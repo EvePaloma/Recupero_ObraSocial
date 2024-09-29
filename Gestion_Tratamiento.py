@@ -91,7 +91,136 @@ class GestionTratamiento(Frame):
         btn_eliminar = Button(frame_tratamientos, text="Eliminar", width=15,font=("Robot",12),bg="#e6c885", command=self.eliminar_tratamiento)
         btn_eliminar.grid(row=3, column=4, padx=40)
 
+    def agregar_tratamiento(self):
+        ventana_agregar = Toplevel(self)
+        ventana_agregar.title("Agregar Tratamiento")
+        ventana_agregar.config(bg="#e4c09f") 
+        ventana.resizable(False,False)
+
+        frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Tratamiento", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
+        frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+        campos = ["Código", "Procedimiento", "Precio", "Tipo", "Siglas", "Descripción completa"]
+        entradas = {}
+
+        for i, campo in enumerate(campos):     #Devuelve índice y valor de cada elemento 
+            etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
+            etiquetas.grid(row=i, column=0, padx=10, pady=5)
+            entry = Entry(frame_agregar, width=40, font=("Robot", 10))
+            entry.grid(row=i, column=1, padx=10, pady=5)
+            entradas[campo] = entry
+
+        btn_nuevo_tratamiento = Button(frame_agregar, text="Agregar", font=("Robot", 10),bg="#e6c885", command=lambda: self.guardar_nuevo_tratamiento(entradas, ventana_agregar))
+        btn_nuevo_tratamiento.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
+
+    def ver_tratamiento(self):
+        seleccion = self.tree.selection()
+        if not seleccion:
+            messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento.")
+            return
+        
+        tratamiento_seleccionado = self.tree.item(seleccion, 'values')   #Item= valor del elemento
+        self.abrir_ventana_tratamiento(tratamiento_seleccionado, seleccion="ver")
+
+    def modificar_tratamiento(self):
+        seleccion = self.tree.selection()
+        if not seleccion:
+            messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento.")
+            return
+        
+        tratamiento_seleccionado = self.tree.item(seleccion, 'values')
+        self.abrir_ventana_tratamiento(tratamiento_seleccionado, seleccion="modificar")    
     
+    def abrir_ventana_tratamiento(self, tratamiento, seleccion="ver"):
+        ventana = Toplevel(self)
+        ventana.title("Detalles del Tratamiento")
+        ventana.config(bg="#e4c09f")
+        ventana.resizable(False,False)
+        
+        ventana.grid_columnconfigure(0, weight=1)
+        ventana.grid_rowconfigure(0, weight=1)
+
+        frame_detalles = LabelFrame(ventana, text="Detalles del Tratamiento", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
+        frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+        campos = ["Código", "Procedimiento", "Precio", "Tipo", "Siglas", "Descripción completa"]
+        valores = list(tratamiento) + ["Tipo Ejemplo", "Siglas Ejemplo", "Descripción del tratamiento"]  #ejemplo
+
+        for i, campo in enumerate(campos):
+            etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
+            etiqueta.grid(row=i, column=0, padx=10, pady=5)
+            entry = Entry(frame_detalles, width=40)
+            entry.grid(row=i, column=1, padx=10, pady=5)
+            entry.insert(0, valores[i])
+
+            if seleccion == "ver":
+                entry.config(state="readonly")
+
+        if seleccion == "modificar":
+            btn_modificar = Button(frame_detalles, text="Guardar Cambios", command=lambda: self.guardar_cambios(tratamiento, ventana))
+            btn_modificar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
+
+    def guardar_cambios(self, tratamiento, ventana):
+        #base de datos
+        messagebox.showinfo("Información", "Cambios guardados correctamente.")
+
+    def eliminar_tratamiento(self):
+        seleccion = self.tree.selection()
+        if not seleccion:
+            messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento para eliminar.")
+            return
+        self.tree.delete(seleccion)
+        messagebox.showinfo("Información", "Tratamiento eliminado correctamente.")
+
+    def agregar_tratamiento(self):
+        ventana_agregar = Toplevel(self)
+        ventana_agregar.title("Agregar Tratamiento")
+        ventana_agregar.config(bg="#e4c09f") 
+        ventana.resizable(False,False)
+        
+        frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Tratamiento", font= ("Robot", 11),padx=10, pady=10, bg="#c9c2b2")
+        frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+        campos = ["Código", "Procedimiento", "Precio", "Tipo", "Siglas", "Descripción completa"]
+        entradas = {}
+
+        for i, campo in enumerate(campos):
+            etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
+            etiquetas.grid(row=i, column=0, padx=10, pady=5)
+            entry = Entry(frame_agregar, width=40, font=("Robot", 10))
+            entry.grid(row=i, column=1, padx=10, pady=5)
+            entradas[campo] = entry
+
+        btn_nuevo_tratamiento = Button(frame_agregar, text="Agregar", font=("Robot", 10),bg="#e6c885", command=lambda: self.guardar_nuevo_tratamiento(entradas, ventana_agregar))
+        btn_nuevo_tratamiento.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
+
+    def guardar_nuevo_tratamiento(self, entry, ventana):
+        codigo = entry["Código"].get()      #Obtenemos los valores que el usuario ingresó.
+        procedimiento = entry["Procedimiento"].get()
+        precio = entry["Precio"].get()
+        tipo = entry["Tipo"].get()
+        siglas = entry["Siglas"].get()
+        descripcion = entry["Descripción completa"].get()
+        # Validar datos y agregar al Treeview
+        if codigo and procedimiento and precio and tipo and siglas and descripcion:
+            self.tree.insert("", "end", values=(codigo, procedimiento, precio))
+            messagebox.showinfo("Información", "Tratamiento agregado correctamente.")
+            ventana.destroy()
+        else:
+            messagebox.showwarning("Atención", "Complete todos los campos.")
+
+    def buscar_tratamiento(self):
+        busqueda = self.entrada_buscar.get().lower()  #Obtenemos búsqueda
+        for item in self.tree.get_children():         #Recorre cada fila usando identificador en la lista devuelta por children
+            valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
+            codigo = valores[0].lower()
+            procedimiento = valores[1].lower()
+            if busqueda in codigo or busqueda in procedimiento:
+                self.tree.selection_set(item)
+                self.tree.focus(item)
+                break
+        else:
+            messagebox.showwarning("Atención", "No se encontró el tratamiento.")
 
 ventana = Tk()
 ventana.title("Gestion de Tratamientos")
