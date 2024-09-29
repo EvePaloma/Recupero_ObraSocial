@@ -28,10 +28,10 @@ class GestionTratamiento(Frame):
         frame_busqueda.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="w")
 
         #Widgets de búsqueda dentro del frame más chico
-        etiqueta_buscar = Label(frame_busqueda, text="Buscar:", bg="#e6c885",font=("Robot",15))
+        etiqueta_buscar = Label(frame_busqueda, text="Buscar:", bg="#e6c885",font=("Robot",13))
         etiqueta_buscar.grid(row=1, column=1, padx=5, pady=5)
 
-        self.entrada_buscar = Entry(frame_busqueda,width="50")
+        self.entrada_buscar = Entry(frame_busqueda,width="50",font=("Robot",11))
         self.entrada_buscar.grid(row=1, column=2, padx=5, pady=5)
 
         img_buscar = Image.open("buscar1.png").resize((30, 30), Image.Resampling.LANCZOS)
@@ -40,7 +40,7 @@ class GestionTratamiento(Frame):
         btn_buscar.grid(row=1, column=3)
         btn_buscar.image = img_buscar
 
-        boton_agregar = Button(frame_tratamientos, text="Agregar   +", width=15, bg="#e6c885",font=("Robot",15), command=self.agregar_tratamiento)
+        boton_agregar = Button(frame_tratamientos, text="Agregar   +", width=15, bg="#e6c885",font=("Robot",13), command=self.agregar_tratamiento)
         boton_agregar.grid(row=1, column=6, padx=10, pady=10)
 
         #Para que siempre esté atrás de los widgets
@@ -51,8 +51,8 @@ class GestionTratamiento(Frame):
         frame_tabla.grid(row=2, column=0, columnspan=6, padx=10, pady=10, sticky="nsew")
         
         stilo = ttk.Style()
-        stilo.configure("Treeview", font=("Robot",12), rowheight=25)  # Cambia la fuente y el alto de las filas
-        stilo.configure("Treeview.Heading", font=("Robot",15))  # Cambia la fuente de las cabeceras
+        stilo.configure("Treeview", font=("Robot",11), rowheight=25)  # Cambia la fuente y el alto de las filas
+        stilo.configure("Treeview.Heading", font=("Robot",14))  # Cambia la fuente de las cabeceras
 
 
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
@@ -82,13 +82,13 @@ class GestionTratamiento(Frame):
         self.tree.configure(yscrollcommand=scrollbar.set)
 
         #Botones(ver, modificar, eliminar)
-        btn_ver = Button(frame_tratamientos, text="Ver", width=15, font=("Robot",12),bg="#e6c885", command=self.ver_tratamiento)
+        btn_ver = Button(frame_tratamientos, text="Ver", width=15, font=("Robot",13),bg="#e6c885", command=self.ver_tratamiento)
         btn_ver.grid(row=3, column=2)
 
-        btn_editar = Button(frame_tratamientos, text="Modificar", width=15, font=("Robot",12),bg="#e6c885", command=self.modificar_tratamiento)
+        btn_editar = Button(frame_tratamientos, text="Modificar", width=15, font=("Robot",13),bg="#e6c885", command=self.modificar_tratamiento)
         btn_editar.grid(row=3, column=3)
         
-        btn_eliminar = Button(frame_tratamientos, text="Eliminar", width=15,font=("Robot",12),bg="#e6c885", command=self.eliminar_tratamiento)
+        btn_eliminar = Button(frame_tratamientos, text="Eliminar", width=15,font=("Robot",13),bg="#e6c885", command=self.eliminar_tratamiento)
         btn_eliminar.grid(row=3, column=4, padx=40)
 
     def agregar_tratamiento(self):
@@ -152,6 +152,7 @@ class GestionTratamiento(Frame):
             entry = Entry(frame_detalles, width=40)
             entry.grid(row=i, column=1, padx=10, pady=5)
             entry.insert(0, valores[i])
+            
 
             if seleccion == "ver":
                 entry.config(state="readonly")
@@ -169,8 +170,13 @@ class GestionTratamiento(Frame):
         if not seleccion:
             messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento para eliminar.")
             return
-        self.tree.delete(seleccion)
-        messagebox.showinfo("Información", "Tratamiento eliminado correctamente.")
+        #Pregunta al usuario si está seguro de eliminar 
+        respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar el tratamiento seleccionado?")
+        if respuesta:  
+            self.tree.delete(seleccion)
+            messagebox.showinfo("Atención", "Tratamiento eliminado correctamente.")
+        else:
+            messagebox.showinfo("Atención", "Eliminación cancelada.")
 
     def agregar_tratamiento(self):
         ventana_agregar = Toplevel(self)
