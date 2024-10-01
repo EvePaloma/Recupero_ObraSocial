@@ -41,14 +41,14 @@ class GestionTratamiento(Frame):
         btn_buscar.image = img_buscar
 
         boton_agregar = Button(frame_tratamientos, text="Agregar   +", width=15, bg="#e6c885",font=("Robot",13), command=self.agregar_tratamiento)
-        boton_agregar.grid(row=1, column=6, padx=10, pady=10)
+        boton_agregar.grid(row=1, column=5, padx=10, pady=10)
 
         #Para que siempre esté atrás de los widgets
         fondo_label.lower()
 
         #Frame para el Treeview y el scrollbar
         frame_tabla = Frame(frame_tratamientos, bg="#c9c2b2")  # Frame para contener la tabla y el scrollbar
-        frame_tabla.grid(row=2, column=0, columnspan=6, padx=10, pady=10, sticky="nsew")
+        frame_tabla.grid(row=2, column=0, columnspan=6, padx=10, pady=10)
         
         stilo = ttk.Style()
         stilo.configure("Treeview", font=("Robot",11), rowheight=25)  # Cambia la fuente y el alto de las filas
@@ -64,9 +64,9 @@ class GestionTratamiento(Frame):
         self.tree.heading("precio", text="Precio")
 
         #Ancho de las columnas y datos centrados
-        self.tree.column("codigo", anchor='center', width=150)
-        self.tree.column("procedimiento", anchor='center', width=250)
-        self.tree.column("precio", anchor='center', width=150)
+        self.tree.column("codigo", anchor='center', width=250)
+        self.tree.column("procedimiento", anchor='center', width=350)
+        self.tree.column("precio", anchor='center', width=250)
 
         #Ejemplo
         self.tree.insert("", "end", values=("1234", "Tratamiento 1", "$100"))
