@@ -245,16 +245,21 @@ class GestionTratamiento(Frame):
             messagebox.showwarning("Atención", "Complete todos los campos.")
 
     def buscar_tratamiento(self):
-        busqueda = self.entrada_buscar.get().lower()  #Obtenemos búsqueda
+        busqueda = self.entrada_buscar.get().lower()
+        tratamiento_encontrado = False
+          #Obtenemos búsqueda
         for item in self.tree.get_children():         #Recorre cada fila usando identificador en la lista devuelta por children
             valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
             codigo = valores[0].lower()
             procedimiento = valores[1].lower()
             if busqueda in codigo or busqueda in procedimiento:
-                self.tree.selection_set(item)
-                self.tree.focus(item)
-                break
-        else:
+                self.tree.selection_set(item)         #Selecciona el tratamiento.
+                self.tree.see(item)                   #Hace visible el tratamiento.
+                tratamiento_encontrado = True
+            else:
+                self.tree.detach(item)                #Oculta los otros tratamientos.
+
+        if not tratamiento_encontrado:
             messagebox.showwarning("Atención", "No se encontró el tratamiento.")
 
 ventana = Tk()
