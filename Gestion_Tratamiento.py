@@ -81,15 +81,18 @@ class GestionTratamiento(Frame):
         scrollbar.grid(row=0, column=1, sticky='ns')  #Se expande desde arriba hacia abajo
         self.tree.configure(yscrollcommand=scrollbar.set)
 
-        #Botones(ver, modificar, eliminar)
-        btn_ver = Button(frame_tratamientos, text="Ver", width=15, font=("Robot",13),bg="#e6c885", command=self.ver_tratamiento)
-        btn_ver.grid(row=3, column=2)
+        frame_btn = Frame(frame_tratamientos,bg="#c9c2b2")
+        frame_btn.grid(row=4, columnspan=6)
 
-        btn_editar = Button(frame_tratamientos, text="Modificar", width=15, font=("Robot",13),bg="#e6c885", command=self.modificar_tratamiento)
-        btn_editar.grid(row=3, column=3)
+        #Botones(ver, modificar, eliminar)
+        btn_ver = Button(frame_btn, text="Ver", width=15, font=("Robot",13),bg="#e6c885", command=self.ver_tratamiento)
+        btn_ver.grid(row=4, column=1,padx=50)
+
+        btn_editar = Button(frame_btn, text="Modificar", width=15, font=("Robot",13),bg="#e6c885", command=self.modificar_tratamiento)
+        btn_editar.grid(row=4, column=2,padx=50)
         
-        btn_eliminar = Button(frame_tratamientos, text="Eliminar", width=15,font=("Robot",13),bg="#e6c885", command=self.eliminar_tratamiento)
-        btn_eliminar.grid(row=3, column=4, padx=40)
+        btn_eliminar = Button(frame_btn, text="Eliminar", width=15,font=("Robot",13),bg="#e6c885", command=self.eliminar_tratamiento)
+        btn_eliminar.grid(row=4, column=3, padx=50)
 
     def agregar_tratamiento(self):
         ventana_agregar = Toplevel(self)
@@ -119,8 +122,8 @@ class GestionTratamiento(Frame):
             messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento.")
             return
         
-        tratamiento_seleccionado = self.tree.item(seleccion, 'values')   #Item= valor del elemento
-        self.abrir_ventana_tratamiento(tratamiento_seleccionado, seleccion="ver")
+        tratamiento_seleccionado = self.tree.item(seleccion[0], 'values')   #Item= valor del elemento
+        self.abrir_ventana_tratamiento(tratamiento_seleccionado,seleccion[0],modo="ver")
 
     def modificar_tratamiento(self):
         seleccion = self.tree.selection()
@@ -128,10 +131,10 @@ class GestionTratamiento(Frame):
             messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento.")
             return
         
-        tratamiento_seleccionado = self.tree.item(seleccion, 'values')
-        self.abrir_ventana_tratamiento(tratamiento_seleccionado, seleccion="modificar")    
+        tratamiento_seleccionado = self.tree.item(seleccion[0], 'values')
+        self.abrir_ventana_tratamiento(tratamiento_seleccionado, seleccion[0],modo="modificar")    
     
-    def abrir_ventana_tratamiento(self, tratamiento, seleccion="ver"):
+    def abrir_ventana_tratamiento(self, tratamiento, id_seleccionado, modo="ver"):
         ventana = Toplevel(self)
         ventana.title("Detalles del Tratamiento")
         ventana.config(bg="#e4c09f")
@@ -145,6 +148,7 @@ class GestionTratamiento(Frame):
 
         campos = ["Código", "Procedimiento", "Precio", "Tipo", "Siglas", "Descripción completa"]
         valores = list(tratamiento) + ["Tipo Ejemplo", "Siglas Ejemplo", "Descripción del tratamiento"]  #ejemplo
+        entradas ={}
 
         for i, campo in enumerate(campos):
             etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
@@ -152,18 +156,43 @@ class GestionTratamiento(Frame):
             entry = Entry(frame_detalles, width=40)
             entry.grid(row=i, column=1, padx=10, pady=5)
             entry.insert(0, valores[i])
+            entradas[campo] = entry
             
 
-            if seleccion == "ver":
+            if modo == "ver":
                 entry.config(state="readonly")
+                btn_editar = Button(ventana, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885",command=lambda: self.activar_edicion(entradas, btn_guardar))
+                btn_editar.grid(row=len(campos), column=0, pady=10)
 
-        if seleccion == "modificar":
-            btn_modificar = Button(frame_detalles, text="Guardar Cambios", command=lambda: self.guardar_cambios(tratamiento, ventana))
+    # Botón "Guardar Cambios"
+                btn_guardar = Button(frame_detalles, text="Guardar Cambios", command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
+                btn_guardar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
+                btn_guardar.config(state="disabled")  # Iniciar como deshabilitado
+                                
+
+        if modo == "modificar":
+            btn_modificar = Button(frame_detalles, text="Guardar Cambios", command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
             btn_modificar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
-    def guardar_cambios(self, tratamiento, ventana):
+    def activar_edicion(self, entradas, btn_guardar):
+    # Habilitar la edición en las entradas
+        for entry in entradas.values():
+            entry.config(state="normal")  # Permitir edición en todos los Entry
+        
+        # Activar el botón "Guardar Cambios"
+        btn_guardar.config(state="normal")  # Activar el botón directamente
+
+    def guardar_cambios(self, entradas, ventana,seleccion):
         #base de datos
+        #messagebox.showinfo("Información", "Cambios guardados correctamente.")# Obtener los nuevos valores de todas las entradas
+        nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
+        self.tree.item(seleccion, values=list(nuevos_valores.values()))
+        
+        # Mostrar mensaje de confirmación
         messagebox.showinfo("Información", "Cambios guardados correctamente.")
+        
+        # Cerrar la ventana después de guardar
+        ventana.destroy()
 
     def eliminar_tratamiento(self):
         seleccion = self.tree.selection()
