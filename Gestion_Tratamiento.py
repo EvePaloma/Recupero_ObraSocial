@@ -248,7 +248,7 @@ class GestionTratamiento(Frame):
         descripcion = entry["Descripción completa"].get()
         # Validar datos y agregar al Treeview
         if codigo and procedimiento and precio and tipo and siglas and descripcion:
-            self.tree.insert("", "end", values=(codigo, procedimiento, precio))
+            self.tree.insert("", "end", values=(codigo, procedimiento, precio, tipo, siglas, descripcion))
             messagebox.showinfo("Información", "Tratamiento agregado correctamente.")
             ventana.destroy()
         else:
