@@ -35,7 +35,7 @@ class Login(Frame):
 
     def check_login(self):
         if self.usario.get() == "admin" and self.password.get() == "admin":
-            messagebox.showinfo("Login", "Usuario o contraseña incorrectos")
+            messagebox.showinfo("Login", "Ingreso al menu principal")
         else:
             messagebox.showerror("Login", "Usuario o contraseña incorrectos")
 
