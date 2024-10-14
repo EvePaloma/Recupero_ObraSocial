@@ -265,7 +265,7 @@ class GestionFicha(Frame):
 
     def buscar_ficha(self):
         busqueda = self.entrada_buscar.get().strip().lower()
-        ficha_encontrada = False
+        paciente_encontrado = False
     
         if not busqueda:
             self.tree.delete(*self.tree.get_children())
@@ -278,23 +278,23 @@ class GestionFicha(Frame):
             if busqueda in nombre or busqueda in dni:
                 self.tree.selection_set(item)         #Selecciona el tratamiento.
                 self.tree.see(item)                   #Hace visible el tratamiento.
-                ficha_encontrada = True
+                paciente_encontrado = True
             else:
                 self.tree.detach(item)                #Oculta los otros tratamientos.
        
             
-        if not ficha_encontrada:
+        if not paciente_encontrado:
             #self.tree.delete(*self.tree.get_children())
             #self.cargar_tratamiento()
             messagebox.showwarning("Atención", "No se encontró el paciente.")
 
     def cargar_ficha(self):
-        self.tree.insert("", "end", values=("Paciente 1", "dni", "Obra Social"))
-        self.tree.insert("", "end", values=("Maria", "28492834", "osim"))
-        self.tree.insert("", "end", values=("Jose", "7462872", "osde"))
+        self.tree.insert("", "end", values=("DNI", "Sabrina Carpenter", "Estudio", "12-05-2024", "342"))
+        self.tree.insert("", "end", values=("29319319", "María Gomez", "Resonancia", "30-08-2024", "421"))
+        self.tree.insert("", "end", values=("1661617", "José Perez", "Fisioterapia", "12-10-2024", "23"))
 
 ventana = Tk()
-ventana.title("Gestion de Ficha")
+ventana.title("Gestion de Fichas")
 ventana.resizable(False,False)
 ventana.geometry("+200+80")
 root = GestionFicha(ventana)
