@@ -281,7 +281,7 @@ class GestionPaciente(Frame):
         if not paciente_encontrado:
             #self.tree.delete(*self.tree.get_children())
             #self.cargar_tratamiento()
-            messagebox.showwarning("Atención", "No se encontró el tratamiento.")
+            messagebox.showwarning("Atención", "No se encontró el paciente.")
 
     def cargar_paciente(self):
         self.tree.insert("", "end", values=("Paciente 1", "dni", "Obra Social"))
