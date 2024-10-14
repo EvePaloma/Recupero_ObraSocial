@@ -7,7 +7,12 @@ class Login(Frame):
         super().__init__(master,bg="#e4c09f")
         self.master = master
         self.pack()
+        self.usuario = ()
+        self.contraseña = ()
+        self.usuarios = {}
         self.create_widgets()
+        
+    
 
     def create_widgets(self):
         img_fondo = Image.open("fondo3.png")
@@ -25,19 +30,85 @@ class Login(Frame):
         self.usario = Entry(contenedor, font=("Robot",13), width=30)
         self.usario.pack()
 
-        label_password = Label(contenedor, text="Ingrese contraseña", padx=10, pady=10,font=("Robot",13), bg="#c9c2b2")
-        label_password.pack()
-        self.password = Entry(contenedor, font=("Robot",13), width=30)
-        self.password.pack()
+        label_contraseña = Label(contenedor, text="Ingrese contraseña", padx=10, pady=10,font=("Robot",13), bg="#c9c2b2")
+        label_contraseña.pack()
+        self.contraseña = Entry(contenedor, font=("Robot",13), width=30)
+        self.contraseña.pack()
 
         login = Button(contenedor, text="Ingresar", command=self.check_login, font=("Robot",13), bg="#e4c09f")
         login.pack(pady=(20, 0))
 
+        crear_usuario = Label(contenedor, text="Crear Usuario", font=("Roboto", 10), fg="black", cursor="hand2", bg="#c9c2b2")
+        crear_usuario.pack(pady=(10, 0))
+
+        crear_usuario.bind("<Enter>", lambda e: crear_usuario.config(fg="blue", font=("Roboto", 10, "underline")))
+        crear_usuario.bind("<Leave>", lambda e: crear_usuario.config(fg="black", font=("Roboto", 10)))
+        crear_usuario.bind("<Button-1>", lambda e: self.pedir_admin_login())
+
+    
+
     def check_login(self):
-        if self.usario.get() == "admin" and self.password.get() == "admin":
+        if self.usario.get() == "admin" and self.contraseña.get() == "admin":
             messagebox.showinfo("Login", "Ingreso al menu principal")
         else:
             messagebox.showerror("Login", "Usuario o contraseña incorrectos")
+
+    def pedir_admin_login(self):
+        admin_login = Toplevel(self.master)
+        admin_login.title("Login Administrador")
+        admin_login.geometry("300x200")
+
+        label_usario = Label(admin_login, text="Usuario Admin:", padx=10, pady=10)
+        label_usario.pack()
+        admin_usario_entry = Entry(admin_login)
+        admin_usario_entry.pack(pady=(0, 10))
+
+        label_contraseña = Label(admin_login, text="Contraseña Admin:", padx=10, pady=10)
+        label_contraseña.pack()
+        admin_contraseña_entry = Entry(admin_login, show="*")
+        admin_contraseña_entry.pack(pady=(0, 10))
+
+        crear_btn = Button(admin_login, text="Iniciar Sesión", 
+                           command=lambda: self.verificar_admin(admin_usario_entry.get(), admin_contraseña_entry.get(), admin_login))
+        crear_btn.pack()
+
+    def verificar_admin(self, usuario, contraseña, window):
+        if usuario == "admin" and contraseña == "admin":  
+            window.destroy()  
+            self.crear_usuario()  
+        else:
+            messagebox.showerror("Error", "Credenciales de administrador incorrectas.")
+
+    def crear_usuario(self):
+        crear_usuario = Toplevel(self.master)
+        crear_usuario.title("Crear Usuario")
+        crear_usuario.geometry("300x200")
+
+        label_usario = Label(crear_usuario, text="Nuevo Usuario:", padx=10, pady=10)
+        label_usario.pack()
+        nuevo_usario_entry = Entry(crear_usuario)
+        nuevo_usario_entry.pack(pady=(0, 10))
+
+        label_contraseña = Label(crear_usuario, text="Contraseña:", padx=10, pady=10)
+        label_contraseña.pack()
+        nuevo_contraseña_entry = Entry(crear_usuario, show="*")
+        nuevo_contraseña_entry.pack(pady=(0, 10))
+
+        crear_btn = Button(crear_usuario, text="Crear", 
+                           command=lambda: self.guardar_usuario(nuevo_usario_entry.get(), nuevo_contraseña_entry.get(), crear_usuario))
+        crear_btn.pack()
+
+    def guardar_usuario(self, usuario, contraseña, ventana):
+        if usuario and contraseña:
+            if usuario in self.usuarios:
+                messagebox.showerror("Error", "El usuario ya existe.")
+            else:
+                self.usuarios[usuario] = contraseña
+                messagebox.showinfo("Éxito", "Usuario creado exitosamente.")
+                ventana.destroy()
+        else:
+            messagebox.showerror("Error", "Por favor, complete todos los campos.")
+
 
 ventana = Tk()
 ventana.configure(bg="#e4c09f") 
