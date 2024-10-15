@@ -50,6 +50,54 @@ class ficha(Label):
         self.createWidgets()
 
     def createWidgets(self):
+        contenedor = Frame(self, padx=10, pady=10, bg="#e4c09f", height=600, width=800)
+        contenedor.pack(expand=True)
+
+        cont_paciente = LabelFrame(contenedor, text="Datos del Paciente", font=("Robot", 12), padx=10, pady=10, bg="#c9c2b2")
+        cont_paciente.pack(expand=True)
+        
+        # Combobox para buscar por DNI
+        self.combobox = ttk.Combobox(cont_paciente, width=30)
+        self.combobox.pack(pady=5)
+        self.combobox.bind('<KeyRelease>', self.actualizar_lista)
+        self.combobox.bind('<<ComboboxSelected>>', self.mostrar_nombre)
+
+        # Entry para mostrar el nombre de la persona
+        self.entry_nombre = Entry(cont_paciente, width=30, state='readonly')
+        self.entry_nombre.pack(pady=5)
+
+
+    def actualizar_lista(self, evento):
+        termino = self.combobox.get().lower()
+        self.combobox['values'] = []  # Limpiar las opciones del Combobox
+        
+        if termino:  # Si hay un término de búsqueda
+            # Filtrar DNIs que contengan el término
+            dnis_encontrados = [valor['dni'] for valor in personas.values() if termino in valor['dni']]
+            self.combobox['values'] = dnis_encontrados  # Actualizar el Combobox con los DNIs encontrados
+
+        try:
+            if dnis_encontrados:
+                self.combobox.event_generate('<Down>')  # Simular la apertura del Combobox
+        except:
+            pass
+            
+    def mostrar_nombre(self, evento):
+        dni_seleccionado = self.combobox.get()
+        # Buscar el nombre correspondiente al DNI seleccionado
+        for clave, valor in personas.items():
+            if valor['dni'] == dni_seleccionado:
+                self.entry_nombre.config(state='normal')  # Habilitar el Entry
+                self.entry_nombre.delete(0, END)  # Limpiar el Entry
+                self.entry_nombre.insert(0, valor['nombre'])  # Insertar el nombre
+                self.entry_nombre.config(state='readonly')  # Volver a poner en solo lectura
+                break
+    
+
+
+
+"""
+    def createWidgets(self):
         contenedor = Frame(self, padx=10, pady=10, bg="NavajoWhite3", height=600, width=800)
         contenedor.pack(expand=True)
 
@@ -116,6 +164,8 @@ class ficha(Label):
             
             # Ocultar el Listbox después de la selección
             self.listbox.pack_forget()
+"""
+
 ventana = Tk()
 ventana.title("ficha")
 ventana.resizable(False,False)
