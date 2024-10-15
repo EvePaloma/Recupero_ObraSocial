@@ -1,6 +1,6 @@
-DROP DATABASE IF EXISTS `obra_social`;
-CREATE DATABASE `obra_social`;
-USE obra_social;
+DROP DATABASE IF EXISTS `recupero_obra_social`;
+CREATE DATABASE `recupero_obra_social`;
+USE recupero_obra_social;
 DROP TABLE IF EXISTS `tipo_documento`;
 CREATE TABLE `tipo_documento` (
   `id_tipo_documento` int NOT NULL AUTO_INCREMENT,
