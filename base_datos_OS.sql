@@ -13,6 +13,12 @@ CREATE TABLE `rol` (
   `nombre` varchar(45) NOT NULL,
   PRIMARY KEY (`id_rol`)
 );
+DROP TABLE IF EXISTS `tipo_matricula`;
+CREATE TABLE `tipo_matricula` (
+  `id_tipo_matricula` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(45) NOT NULL,
+  PRIMARY KEY (`id_tipo_matricula`)
+);
 DROP TABLE IF EXISTS `afip`;
 CREATE TABLE `afip` (
   `id_afip` int NOT NULL AUTO_INCREMENT,
@@ -55,6 +61,7 @@ CREATE TABLE `medico` (
   `id_medico` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(45) NOT NULL,
   `apellido` varchar(45) NOT NULL,
+  `tipo_matricula` int NOT NULL,
   `matricula` varchar(45) NOT NULL,
   `telefono` varchar(45) NOT NULL,
   `tipo_documento` int NOT NULL DEFAULT '1',
@@ -64,7 +71,8 @@ CREATE TABLE `medico` (
   PRIMARY KEY (`id_medico`),
   UNIQUE KEY `documento_UNIQUE` (`documento`),
   FOREIGN KEY (`id_especialidad`) REFERENCES `especialidad` (`id_especialidad`),
-  FOREIGN KEY (`tipo_documento`) REFERENCES `tipo_documento` (`id_tipo_documento`)
+  FOREIGN KEY (`tipo_documento`) REFERENCES `tipo_documento` (`id_tipo_documento`),
+  FOREIGN KEY (`tipo_matricula`) REFERENCES `tipo_matricula` (`id_tipo_matricula`)
 );
 
 DROP TABLE IF EXISTS `obra_social`;
@@ -74,7 +82,7 @@ CREATE TABLE `obra_social` (
   `siglas` varchar(20) NOT NULL,
   `email` varchar(50) NOT NULL,
   `telefono` varchar(45) NOT NULL,
-  `anotacion` longtext,
+  `detalle` longtext,
   `domicilio_central` varchar(45) NOT NULL,
   `domicilio_cp` varchar(45) DEFAULT NULL,
   `cuit` varchar(45) NOT NULL,
@@ -91,15 +99,10 @@ CREATE TABLE `paciente` (
   `nombre` varchar(45) NOT NULL,
   `apellido` varchar(45) NOT NULL,
   `nacimiento` date NOT NULL,
-  `direccion` varchar(60) NOT NULL,
-  `id_barrio` int NOT NULL,
-  `telefono` varchar(45) NOT NULL,
-  `telefono_familiar` varchar(45) DEFAULT NULL,
   `tipo_documento` int NOT NULL,
   `documento` varchar(45) NOT NULL,
   `activo` tinyint NOT NULL DEFAULT 1,
   PRIMARY KEY (`id_paciente`),
-  FOREIGN KEY (`id_barrio`) REFERENCES `barrio` (`id_barrio`),
   FOREIGN KEY (`tipo_documento`) REFERENCES `tipo_documento` (`id_tipo_documento`)
 );
 DROP TABLE IF EXISTS `detalle_obra_social`;
@@ -120,9 +123,10 @@ CREATE TABLE `tratamiento` (
   `id_tratamiento` int NOT NULL AUTO_INCREMENT,
   `codigo` varchar(45) NOT NULL,
   `nombre` varchar(45) NOT NULL,
-  `descripcion` varchar(50),
+  `siglas` varchar(45) NOT NULL,
   `precio` float NOT NULL,
   `fecha_precio` date NOT NULL,
+  `descripcion` varchar(50),
   `activo` tinyint NOT NULL DEFAULT 1,
   PRIMARY KEY (`id_tratamiento`)
 );
@@ -131,7 +135,9 @@ DROP TABLE IF EXISTS `usuario`;
 CREATE TABLE `usuario` (
   `id_usuario` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(45) NOT NULL,
-  `legajo` varchar(45) NOT NULL,
+  `apellido` varchar(45) NOT NULL,
+  `dni` varchar(45) NOT NULL,
+  `telefono` varchar(45) NOT NULL,
   `clave` varchar(45) NOT NULL,
   `activo` tinyint NOT NULL DEFAULT 1,
   `id_rol` int NOT NULL,
@@ -143,13 +149,12 @@ DROP TABLE IF EXISTS `ficha`;
 CREATE TABLE `ficha` (
   `id_ficha` int NOT NULL AUTO_INCREMENT,
   `id_paciente` int NOT NULL,
-  `id_obra_social` int NOT NULL,
   `id_medico` int NOT NULL,
   `fecha` date NOT NULL,
+  `total` float NOT NULL,
   `activo` tinyint NOT NULL DEFAULT 1,
   PRIMARY KEY (`id_ficha`),
   FOREIGN KEY (`id_paciente`) REFERENCES `paciente` (`id_paciente`),
-  FOREIGN KEY (`id_obra_social`) REFERENCES `obra_social` (`id_obra_social`),
   FOREIGN KEY (`id_medico`) REFERENCES `medico` (`id_medico`)
 );
 
