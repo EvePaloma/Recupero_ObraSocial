@@ -53,25 +53,31 @@ class ficha(Label):
         contenedor = Frame(self, padx=10, pady=10, bg="NavajoWhite3", height=600, width=800)
         contenedor.pack(expand=True)
 
-        cont_paciente = LabelFrame(contenedor, text="Datos del Paciente", font=("Robot", 12), padx=10, pady=10, bg="#c9c2b2", width=700, height=300)
+        cont_paciente = LabelFrame(contenedor, text="Datos del Paciente", font=("Robot", 12), padx=10, pady=10, bg="#c9c2b2", width=800, height=300)
         cont_paciente.pack_propagate(False)
-        cont_paciente.pack(expand=True)
+        cont_paciente.pack(expand=True, ipadx=18, ipady=18)
         
-        cont_datos =Label(cont_paciente)
-        cont_datos.pack()
+        cont_datos =Label(cont_paciente, width= 600, height= 300)
+        cont_datos.pack(expand=True)
 
         # Entry para buscar
-        self.entry_dni = Entry(cont_paciente, width=30)
-        self.entry_dni.grid(column=0)
+        self.entry_dni = Entry(cont_datos, width=30)
+        self.entry_dni.grid(row= 0, column=0)
         self.entry_dni.bind('<KeyRelease>', self.actualizar_lista)
 
+        self.entry_nombre = Entry(cont_datos, width=30, state="readonly")
+        self.entry_nombre.grid( row=0 ,column=1)
+
         # Listbox para mostrar las coincidencias
-        self.listbox = Listbox(cont_paciente, width=30, height=5)
+        self.listbox = Listbox(cont_datos, width=30, height=5)
         self.listbox.pack(pady=5)  # Muestra el Listbox, ocultarlo inicialmente
         self.listbox.pack_forget()  # Ocultar inicialmente
 
+        # Vincular el evento de selección al Listbox
+        self.listbox.bind('<<ListboxSelect>>', self.on_select)
+
     def actualizar_lista(self, evento):
-        termino = self.entry_dni.get().lower()
+        termino = self.entry_dni.get()
         self.listbox.delete(0, END)  # Limpiar la lista
         
         if termino:  # Mostrar el Listbox solo si hay un término de búsqueda
@@ -79,8 +85,8 @@ class ficha(Label):
             self.listbox.place(x=self.entry_dni.winfo_x() - 12, y=self.entry_dni.winfo_y() - 11)
             # Buscar coincidencias en los datos de 'personas'
             for clave, valor in personas.items():
-                if termino in valor['nombre'].lower():
-                    self.listbox.insert(END, valor['nombre'])
+                if termino in valor['dni']:
+                    self.listbox.insert(END, valor['dni'])
             
             # Si no hay coincidencias, ocultar la lista
             if self.listbox.size() == 0:
@@ -88,6 +94,28 @@ class ficha(Label):
         else:
             self.listbox.pack_forget()  # Ocultar si no hay término de búsqueda
 
+    def on_select(self, evento):
+        # Obtener la selección actual
+        seleccion = self.listbox.curselection()
+        if seleccion:
+            index = seleccion[0]
+            dni_seleccionado = self.listbox.get(index)
+            
+            # Actualizar el Entry con el DNI seleccionado
+            self.entry_dni.delete(0, END)
+            self.entry_dni.insert(0, dni_seleccionado)
+            
+            # Rellenar el Entry de nombre con el nombre correspondiente
+            for clave, valor in personas.items():
+                if valor['dni'] == dni_seleccionado:
+                    self.entry_nombre.config(state="normal")
+                    self.entry_nombre.delete(0, END)
+                    self.entry_nombre.insert(0, valor['nombre'])
+                    self.entry_nombre.config(state="readonly")
+                    break
+            
+            # Ocultar el Listbox después de la selección
+            self.listbox.pack_forget()
 ventana = Tk()
 ventana.title("ficha")
 ventana.resizable(False,False)
