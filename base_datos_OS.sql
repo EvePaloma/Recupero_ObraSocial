@@ -76,7 +76,7 @@ CREATE TABLE `obra_social` (
   `telefono` varchar(45) NOT NULL,
   `anotacion` longtext,
   `domicilio_central` varchar(45) NOT NULL,
-  `domicilio_cba` varchar(45) DEFAULT NULL,
+  `domicilio_cp` varchar(45) DEFAULT NULL,
   `cuit` varchar(45) NOT NULL,
   `id_afip` int DEFAULT NULL,
   `activo` tinyint NOT NULL DEFAULT 1,
