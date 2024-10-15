@@ -113,6 +113,7 @@ class GestionFicha(Frame):
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar ficha", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
+
         campos = ["Nombre y Apellido", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Número de Afiliado"]
         entradas = {}
 
