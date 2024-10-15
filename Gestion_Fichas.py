@@ -114,7 +114,7 @@ class GestionFicha(Frame):
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
 
-        campos = ["Nombre y Apellido", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Número de Afiliado"]
+        campos = ["Nombre y Apellido del paciente", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Número de Afiliado", "Nombre y apellido del médico","Especialidad","Tipo de matrícula", "Matrícula","Servicio", "Fecha de prestación médica", "Código", "Nombre del procedimiento", "Precio", "Tippo de tratamiento", "Siglas"]
         entradas = {}
 
         for i, campo in enumerate(campos):     #Devuelve índice y valor de cada elemento 
@@ -159,8 +159,9 @@ class GestionFicha(Frame):
         frame_detalles = LabelFrame(ventana, text="Detalles del Paciente", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre y Apellido", "DNI", "Obra Social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Número de Afiliado"]
-        valores = list(tratamiento) + ["Obra Social Ejemplo", "Propietario del Plan Ejemplo", "Fecha de Nacimiento del paciente", "Número de Afiliado Ejemplo"]  #ejemplo
+        campos = ["Nombre y Apellido del paciente", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", 
+        "Fecha de Nacimiento", "Número de Afiliado", "Nombre y apellido del médico","Especialidad","Tipo de matrícula", "Matrícula",
+        "Servicio", "Fecha de prestación médica", "Código", "Nombre del procedimiento", "Precio", "Tippo de tratamiento", "Siglas"] #ejemplo
         entradas ={}
 
         for i, campo in enumerate(campos):
@@ -232,7 +233,9 @@ class GestionFicha(Frame):
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar ficha", font= ("Robot", 11),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre y Apellido", "DNI", "Obra Social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Sexo", "Teléfono del Paciente", "Contacto de Emergencia", "Número de Afiliado"]
+        campos = ["Nombre y Apellido del paciente", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", 
+        "Fecha de Nacimiento", "Número de Afiliado", "Nombre y apellido del médico","Especialidad","Tipo de matrícula", "Matrícula",
+        "Servicio", "Fecha de prestación médica", "Código", "Nombre del procedimiento", "Precio", "Tippo de tratamiento", "Siglas"]
         entradas = {}
 
         for i, campo in enumerate(campos):
