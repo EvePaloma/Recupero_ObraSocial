@@ -259,9 +259,19 @@ class GestionFicha(Frame):
         telefonopaciente = entry["Teléfono del Paciente"].get()
         contactoemergencia = entry["Contacto de Emergencia"].get()
         numeroafiliado = entry["Número de Afiliado"].get()
+        nombre_medico = entry["Nombre y apellido del médico"].get()
+        especialidad = entry ["Especialidad"].get()
+        tipomatricula = entry ["Tipo de matrícula"].get()
+        servicio = entry ["Servicio"].get()
+        fechaprestacion = entry["Fecha de prestación médica"].get()
+        codigo =["Código"].get()
+        nombreprocedimiento=["Nombre del procedimiento"].get()
+        precio=["Precio"].get()
+        tipotratamiento=["Tipo de tratamiento"].get()
+        siglas=["Siglas"].get()
         # Validar datos y agregar al Treeview
-        if nombre and dni and obrasocial and obrasocialsec and propietario and fechanac and telefonopaciente and contactoemergencia and numeroafiliado:
-            self.tree.insert("", "end", values=(nombre, dni, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado))
+        if nombre and dni and obrasocial and obrasocialsec and propietario and fechanac and telefonopaciente and contactoemergencia and numeroafiliado and nombre_medico and especialidad and tipomatricula and servicio and fechaprestacion and codigo and nombreprocedimiento and precio and tipotratamiento and siglas:
+            self.tree.insert("", "end", values=(nombre, dni, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado, nombre_medico, especialidad, tipomatricula, servicio, fechaprestacion, codigo, nombreprocedimiento, precio, tipotratamiento, siglas  ))
             messagebox.showinfo("Información", "Paciente agregado correctamente.")
             ventana.destroy()
         else:
