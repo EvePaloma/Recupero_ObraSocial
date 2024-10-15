@@ -108,7 +108,7 @@ class GestionFicha(Frame):
         ventana_agregar = Toplevel(self)
         ventana_agregar.title("Agregar ficha")
         ventana_agregar.config(bg="#e4c09f") 
-        ventana.resizable(False,False)
+        ventana_agregar.resizable(False,False)
 
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar ficha", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
@@ -164,12 +164,13 @@ class GestionFicha(Frame):
         "Servicio", "Fecha de prestación médica", "Código", "Nombre del procedimiento", "Precio", "Tippo de tratamiento", "Siglas"] #ejemplo
         entradas ={}
 
+
         for i, campo in enumerate(campos):
             etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
             etiqueta.grid(row=i, column=0, padx=10, pady=5)
             entry = Entry(frame_detalles, width=40)
             entry.grid(row=i, column=1, padx=10, pady=5)
-            entry.insert(0, valores[i])
+            entry.insert(0, tratamiento[i])
             entradas[campo] = entry
             
 
@@ -181,7 +182,7 @@ class GestionFicha(Frame):
 
     
                 btn_guardar = Button(frame_detalles, text="Guardar Cambios", 
-                                     command=lambda: self.guardar_cambios(entradas, ventana))
+                                     command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
                 btn_guardar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
                 btn_guardar.config(state="disabled")  # Iniciar como deshabilitado
                                 
@@ -224,54 +225,27 @@ class GestionFicha(Frame):
         else:
             messagebox.showinfo("Atención", "Eliminación cancelada.")
 
-    def agregar_ficha(self):
-        ventana_agregar = Toplevel(self)
-        ventana_agregar.title("Agregar ficha")
-        ventana_agregar.config(bg="#e4c09f")
-        ventana.resizable(False,False)
-        
-        frame_agregar = LabelFrame(ventana_agregar, text="Agregar ficha", font= ("Robot", 11),padx=10, pady=10, bg="#c9c2b2")
-        frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-
-        campos = ["Nombre y Apellido del paciente", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", 
-        "Fecha de Nacimiento", "Número de Afiliado", "Nombre y apellido del médico","Especialidad","Tipo de matrícula", "Matrícula",
-        "Servicio", "Fecha de prestación médica", "Código", "Nombre del procedimiento", "Precio", "Tippo de tratamiento", "Siglas"]
-        entradas = {}
-
-        for i, campo in enumerate(campos):
-            etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
-            etiquetas.grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_agregar, width=40, font=("Robot", 10))
-            entry.grid(row=i, column=1, padx=10, pady=5)
-            entradas[campo] = entry
-
-        btn_nuevo_tratamiento = Button(frame_agregar, text="Agregar", font=("Robot", 10),bg="#e6c885", command=lambda: self.guardar_nueva_ficha(entradas, ventana_agregar))
-        btn_nuevo_tratamiento.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
-
     def guardar_nueva_ficha(self, entry, ventana):
-        nombre = entry["Nombre y Apellido"].get()      #Obtenemos los valores que el usuario ingresó.
+        nombre = entry["Nombre y Apellido del paciente"].get()      #Obtenemos los valores que el usuario ingresó.
         dni = entry["DNI"].get()
-        obrasocial = entry["Obra Social"].get()
+        obrasocial = entry["Obra social"].get()
         obrasocialsec = entry["Obra Social Secundaria"].get()
         propietario = entry["Propietario del Plan"].get()
         fechanac = entry["Fecha de Nacimiento"].get()
-        sexo = entry["Sexo"].get()
-        telefonopaciente = entry["Teléfono del Paciente"].get()
-        contactoemergencia = entry["Contacto de Emergencia"].get()
         numeroafiliado = entry["Número de Afiliado"].get()
         nombre_medico = entry["Nombre y apellido del médico"].get()
         especialidad = entry ["Especialidad"].get()
         tipomatricula = entry ["Tipo de matrícula"].get()
         servicio = entry ["Servicio"].get()
         fechaprestacion = entry["Fecha de prestación médica"].get()
-        codigo =["Código"].get()
-        nombreprocedimiento=["Nombre del procedimiento"].get()
-        precio=["Precio"].get()
-        tipotratamiento=["Tipo de tratamiento"].get()
-        siglas=["Siglas"].get()
+        codigo =entry["Código"].get()
+        nombreprocedimiento=entry["Nombre del procedimiento"].get()
+        precio=entry["Precio"].get()
+        tipotratamiento=entry["Tippo de tratamiento"].get()
+        siglas=entry["Siglas"].get()
         # Validar datos y agregar al Treeview
-        if nombre and dni and obrasocial and obrasocialsec and propietario and fechanac and telefonopaciente and contactoemergencia and numeroafiliado and nombre_medico and especialidad and tipomatricula and servicio and fechaprestacion and codigo and nombreprocedimiento and precio and tipotratamiento and siglas:
-            self.tree.insert("", "end", values=(nombre, dni, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado, nombre_medico, especialidad, tipomatricula, servicio, fechaprestacion, codigo, nombreprocedimiento, precio, tipotratamiento, siglas  ))
+        if nombre and dni and obrasocial and obrasocialsec and propietario and fechanac and numeroafiliado and nombre_medico and especialidad and tipomatricula and servicio and fechaprestacion and codigo and nombreprocedimiento and precio and tipotratamiento and siglas:
+            self.tree.insert("", "end", values=(dni, nombre, servicio, fechaprestacion, codigo))
             messagebox.showinfo("Información", "Paciente agregado correctamente.")
             ventana.destroy()
         else:
@@ -287,8 +261,8 @@ class GestionFicha(Frame):
         #Obtenemos búsqueda
         for item in self.tree.get_children():         #Recorre cada fila usando identificador en la lista devuelta por children
             valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
-            nombre = valores[0].lower()
-            dni = valores[1].lower()
+            nombre = valores[1].lower()
+            dni = valores[0].lower()
             if busqueda in nombre or busqueda in dni:
                 self.tree.selection_set(item)         #Selecciona el tratamiento.
                 self.tree.see(item)                   #Hace visible el tratamiento.
