@@ -118,7 +118,7 @@ CREATE TABLE `detalle_obra_social` (
 DROP TABLE IF EXISTS `tratamiento`;
 CREATE TABLE `tratamiento` (
   `id_tratamiento` int NOT NULL AUTO_INCREMENT,
-  `cod_tratamiento` varchar(45) NOT NULL,
+  `codigo` varchar(45) NOT NULL,
   `nombre` varchar(45) NOT NULL,
   `descripcion` varchar(50),
   `precio` float NOT NULL,
