@@ -163,7 +163,7 @@ class Gestion_Obra_Social(Frame):
             valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
             nombre = valores[0].lower()
             siglas = valores[1].lower()
-            if busqueda in nombre or siglas in obra_social:
+            if busqueda in nombre or siglas:
                 self.tree.selection_set(item)         #Selecciona el tratamiento.
                 self.tree.see(item)                   #Hace visible el tratamiento.
                 tratamiento_encontrado = True
