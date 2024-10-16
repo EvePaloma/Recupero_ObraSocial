@@ -58,16 +58,16 @@ class GestionTratamiento(Frame):
 
 
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("codigo", "procedimiento", "precio"), show='headings', height=5)
+        self.tree = ttk.Treeview(frame_tabla, columns=("codigo", "nombre", "precio"), show='headings', height=5)
 
         #Títulos de columnas
         self.tree.heading("codigo", text="Código")
-        self.tree.heading("procedimiento", text="Procedimiento")
+        self.tree.heading("nombre", text="Nombre")
         self.tree.heading("precio", text="Precio")
 
         #Ancho de las columnas y datos centrados
         self.tree.column("codigo", anchor='center', width=250)
-        self.tree.column("procedimiento", anchor='center', width=350)
+        self.tree.column("nombre", anchor='center', width=350)
         self.tree.column("precio", anchor='center', width=250)
 
         #Ejemplo
@@ -108,7 +108,7 @@ class GestionTratamiento(Frame):
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Tratamiento", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Código", "Procedimiento", "Precio", "Tipo", "Siglas", "Descripción completa"]
+        campos = ["Código", "Nombre", "Precio", "Fecha Precio","Tipo", "Siglas", "Descripción"]
         entradas = {}
 
         for i, campo in enumerate(campos):     #Devuelve índice y valor de cada elemento 
@@ -145,7 +145,7 @@ class GestionTratamiento(Frame):
         ventana.title("Detalles del Tratamiento")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False,False)
-        ventana.geometry("510x345+400+160")
+        ventana.geometry("510x370+400+160")
         
         ventana.grid_columnconfigure(0, weight=1)
         ventana.grid_rowconfigure(0, weight=1)
@@ -153,8 +153,8 @@ class GestionTratamiento(Frame):
         frame_detalles = LabelFrame(ventana, text="Detalles del Tratamiento", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Código", "Procedimiento", "Precio", "Tipo", "Siglas", "Descripción completa"]
-        valores = list(tratamiento) + ["Tipo Ejemplo", "Siglas Ejemplo", "Descripción del tratamiento"]  #ejemplo
+        campos = ["Código", "Nombre", "Precio", "Fecha Precio", "Tipo", "Siglas", "Descripción"]
+        valores = list(tratamiento) + ["Fecha Precio","Tipo Ejemplo", "Siglas Ejemplo", "Descripción del tratamiento"]  #ejemplo
         entradas ={}
 
         for i, campo in enumerate(campos):
@@ -226,7 +226,7 @@ class GestionTratamiento(Frame):
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Tratamiento", font= ("Robot", 11),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Código", "Procedimiento", "Precio", "Tipo", "Siglas", "Descripción completa"]
+        campos = ["Código", "Nombre", "Precio", "Fecha Precio","Tipo", "Siglas", "Descripción"]
         entradas = {}
 
         for i, campo in enumerate(campos):
@@ -241,14 +241,15 @@ class GestionTratamiento(Frame):
 
     def guardar_nuevo_tratamiento(self, entry, ventana):
         codigo = entry["Código"].get()      #Obtenemos los valores que el usuario ingresó.
-        procedimiento = entry["Procedimiento"].get()
+        nombre = entry["Nombre"].get()
         precio = entry["Precio"].get()
+        fecha_precio = entry["Fecha Precio"].get()
         tipo = entry["Tipo"].get()
         siglas = entry["Siglas"].get()
-        descripcion = entry["Descripción completa"].get()
+        descripcion = entry["Descripción"].get()
         # Validar datos y agregar al Treeview
-        if codigo and procedimiento and precio and tipo and siglas and descripcion:
-            self.tree.insert("", "end", values=(codigo, procedimiento, precio, tipo, siglas, descripcion))
+        if codigo and nombre and precio and tipo and siglas and descripcion:
+            self.tree.insert("", "end", values=(codigo, nombre, precio, fecha_precio, tipo, siglas, descripcion))
             messagebox.showinfo("Información", "Tratamiento agregado correctamente.")
             ventana.destroy()
         else:
@@ -265,8 +266,8 @@ class GestionTratamiento(Frame):
         for item in self.tree.get_children():         #Recorre cada fila usando identificador en la lista devuelta por children
             valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
             codigo = valores[0].lower()
-            procedimiento = valores[1].lower()
-            if busqueda in codigo or busqueda in procedimiento:
+            nombre = valores[1].lower()
+            if busqueda in codigo or busqueda in nombre:
                 self.tree.selection_set(item)         #Selecciona el tratamiento.
                 self.tree.see(item)                   #Hace visible el tratamiento.
                 tratamiento_encontrado = True

@@ -1,9 +1,12 @@
+use recupero_obra_social;
 INSERT INTO tratamiento (codigo, procedimiento, precio, tipo, siglas, descripcion) 
             VALUES ("123", "Radiografía torax", "20000", "Ambulatorio", "RX TORAX", "Radiografia de torax" ),
             ("456", "Consulta médica", "6000", "Ambulatorio", "CONS", "Consulta médica con médico clinico" ),
              ("789", "Hemograma", "15000", "Ambulatorio", "CSC", "Laboratorio por fiebre" ),
              ("321", "Herida brazo", "25000", "Ambulatorio", "HR BRAZO", "Herida en brazo izquierdo" ),
              ("987", "Quemadura", "35000", "Ambulatorio", "QUEM Pierna", "Quemadura de pie y tobillo derecho" );
+
+select * from tratamiento;
 
 
 use recupero_obra_social;
