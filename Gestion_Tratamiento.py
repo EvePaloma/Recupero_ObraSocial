@@ -10,6 +10,12 @@ class GestionTratamiento(Frame):
         self.grid()
         self.createWidgets()
 
+    def solo_letras(self, char):
+        return char.isalpha() or char == " "
+
+    def solo_numeros(self, char):
+        return char.isdigit()
+
     def createWidgets(self):
         frame_tratamientos = LabelFrame(self, text="Gestión de Tratamientos", font=("Robot",10),padx=10, pady=10, bg="#c9c2b2")
         frame_tratamientos.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
