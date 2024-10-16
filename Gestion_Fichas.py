@@ -58,7 +58,7 @@ class GestionFicha(Frame):
 
 
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("DNI", "Nombre y apellido", "Servicio", "Fecha prestación medica", "Código"), show='headings', height=5)
+        self.tree = ttk.Treeview(frame_tabla, columns=("DNI", "Nombre y apellido", "Servicio", "Fecha prestación medica", "Código"), show='headings', height=10)
 
         #Títulos de columnas
        
@@ -69,16 +69,16 @@ class GestionFicha(Frame):
         self.tree.heading("Código", text="Código")
 
         #Ancho de las columnas y datos centrados
-        self.tree.column("DNI", anchor='center', width=250)
+        self.tree.column("DNI", anchor='center', width=200)
         self.tree.column("Nombre y apellido", anchor='center', width=350)
         self.tree.column("Servicio", anchor='center', width=250)
-        self.tree.column("Fecha prestación medica", anchor='center', width=250)
-        self.tree.column("Código", anchor='center', width=250)
+        self.tree.column("Fecha prestación medica", anchor='center', width=220)
+        self.tree.column("Código", anchor='center', width=200)
 
         #Ejemplo
         self.tree.insert("", "end", values=("DNI", "Sabrina Carpenter", "Estudio", "12-05-2024", "342"))
-        self.tree.insert("", "end", values=("29319319", "María Gomez", "Resonancia", "30-08-2024", "421"))
-        self.tree.insert("", "end", values=("1661617", "José Perez", "Fisioterapia", "12-10-2024", "23"))
+        self.tree.insert("", "end", values=("29319319", "Chapell Roan", "Resonancia", "30-08-2024", "421"))
+        self.tree.insert("", "end", values=("1661617", "Billie Eilish", "Fisioterapia", "12-10-2024", "23"))
 
         #Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -111,7 +111,7 @@ class GestionFicha(Frame):
         ventana_agregar.resizable(False,False)
 
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar ficha", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
-        frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        frame_agregar.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
 
         campos = ["Nombre y Apellido del paciente", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Número de Afiliado", "Nombre y apellido del médico","Especialidad","Tipo de matrícula", "Matrícula","Servicio", "Fecha de prestación médica", "Código", "Nombre del procedimiento", "Precio", "Tipo de tratamiento", "Siglas"]
@@ -151,13 +151,14 @@ class GestionFicha(Frame):
         ventana.title("Detalles de la Ficha")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False,False)
-        ventana.geometry("700x705+400+160")
+        ventana.geometry("+400+160")
+        ventana.wm_geometry("+500+0")
         
         ventana.grid_columnconfigure(0, weight=1)
         ventana.grid_rowconfigure(0, weight=1)
 
         frame_detalles = LabelFrame(ventana, text="Detalles del Paciente", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
-        frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        frame_detalles.grid(row=0, column=0, padx=10, pady=1, sticky="nsew")
 
         campos = ["Nombre y Apellido del paciente", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", 
         "Fecha de Nacimiento", "Número de Afiliado", "Nombre y apellido del médico","Especialidad","Tipo de matrícula", "Matrícula",
@@ -189,7 +190,7 @@ class GestionFicha(Frame):
 
         if modo == "modificar":
             btn_modificar = Button(frame_detalles, text="Guardar Cambios", 
-                                   command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
+                                   command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado), bg="#e6c885")
             btn_modificar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
     def activar_edicion(self, entradas, btn_guardar):
@@ -273,7 +274,7 @@ class GestionFicha(Frame):
             
         if not paciente_encontrado:
 
-            messagebox.showwarning("Atención", "No se encontró el paciente.")
+            messagebox.showwarning("Atención", "No se encontró la ficha.")
 
     def cargar_ficha(self):
         self.tree.insert("", "end", values=("DNI", "Sabrina Carpenter", "Estudio", "12-05-2024", "342"))
@@ -283,6 +284,9 @@ class GestionFicha(Frame):
 ventana = Tk()
 ventana.title("Gestion de Fichas")
 ventana.resizable(False,False)
-ventana.geometry("+200+80")
+ventana.geometry("+30+15")
+ventana.config(padx=20, pady=20)
+ventana.config(bg="#e4c09f")
+ventana.wm_geometry("+25+0")
 root = GestionFicha(ventana)
 ventana.mainloop()
