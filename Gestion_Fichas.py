@@ -114,7 +114,7 @@ class GestionFicha(Frame):
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
 
-        campos = ["Nombre y Apellido del paciente", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Número de Afiliado", "Nombre y apellido del médico","Especialidad","Tipo de matrícula", "Matrícula","Servicio", "Fecha de prestación médica", "Código", "Nombre del procedimiento", "Precio", "Tippo de tratamiento", "Siglas"]
+        campos = ["Nombre y Apellido del paciente", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Número de Afiliado", "Nombre y apellido del médico","Especialidad","Tipo de matrícula", "Matrícula","Servicio", "Fecha de prestación médica", "Código", "Nombre del procedimiento", "Precio", "Tipo de tratamiento", "Siglas"]
         entradas = {}
 
         for i, campo in enumerate(campos):     #Devuelve índice y valor de cada elemento 
@@ -143,15 +143,15 @@ class GestionFicha(Frame):
             messagebox.showwarning("Atención", "Por favor, seleccione una ficha.")
             return
         
-        tratamiento_seleccionado = self.tree.item(seleccion[0], 'values')
-        self.abrir_ventana_ficha(tratamiento_seleccionado, seleccion[0],modo="modificar")    
+        ficha_seleccionada = self.tree.item(seleccion[0], 'values')
+        self.abrir_ventana_ficha(ficha_seleccionada, seleccion[0],modo="modificar")    
     
     def abrir_ventana_ficha(self, tratamiento, id_seleccionado, modo="ver"):
         ventana = Toplevel(self)
-        ventana.title("Detalles del Tratamiento")
+        ventana.title("Detalles de la Ficha")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False,False)
-        ventana.geometry("510x485+400+160")
+        ventana.geometry("700x705+400+160")
         
         ventana.grid_columnconfigure(0, weight=1)
         ventana.grid_rowconfigure(0, weight=1)
@@ -161,7 +161,7 @@ class GestionFicha(Frame):
 
         campos = ["Nombre y Apellido del paciente", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", 
         "Fecha de Nacimiento", "Número de Afiliado", "Nombre y apellido del médico","Especialidad","Tipo de matrícula", "Matrícula",
-        "Servicio", "Fecha de prestación médica", "Código", "Nombre del procedimiento", "Precio", "Tippo de tratamiento", "Siglas"] #ejemplo
+        "Servicio", "Fecha de prestación médica", "Código", "Nombre del procedimiento", "Precio", "Tipo de tratamiento", "Siglas"] #ejemplo
         entradas ={}
 
 
@@ -170,7 +170,7 @@ class GestionFicha(Frame):
             etiqueta.grid(row=i, column=0, padx=10, pady=5)
             entry = Entry(frame_detalles, width=40)
             entry.grid(row=i, column=1, padx=10, pady=5)
-            entry.insert(0, tratamiento[i])
+            entry.insert(0, campos[i])
             entradas[campo] = entry
             
 
@@ -241,11 +241,11 @@ class GestionFicha(Frame):
         codigo =entry["Código"].get()
         nombreprocedimiento=entry["Nombre del procedimiento"].get()
         precio=entry["Precio"].get()
-        tipotratamiento=entry["Tippo de tratamiento"].get()
+        tipotratamiento=entry["Tipo de tratamiento"].get()
         siglas=entry["Siglas"].get()
         # Validar datos y agregar al Treeview
         if nombre and dni and obrasocial and obrasocialsec and propietario and fechanac and numeroafiliado and nombre_medico and especialidad and tipomatricula and servicio and fechaprestacion and codigo and nombreprocedimiento and precio and tipotratamiento and siglas:
-            self.tree.insert("", "end", values=(dni, nombre, servicio, fechaprestacion, codigo))
+            self.tree.insert("", "end", values=(nombre, dni, obrasocial, propietario, fechanac, numeroafiliado, nombre_medico, especialidad, tipomatricula, servicio, fechaprestacion, codigo, nombreprocedimiento,precio,tipotratamiento, siglas))
             messagebox.showinfo("Información", "Paciente agregado correctamente.")
             ventana.destroy()
         else:
@@ -272,8 +272,7 @@ class GestionFicha(Frame):
        
             
         if not paciente_encontrado:
-            #self.tree.delete(*self.tree.get_children())
-            #self.cargar_tratamiento()
+
             messagebox.showwarning("Atención", "No se encontró el paciente.")
 
     def cargar_ficha(self):
