@@ -215,7 +215,7 @@ class Gestion_Obra_Social(Frame):
         btn_buscar.grid(row=1, column=3, sticky= W)
         btn_buscar.image = img_buscar
 
-        boton_agregar = Button(frame_busqueda, text="Agregar   +", width=15, bg="chartreuse3", activebackground="chartreuse4", font=("Robot",15), command=self.agregar_OS)
+        boton_agregar = Button(frame_busqueda, text="Agregar   +", width=15, bg="#e6c885", activebackground="chartreuse4", font=("Robot",15), command=self.agregar_OS)
         boton_agregar.grid(row=1, column=5, padx=10, pady=10, sticky= E)
 
 
