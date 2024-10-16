@@ -4,20 +4,26 @@ USE recupero_obra_social;
 DROP TABLE IF EXISTS `tipo_documento`;
 CREATE TABLE `tipo_documento` (
   `id_tipo_documento` int NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(45) NOT NULL,
+  `nombre` varchar(20) NOT NULL,
   PRIMARY KEY (`id_tipo_documento`)
 );
 DROP TABLE IF EXISTS `rol`;
 CREATE TABLE `rol` (
   `id_rol` int NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(45) NOT NULL,
+  `nombre` varchar(20) NOT NULL,
   PRIMARY KEY (`id_rol`)
 );
 DROP TABLE IF EXISTS `tipo_matricula`;
 CREATE TABLE `tipo_matricula` (
   `id_tipo_matricula` int NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(45) NOT NULL,
+  `nombre` varchar(10) NOT NULL,
   PRIMARY KEY (`id_tipo_matricula`)
+);
+DROP TABLE IF EXISTS `tipo_tratamiento`;
+CREATE TABLE `tipo_tratamiento` (
+  `id_tipo_tratamiento` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(15) NOT NULL,
+  PRIMARY KEY (`id_tipo_tratamiento`)
 );
 DROP TABLE IF EXISTS `afip`;
 CREATE TABLE `afip` (
@@ -29,7 +35,7 @@ CREATE TABLE `afip` (
 DROP TABLE IF EXISTS `pais`;
 CREATE TABLE `pais` (
   `id_pais` int NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(45) NOT NULL,
+  `nombre` varchar(30) NOT NULL,
   PRIMARY KEY (`id_pais`)
 );
 DROP TABLE IF EXISTS `ciudad`;
@@ -43,7 +49,7 @@ CREATE TABLE `ciudad` (
 DROP TABLE IF EXISTS `barrio`;
 CREATE TABLE `barrio` (
   `id_barrio` int NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(45) NOT NULL,
+  `nombre` varchar(25) NOT NULL,
   `id_ciudad` int NOT NULL,
   PRIMARY KEY (`id_barrio`),
   FOREIGN KEY (`id_ciudad`) REFERENCES `ciudad` (`id_ciudad`)
@@ -52,8 +58,8 @@ CREATE TABLE `barrio` (
 DROP TABLE IF EXISTS `especialidad`;
 CREATE TABLE `especialidad` (
   `id_especialidad` int NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(45) NOT NULL,
-  `activo` tinyint NOT NULL DEFAULT TRUE,
+  `nombre` varchar(40) NOT NULL,
+  `activo` tinyint NOT NULL DEFAULT 1,
   PRIMARY KEY (`id_especialidad`)
 );
 DROP TABLE IF EXISTS `medico`;
@@ -62,10 +68,10 @@ CREATE TABLE `medico` (
   `nombre` varchar(45) NOT NULL,
   `apellido` varchar(45) NOT NULL,
   `tipo_matricula` int NOT NULL,
-  `matricula` varchar(45) NOT NULL,
+  `matricula` varchar(20) NOT NULL,
   `telefono` varchar(45) NOT NULL,
   `tipo_documento` int NOT NULL DEFAULT '1',
-  `documento` varchar(45) NOT NULL DEFAULT '1',
+  `documento` varchar(45) NOT NULL DEFAULT,
   `activo` tinyint NOT NULL DEFAULT 1,
   `id_especialidad` int NOT NULL,
   PRIMARY KEY (`id_medico`),
@@ -80,12 +86,11 @@ CREATE TABLE `obra_social` (
   `id_obra_social` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(45) NOT NULL,
   `siglas` varchar(20) NOT NULL,
-  `email` varchar(50) NOT NULL,
   `telefono` varchar(45) NOT NULL,
   `detalle` longtext,
-  `domicilio_central` varchar(45) NOT NULL,
+  `domicilio_central` varchar(45) DEFAULT NULL,
   `domicilio_cp` varchar(45) DEFAULT NULL,
-  `cuit` varchar(45) NOT NULL,
+  `cuit` varchar(30) NOT NULL,
   `id_afip` int DEFAULT NULL,
   `activo` tinyint NOT NULL DEFAULT 1,
   PRIMARY KEY (`id_obra_social`),
@@ -121,14 +126,16 @@ CREATE TABLE `detalle_obra_social` (
 DROP TABLE IF EXISTS `tratamiento`;
 CREATE TABLE `tratamiento` (
   `id_tratamiento` int NOT NULL AUTO_INCREMENT,
-  `codigo` varchar(45) NOT NULL,
+  `codigo` varchar(15) NOT NULL,
   `nombre` varchar(45) NOT NULL,
-  `siglas` varchar(45) NOT NULL,
+  `siglas` varchar(20) NOT NULL,
   `precio` float NOT NULL,
   `fecha_precio` date NOT NULL,
-  `descripcion` varchar(50),
+  `id_tipo_tratamiento` int NOT NULL,
+  `descripcion` longtext,
   `activo` tinyint NOT NULL DEFAULT 1,
   PRIMARY KEY (`id_tratamiento`)
+  FOREIGN KEY (`id_tipo_tratamiento`) REFERENCES `tipo_tratamiento` (`id_tipo_tratamiento`)
 );
 
 DROP TABLE IF EXISTS `usuario`;
@@ -136,11 +143,11 @@ CREATE TABLE `usuario` (
   `id_usuario` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(45) NOT NULL,
   `apellido` varchar(45) NOT NULL,
-  `dni` varchar(45) NOT NULL,
-  `telefono` varchar(45) NOT NULL,
-  `clave` varchar(45) NOT NULL,
+  `documento` varchar(45) NOT NULL,
+  `telefono` varchar(45),
+  `clave` varchar(20) NOT NULL,
   `activo` tinyint NOT NULL DEFAULT 1,
-  `id_rol` int NOT NULL,
+  `id_rol` int NOT NULL DEFAULT `2`,
   PRIMARY KEY (`id_usuario`),
   FOREIGN KEY (`id_rol`) REFERENCES `rol` (`id_rol`)
 );
@@ -163,7 +170,7 @@ CREATE TABLE `detalle_ficha` (
   `id_detalle` int NOT NULL AUTO_INCREMENT,
   `id_ficha` int NOT NULL,
   `id_tratamiento` int NOT NULL,
-  `cantidad` int NOT NULL,
+  `cantidad` int NOT NULL DEFAULT `1` ,
   `precio_unitario` float NOT NULL,
   `subtotal` float AS (cantidad * precio_unitario) STORED,
   PRIMARY KEY (`id_detalle`),

@@ -172,6 +172,7 @@ ventana.resizable(False,False)
 ventana.geometry("+30+15")
 root = ficha(ventana)
 ventana.mainloop()
+
 """
 class Gestion_Fichas(Frame):
     def __init__(self, master):
