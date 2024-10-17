@@ -2,6 +2,9 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk
+import mysql.connector
+from ConexionBD import obtener_conexion
+
 
 class GestionTratamiento(Frame):
     def __init__(self, master):
@@ -64,22 +67,22 @@ class GestionTratamiento(Frame):
 
 
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("codigo", "procedimiento", "precio"), show='headings', height=5)
+        self.tree = ttk.Treeview(frame_tabla, columns=("codigo", "nombre", "precio"), show='headings', height=5)
 
         #Títulos de columnas
         self.tree.heading("codigo", text="Código")
-        self.tree.heading("procedimiento", text="Procedimiento")
+        self.tree.heading("nombre", text="Nombre")
         self.tree.heading("precio", text="Precio")
 
         #Ancho de las columnas y datos centrados
         self.tree.column("codigo", anchor='center', width=250)
-        self.tree.column("procedimiento", anchor='center', width=350)
+        self.tree.column("nombre", anchor='center', width=350)
         self.tree.column("precio", anchor='center', width=250)
 
         #Ejemplo
-        self.tree.insert("", "end", values=("1234", "Tratamiento 1", "$100"))
-        self.tree.insert("", "end", values=("5678", "Tratamiento 2", "$150"))
-        self.tree.insert("", "end", values=("91011", "Tratamiento 3", "$200"))
+        #self.tree.insert("", "end", values=("1234", "Tratamiento 1", "$100"))
+        #self.tree.insert("", "end", values=("5678", "Tratamiento 2", "$150"))
+        #self.tree.insert("", "end", values=("91011", "Tratamiento 3", "$200"))
 
         #Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -114,14 +117,20 @@ class GestionTratamiento(Frame):
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Tratamiento", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Código", "Procedimiento", "Precio", "Tipo", "Siglas", "Descripción completa"]
+        campos = ["Código", "Nombre", "Precio", "Fecha Precio", "Tipo", "Siglas", "Descripción"]
         entradas = {}
 
         for i, campo in enumerate(campos):     #Devuelve índice y valor de cada elemento 
             etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
             etiquetas.grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_agregar, width=40, font=("Robot", 10))
-            entry.grid(row=i, column=1, padx=10, pady=5)
+            if campo == "Tipo":
+                entry_tipo = ttk.Combobox(frame_agregar, width=37, font=("Robot", 10), state="readonly")
+                entry_tipo['values'] = ("Consulta", "Cirugía", "Terapia", "Examen", "Otro")
+                entry_tipo.grid(row=i, column=1, padx=10, pady=5)
+                entry_tipo.set("Consulta")
+            else:
+                entry = Entry(frame_agregar, width=40, font=("Robot", 10))
+                entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
 
         btn_nuevo_tratamiento = Button(frame_agregar, text="Agregar", font=("Robot", 10),bg="#e6c885", 
@@ -159,21 +168,30 @@ class GestionTratamiento(Frame):
         frame_detalles = LabelFrame(ventana, text="Detalles del Tratamiento", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Código", "Procedimiento", "Precio", "Tipo", "Siglas", "Descripción completa"]
-        valores = list(tratamiento) + ["Tipo Ejemplo", "Siglas Ejemplo", "Descripción del tratamiento"]  #ejemplo
+        campos = ["Código", "Nombre", "Precio", "Fecha Precio", "Tipo", "Siglas", "Descripción"]
+        valores = list(tratamiento) + ["Tipo Ejemplo", "Ejemplo Fecha Precio","Siglas Ejemplo", "Descripción"]  #ejemplo
         entradas ={}
 
         for i, campo in enumerate(campos):
             etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
             etiqueta.grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_detalles, width=40)
-            entry.grid(row=i, column=1, padx=10, pady=5)
-            entry.insert(0, valores[i])
+            if campo == "Tipo":
+                entry = ttk.Combobox(frame_detalles, width=37, font=("Robot", 10), state="readonly")
+                entry['values'] = ("Consulta", "Cirugía", "Terapia", "Examen", "Otro")
+                entry.grid(row=i, column=1, padx=10, pady=5)
+                entry.set("Consulta")
+                if modo == "ver":
+                  entry.config(state="disabled")
+            else:
+                entry = Entry(frame_detalles, width=40)
+                entry.grid(row=i, column=1, padx=10, pady=5)
+                entry.insert(0, valores[i])
             entradas[campo] = entry
             
 
             if modo == "ver":
-                entry.config(state="readonly")
+                entry.config(state="readonly")  
+                
                 btn_editar = Button(ventana, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885",
                                     command=lambda: self.activar_edicion(entradas, btn_guardar))
                 btn_editar.grid(row=len(campos), column=0, pady=10)
@@ -199,96 +217,137 @@ class GestionTratamiento(Frame):
         btn_guardar.config(state="normal")  # Activar el botón directamente
 
     def guardar_cambios(self, entradas, ventana,seleccion):
-        #base de datos
-        #messagebox.showinfo("Información", "Cambios guardados correctamente.")# Obtener los nuevos valores de todas las entradas
+        conexion = obtener_conexion()
+        if conexion is None:
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
         nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
         self.tree.item(seleccion, values=list(nuevos_valores.values()))
-        
-        # Mostrar mensaje de confirmación
-        messagebox.showinfo("Información", "Cambios guardados correctamente.")
-        
-        # Cerrar la ventana después de guardar
-        ventana.destroy()
+        try:
+            cursor = conexion.cursor()
+            sql = "UPDATE tratamientos SET codigo=%s, nombre=%s, precio=%s, fecha_precio=%s, tipo=%s, siglas=%s, descripcion=%s WHERE codigo=%s"
+            valores = (nuevos_valores['Código'], nuevos_valores['Nombre'], nuevos_valores['Precio'], nuevos_valores['Fecha Precio'], nuevos_valores['Tipo'], nuevos_valores['Siglas'], nuevos_valores['Descripción'])
+            cursor.execute(sql, valores)
+            conexion.commit()
+            messagebox.showinfo("Información", "Tratamiento modificado correctamente.")
+            ventana.destroy()
+            self.actualizar_treeview()
+        except mysql.connector.Error as error:
+            messagebox.showerror("Error", f"No se pudo modificar el tratamiento: {error}")
+        finally:
+            cursor.close()
+            conexion.close()
 
-    def eliminar_tratamiento(self):
+    def eliminar_tratamiento(self,tratamiento):
+        conexion = obtener_conexion()
+        if conexion is None:
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
         seleccion = self.tree.selection()
         if not seleccion:
             messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento para eliminar.")
             return
         #Pregunta al usuario si está seguro de eliminar 
         respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar el tratamiento seleccionado?")
-        if respuesta:  
-            self.tree.delete(seleccion)
-            messagebox.showinfo("Atención", "Tratamiento eliminado correctamente.")
-        else:
-            messagebox.showinfo("Atención", "Eliminación cancelada.")
-
-    def agregar_tratamiento(self):
-        ventana_agregar = Toplevel(self)
-        ventana_agregar.title("Agregar Tratamiento")
-        ventana_agregar.config(bg="#e4c09f")
-        ventana.resizable(False,False)
-        
-        frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Tratamiento", font= ("Robot", 11),padx=10, pady=10, bg="#c9c2b2")
-        frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-
-        campos = ["Código", "Procedimiento", "Precio", "Tipo", "Siglas", "Descripción completa"]
-        entradas = {}
-
-        for i, campo in enumerate(campos):
-            etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
-            etiquetas.grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_agregar, width=40, font=("Robot", 10))
-            entry.grid(row=i, column=1, padx=10, pady=5)
-            entradas[campo] = entry
-
-        btn_nuevo_tratamiento = Button(frame_agregar, text="Agregar", font=("Robot", 10),bg="#e6c885", command=lambda: self.guardar_nuevo_tratamiento(entradas, ventana_agregar))
-        btn_nuevo_tratamiento.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
+        if respuesta:
+            try:
+                cursor = conexion.cursor()
+                cursor.execute("DELETE FROM tratamientos WHERE codigo = %s", (tratamiento,))
+                conexion.commit()
+                messagebox.showinfo("Información", "Tratamiento eliminado correctamente.")
+                self.actualizar_treeview()
+            except mysql.connector.Error as error:
+                messagebox.showerror("Error", f"No se pudo eliminar el tratamiento: {error}")
+            finally:
+                cursor.close()
+                conexion.close()
 
     def guardar_nuevo_tratamiento(self, entry, ventana):
+        conexion = obtener_conexion()
+        if conexion is None:
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
         codigo = entry["Código"].get()      #Obtenemos los valores que el usuario ingresó.
-        procedimiento = entry["Procedimiento"].get()
+        nombre = entry["Nombre"].get()
         precio = entry["Precio"].get()
-        tipo = entry["Tipo"].get()
+        fecha_precio = entry["Fecha Precio"].get()
+        tipo_tratamiento = entry["Tipo"].get()
         siglas = entry["Siglas"].get()
-        descripcion = entry["Descripción completa"].get()
+        descripcion = entry["Descripción"].get()
         # Validar datos y agregar al Treeview
-        if codigo and procedimiento and precio and tipo and siglas and descripcion:
-            self.tree.insert("", "end", values=(codigo, procedimiento, precio, tipo, siglas, descripcion))
-            messagebox.showinfo("Información", "Tratamiento agregado correctamente.")
-            ventana.destroy()
+        if codigo and nombre and precio and fecha_precio and tipo_tratamiento and siglas and descripcion:
+            try:
+                cursor = conexion.cursor()
+                sql = "INSERT INTO tratamientos (codigo, nombre, precio, fecha_precio, tipo, siglas, descripcion) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                val = (codigo, nombre, precio, fecha_precio, tipo_tratamiento, siglas, descripcion)
+                cursor.execute(sql, val)
+                conexion.commit()
+                messagebox.showinfo("Información", "Tratamiento agregado exitosamente")
+                ventana.destroy()
+            except mysql.connector.Error as error:
+                messagebox.showerror("Error", f"No se pudo agregar el tratamiento: {error}")
+            finally:
+                cursor.close()
+                conexion.close()   
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
 
-    def buscar_tratamiento(self):
-        busqueda = self.entrada_buscar.get().strip().lower()
-        tratamiento_encontrado = False
-    
-        if not busqueda:
-            self.tree.delete(*self.tree.get_children())
-            self.cargar_tratamiento()
-        #Obtenemos búsqueda
-        for item in self.tree.get_children():         #Recorre cada fila usando identificador en la lista devuelta por children
-            valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
-            codigo = valores[0].lower()
-            procedimiento = valores[1].lower()
-            if busqueda in codigo or busqueda in procedimiento:
-                self.tree.selection_set(item)         #Selecciona el tratamiento.
-                self.tree.see(item)                   #Hace visible el tratamiento.
-                tratamiento_encontrado = True
-            else:
-                self.tree.detach(item)                #Oculta los otros tratamientos.
-       
-            
-        if not tratamiento_encontrado:
-            #self.tree.delete(*self.tree.get_children())
-            #self.cargar_tratamiento()
-            messagebox.showwarning("Atención", "No se encontró el tratamiento.")
+    def actualizar_treeview(self):
+        conexion = obtener_conexion()
+        if conexion is None:
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
+        for i in self.tree.get_children():
+            self.tree.delete(i)
+            try:
+                cursor = conexion.cursor()
+                cursor.execute("SELECT codigo, nombre, precio FROM tratamientos")
+                tratamientos = cursor.fetchall()
+                for tratamiento in tratamientos:
+                    self.tree.insert("", "end", values=tratamiento)
+            except mysql.connector.Error as error:
+                messagebox.showerror("Error", f"No se pudo recuperar los tratamientos: {error}")
+            finally:
+                cursor.close()
+                conexion.close()
 
-    def cargar_tratamiento(self):
-        self.tree.insert("", "end", values=("1234", "Tratamiento 1", "$100"))
-        self.tree.insert("", "end", values=("5678", "Tratamiento 2", "$150"))
-        self.tree.insert("", "end", values=("91011", "Tratamiento 3", "$200"))
+    def buscar_tratamiento(self, criterio):
+        conexion = obtener_conexion()
+        if conexion is None:
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
+        for i in self.tree.get_children():
+            self.tree.delete(i)
+
+        # Si el criterio está vacío, mostrar un mensaje y retornar
+        if not criterio:
+            messagebox.showinfo("Información", "Ingrese un criterio de búsqueda.")
+            return
+
+        try:
+            cursor = conexion.cursor()
+            sql = "SELECT codigo, nombre, precio FROM tratamientos WHERE nombre LIKE %s"
+            val = ('%' + criterio + '%',)
+            cursor.execute(sql, val)
+            tratamientos = cursor.fetchall()
+
+            # Verificar si se encontraron tratamientos
+            if len(tratamientos) == 0:
+                messagebox.showinfo("Información", "No se encontraron tratamientos con ese criterio.")
+            else:
+                # Insertar los tratamientos en el Treeview si se encontraron resultados
+                for tratamiento in tratamientos:
+                    self.tree.insert("", "end", values=tratamiento)
+        except mysql.connector.Error as error:
+            messagebox.showerror("Error", f"No se pudo recuperar los tratamientos: {error}")
+        finally:
+            cursor.close()
+            conexion.close()
+
+    #def cargar_tratamiento(self):
+        #self.tree.insert("", "end", values=("1234", "Tratamiento 1", "$100"))
+        #self.tree.insert("", "end", values=("5678", "Tratamiento 2", "$150"))
+        #self.tree.insert("", "end", values=("91011", "Tratamiento 3", "$200"))
 
 ventana = Tk()
 ventana.title("Gestion de Tratamientos")
