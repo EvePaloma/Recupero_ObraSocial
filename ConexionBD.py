@@ -1,8 +1,6 @@
 import mysql.connector
 from tkinter import messagebox
 
-    
-    # Datos de conexión a la base de datos (reemplázalos con tus datos)
 def obtener_conexion():
     try:
         conexion = mysql.connector.connect(
