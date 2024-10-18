@@ -71,7 +71,7 @@ CREATE TABLE `medico` (
   `matricula` varchar(20) NOT NULL,
   `telefono` varchar(45) NOT NULL,
   `tipo_documento` int NOT NULL DEFAULT '1',
-  `documento` varchar(45) NOT NULL DEFAULT,
+  `documento` varchar(45) NOT NULL,
   `activo` tinyint NOT NULL DEFAULT 1,
   `id_especialidad` int NOT NULL,
   PRIMARY KEY (`id_medico`),
@@ -131,10 +131,10 @@ CREATE TABLE `tratamiento` (
   `precio` float NOT NULL,
   `fecha_precio` date NOT NULL,
   `siglas` varchar(20) NOT NULL,
-  `id_tipo_tratamiento` int NOT NULL,
+  `id_tipo_tratamiento` int NOT NULL DEFAULT 1,
   `descripcion` longtext,
   `activo` tinyint NOT NULL DEFAULT 1,
-  PRIMARY KEY (`id_tratamiento`)
+  PRIMARY KEY (`id_tratamiento`),
   FOREIGN KEY (`id_tipo_tratamiento`) REFERENCES `tipo_tratamiento` (`id_tipo_tratamiento`)
 );
 
@@ -147,7 +147,7 @@ CREATE TABLE `usuario` (
   `telefono` varchar(45),
   `clave` varchar(20) NOT NULL,
   `activo` tinyint NOT NULL DEFAULT 1,
-  `id_rol` int NOT NULL DEFAULT `2`,
+  `id_rol` int NOT NULL DEFAULT 2,
   PRIMARY KEY (`id_usuario`),
   FOREIGN KEY (`id_rol`) REFERENCES `rol` (`id_rol`)
 );
@@ -170,7 +170,7 @@ CREATE TABLE `detalle_ficha` (
   `id_detalle` int NOT NULL AUTO_INCREMENT,
   `id_ficha` int NOT NULL,
   `id_tratamiento` int NOT NULL,
-  `cantidad` int NOT NULL DEFAULT `1` ,
+  `cantidad` int NOT NULL DEFAULT 1 ,
   `precio_unitario` float NOT NULL,
   `subtotal` float AS (cantidad * precio_unitario) STORED,
   PRIMARY KEY (`id_detalle`),
