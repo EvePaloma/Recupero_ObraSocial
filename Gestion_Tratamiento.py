@@ -46,16 +46,14 @@ class GestionTratamiento(Frame):
 
         img_buscar = Image.open("buscar1.png").resize((30, 30), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
-        criterio_entry = Entry(self)
-        criterio_entry.grid()
         btn_buscar = Button(frame_busqueda, image=img_buscar, width=30, height=30,bg="#e6c885", 
-                            command=lambda:self.buscar_tratamiento(criterio_entry.get()))
+                            command=self.buscar_tratamiento)
         
         btn_buscar.grid(row=1, column=3)
         btn_buscar.image = img_buscar
 
         boton_agregar = Button(frame_tratamientos, text="Agregar   +", width=15, bg="#e6c885",font=("Robot",13),
-                                command=self.agregar_tratamiento)
+                                command=self.buscar_tratamiento)
         boton_agregar.grid(row=1, column=5, padx=10, pady=10)
 
         #Para que siempre esté atrás de los widgets
@@ -308,12 +306,11 @@ class GestionTratamiento(Frame):
             messagebox.showwarning("Atención", "Complete todos los campos.")
 
     def actualizar_treeview(self):
+        self.tree.delete(*self.tree.get_children())
         conexion = obtener_conexion()
         if conexion is None:
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
-        for i in self.tree.get_children():
-            self.tree.delete(i)
         try:
             cursor = conexion.cursor()
             cursor.execute("SELECT codigo, nombre, precio FROM tratamiento")
@@ -326,38 +323,32 @@ class GestionTratamiento(Frame):
             cursor.close()
             conexion.close()
 
-    def buscar_tratamiento(self, criterio):
-        conexion = obtener_conexion()
-        if conexion is None:
-            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
-            return
-        for i in self.tree.get_children():
-            self.tree.delete(i)
+    def buscar_tratamiento(self):
+        busqueda = self.entrada_buscar.get().strip().lower()
 
-        # Si el criterio está vacío, mostrar un mensaje y retornar
-        if not criterio:
-            messagebox.showinfo("Información", "Ingrese un criterio de búsqueda.")
+        if not busqueda:
+            self.tree.delete(*self.tree.get_children())
+            self.actualizar_treeview()
             return
 
-        try:
-            cursor = conexion.cursor()
-            sql = "SELECT codigo, nombre, precio FROM tratamiento WHERE nombre LIKE %s"
-            val = ('%' + criterio + '%',)
-            cursor.execute(sql, val)
-            tratamientos = cursor.fetchall()
+        tratamiento_encontrado = False
 
-            # Verificar si se encontraron tratamientos
-            if len(tratamientos) == 0:
-                messagebox.showinfo("Información", "No se encontraron tratamientos con ese criterio.")
+        for item in self.tree.get_children():
+            valores = self.tree.item(item, 'values')
+            codigo = valores[0].lower()
+            nombre = valores[1].lower()
+
+            if busqueda in codigo or busqueda in nombre:
+                tratamiento_encontrado = True
             else:
-                # Insertar los tratamientos en el Treeview si se encontraron resultados
-                for tratamiento in tratamientos:
-                    self.tree.insert("", "end", values=tratamiento)
-        except mysql.connector.Error as error:
-            messagebox.showerror("Error", f"No se pudo recuperar los tratamientos: {error}")
-        finally:
-            cursor.close()
-            conexion.close()
+                self.tree.delete(item)
+
+        if not tratamiento_encontrado:
+            messagebox.showwarning("Atención", "No se encontró el médico.")
+            self.tree.delete(*self.tree.get_children())
+            self.actualizar_treeview()
+
+        
 
     #def cargar_tratamiento(self):
         #self.tree.insert("", "end", values=("1234", "Tratamiento 1", "$100"))
