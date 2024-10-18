@@ -12,6 +12,7 @@ class GestionTratamiento(Frame):
         self.master = master
         self.grid()
         self.createWidgets()
+        self.actualizar_treeview()
 
     def solo_letras(self, char):
         return char.isalpha() or char == " "
@@ -225,7 +226,7 @@ class GestionTratamiento(Frame):
         self.tree.item(seleccion, values=list(nuevos_valores.values()))
         try:
             cursor = conexion.cursor()
-            sql = "UPDATE tratamientos SET codigo=%s, nombre=%s, precio=%s, fecha_precio=%s, tipo=%s, siglas=%s, descripcion=%s WHERE codigo=%s"
+            sql = "UPDATE tratamiento SET codigo=%s, nombre=%s, precio=%s, fecha_precio=%s, tipo_tratamiento=%s, siglas=%s, descripcion=%s WHERE codigo=%s"
             valores = (nuevos_valores['Código'], nuevos_valores['Nombre'], nuevos_valores['Precio'], nuevos_valores['Fecha Precio'], nuevos_valores['Tipo'], nuevos_valores['Siglas'], nuevos_valores['Descripción'])
             cursor.execute(sql, valores)
             conexion.commit()
@@ -238,7 +239,7 @@ class GestionTratamiento(Frame):
             cursor.close()
             conexion.close()
 
-    def eliminar_tratamiento(self,tratamiento):
+    def eliminar_tratamiento(self):
         conexion = obtener_conexion()
         if conexion is None:
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
@@ -247,12 +248,13 @@ class GestionTratamiento(Frame):
         if not seleccion:
             messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento para eliminar.")
             return
+        tratamiento = self.tree.item(seleccion[0], 'values')[0]
         #Pregunta al usuario si está seguro de eliminar 
         respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar el tratamiento seleccionado?")
         if respuesta:
             try:
                 cursor = conexion.cursor()
-                cursor.execute("DELETE FROM tratamientos WHERE codigo = %s", (tratamiento,))
+                cursor.execute("DELETE FROM tratamiento WHERE codigo = %s", (tratamiento,))
                 conexion.commit()
                 messagebox.showinfo("Información", "Tratamiento eliminado correctamente.")
                 self.actualizar_treeview()
@@ -278,12 +280,13 @@ class GestionTratamiento(Frame):
         if codigo and nombre and precio and fecha_precio and tipo_tratamiento and siglas and descripcion:
             try:
                 cursor = conexion.cursor()
-                sql = "INSERT INTO tratamientos (codigo, nombre, precio, fecha_precio, tipo, siglas, descripcion) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                sql = "INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, tipo_tratamiento, siglas, descripcion) VALUES (%s, %s, %s, %s, %s, %s, %s)"
                 val = (codigo, nombre, precio, fecha_precio, tipo_tratamiento, siglas, descripcion)
                 cursor.execute(sql, val)
                 conexion.commit()
                 messagebox.showinfo("Información", "Tratamiento agregado exitosamente")
                 ventana.destroy()
+                self.actualizar_treeview()
             except mysql.connector.Error as error:
                 messagebox.showerror("Error", f"No se pudo agregar el tratamiento: {error}")
             finally:
@@ -299,17 +302,17 @@ class GestionTratamiento(Frame):
             return
         for i in self.tree.get_children():
             self.tree.delete(i)
-            try:
-                cursor = conexion.cursor()
-                cursor.execute("SELECT codigo, nombre, precio FROM tratamientos")
-                tratamientos = cursor.fetchall()
-                for tratamiento in tratamientos:
-                    self.tree.insert("", "end", values=tratamiento)
-            except mysql.connector.Error as error:
-                messagebox.showerror("Error", f"No se pudo recuperar los tratamientos: {error}")
-            finally:
-                cursor.close()
-                conexion.close()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT codigo, nombre, precio FROM tratamiento")
+            tratamientos = cursor.fetchall()
+            for tratamiento in tratamientos:
+                self.tree.insert("", "end", values=tratamiento)
+        except mysql.connector.Error as error:
+            messagebox.showerror("Error", f"No se pudo recuperar los tratamientos: {error}")
+        finally:
+            cursor.close()
+            conexion.close()
 
     def buscar_tratamiento(self, criterio):
         conexion = obtener_conexion()
@@ -326,7 +329,7 @@ class GestionTratamiento(Frame):
 
         try:
             cursor = conexion.cursor()
-            sql = "SELECT codigo, nombre, precio FROM tratamientos WHERE nombre LIKE %s"
+            sql = "SELECT codigo, nombre, precio FROM tratamiento WHERE nombre LIKE %s"
             val = ('%' + criterio + '%',)
             cursor.execute(sql, val)
             tratamientos = cursor.fetchall()
