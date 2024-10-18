@@ -8,8 +8,10 @@ from ConexionBD import obtener_conexion
 
 class GestionTratamiento(Frame):
     def __init__(self, master):
-        Frame.__init__(self, master, bg="#e4c09f")
+        Frame.__init__(self, master, bg="#e4c09f", height=780, width=1300)
         self.master = master
+        self.pack_propagate(False)
+        self.pack(expand=True)
         self.grid()
         self.createWidgets()
         self.actualizar_treeview()
@@ -26,7 +28,7 @@ class GestionTratamiento(Frame):
 
         #Carga la imagen de fondo
         img_fondo = Image.open("fondo3.png")
-        img_fondo = img_fondo.resize((900, 200), Image.Resampling.LANCZOS)
+        img_fondo = img_fondo.resize((1250, 200), Image.Resampling.LANCZOS)
         self.img_fondo = ImageTk.PhotoImage(img_fondo)
 
         #Label para la imagen de fondo
@@ -69,7 +71,7 @@ class GestionTratamiento(Frame):
 
 
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("codigo", "nombre", "precio"), show='headings', height=5)
+        self.tree = ttk.Treeview(frame_tabla, columns=("codigo", "nombre", "precio"), show='headings', height=10)
 
         #Títulos de columnas
         self.tree.heading("codigo", text="Código")
@@ -77,14 +79,9 @@ class GestionTratamiento(Frame):
         self.tree.heading("precio", text="Precio")
 
         #Ancho de las columnas y datos centrados
-        self.tree.column("codigo", anchor='center', width=250)
-        self.tree.column("nombre", anchor='center', width=350)
-        self.tree.column("precio", anchor='center', width=250)
-
-        #Ejemplo
-        #self.tree.insert("", "end", values=("1234", "Tratamiento 1", "$100"))
-        #self.tree.insert("", "end", values=("5678", "Tratamiento 2", "$150"))
-        #self.tree.insert("", "end", values=("91011", "Tratamiento 3", "$200"))
+        self.tree.column("codigo", anchor='center', width=350)
+        self.tree.column("nombre", anchor='center', width=450)
+        self.tree.column("precio", anchor='center', width=350)
 
         #Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -109,6 +106,9 @@ class GestionTratamiento(Frame):
         btn_eliminar = Button(frame_btn, text="Eliminar", width=15,font=("Robot",13),bg="#e6c885",
                                command=self.eliminar_tratamiento)
         btn_eliminar.grid(row=4, column=3, padx=50)
+
+        btn_volver = Button(frame_btn, text="Volver", width=15,font=("Robot",13),bg="#e6c885")
+        btn_volver.grid(row=4, column=4, padx=50)
 
     def agregar_tratamiento(self):
         ventana_agregar = Toplevel(self)
@@ -211,11 +211,8 @@ class GestionTratamiento(Frame):
             btn_modificar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
     def activar_edicion(self, entradas, btn_guardar):
-    # Habilitar la edición en las entradas
         for entry in entradas.values():
             entry.config(state="normal")  # Permitir edición en todos los Entry
-        
-        # Activar el botón "Guardar Cambios"
         btn_guardar.config(state="normal")  # Activar el botón directamente
 
     def guardar_cambios(self, entradas, ventana,seleccion):
@@ -350,14 +347,9 @@ class GestionTratamiento(Frame):
 
         
 
-    #def cargar_tratamiento(self):
-        #self.tree.insert("", "end", values=("1234", "Tratamiento 1", "$100"))
-        #self.tree.insert("", "end", values=("5678", "Tratamiento 2", "$150"))
-        #self.tree.insert("", "end", values=("91011", "Tratamiento 3", "$200"))
-
 ventana = Tk()
 ventana.title("Gestion de Tratamientos")
 ventana.resizable(False,False)
-ventana.geometry("+200+80")
+ventana.geometry("+30+15")
 root = GestionTratamiento(ventana)
 ventana.mainloop()
