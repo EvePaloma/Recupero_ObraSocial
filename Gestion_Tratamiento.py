@@ -46,8 +46,11 @@ class GestionTratamiento(Frame):
 
         img_buscar = Image.open("buscar1.png").resize((30, 30), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
+        criterio_entry = Entry(self)
+        criterio_entry.grid()
         btn_buscar = Button(frame_busqueda, image=img_buscar, width=30, height=30,bg="#e6c885", 
-                            command=self.buscar_tratamiento)
+                            command=lambda:self.buscar_tratamiento(criterio_entry.get()))
+        
         btn_buscar.grid(row=1, column=3)
         btn_buscar.image = img_buscar
 
@@ -293,6 +296,7 @@ class GestionTratamiento(Frame):
                 cursor.execute(sql, val)
                 conexion.commit()
                 messagebox.showinfo("Información", "Tratamiento agregado exitosamente")
+                self.tree.insert("", 0, values=(codigo, nombre, precio))
                 ventana.destroy()
                 self.actualizar_treeview()
             except mysql.connector.Error as error:
@@ -315,7 +319,7 @@ class GestionTratamiento(Frame):
             cursor.execute("SELECT codigo, nombre, precio FROM tratamiento")
             tratamientos = cursor.fetchall()
             for tratamiento in tratamientos:
-                self.tree.insert("", "end", values=tratamiento)
+                self.tree.insert("", 0, values=tratamiento)
         except mysql.connector.Error as error:
             messagebox.showerror("Error", f"No se pudo recuperar los tratamientos: {error}")
         finally:
