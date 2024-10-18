@@ -227,8 +227,16 @@ class GestionTratamiento(Frame):
         try:
             cursor = conexion.cursor()
             sql = "UPDATE tratamiento SET codigo=%s, nombre=%s, precio=%s, fecha_precio=%s, tipo_tratamiento=%s, siglas=%s, descripcion=%s WHERE codigo=%s"
-            valores = (nuevos_valores['Código'], nuevos_valores['Nombre'], nuevos_valores['Precio'], nuevos_valores['Fecha Precio'], nuevos_valores['Tipo'], nuevos_valores['Siglas'], nuevos_valores['Descripción'])
-            cursor.execute(sql, valores)
+            val = (nuevos_valores['Código'], 
+                   nuevos_valores['Nombre'],
+                   nuevos_valores['Precio'],
+                   nuevos_valores['Fecha Precio'], 
+                   nuevos_valores['Tipo'], 
+                   nuevos_valores['Siglas'], 
+                   nuevos_valores['Descripción'],
+                   self.tree.item(seleccion, 'values')[0]
+                   )
+            cursor.execute(sql, val)
             conexion.commit()
             messagebox.showinfo("Información", "Tratamiento modificado correctamente.")
             ventana.destroy()
