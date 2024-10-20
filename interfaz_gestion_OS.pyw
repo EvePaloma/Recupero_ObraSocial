@@ -85,7 +85,7 @@ class Gestion_Obra_Social(Frame):
             return
         
         os_seleccion = self.tree.item(seleccion[0], 'values')   #Item= valor del elemento
-        self.abrir_ventana_OS(os_seleccion,seleccion[0],modo="ver")
+        self.abrir_ventana_OS(os_seleccion,modo="ver")
     
     def modificar_OS(self):
         seleccion = self.tree.selection()
@@ -96,7 +96,7 @@ class Gestion_Obra_Social(Frame):
         tratamiento_seleccionado = self.tree.item(seleccion[0], 'values')
         self.abrir_ventana_OS(tratamiento_seleccionado, seleccion[0],modo="modificar")
 
-    def abrir_ventana_OS(self, obra_social, id_seleccionado, modo="ver"):
+    def abrir_ventana_OS(self, id_seleccionado, modo="ver"):
         def guardar_cambios(entradas, ventana, seleccion):
             #base de datos
             #messagebox.showinfo("Información", "Cambios guardados correctamente.")# Obtener los nuevos valores de todas las entradas
@@ -126,17 +126,17 @@ class Gestion_Obra_Social(Frame):
         frame_detalles = LabelFrame(ventana, text="Detalles de la Obra Social", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre", "Siglas", "CUIT", "Carácter de AFIP", "Domicilio Casa Central", "Domicilio Carlos Paz", "Teléfono", "Detalle"]
-        columnas = ["nombre", "siglas", "cuit", "id_afip", "domicilio_central", "domicilio_cp", "telefono", "detalle"]
+        campos = ["Nombre", "Siglas", "Teléfono", "Detalle", "Domicilio Casa Central", "Domicilio Carlos Paz", "CUIT", "Carácter de AFIP"]
+        columnas = ["nombre", "siglas", "telefono", "detalle", "domicilio_central", "domicilio_cp", "cuit", "id_afip"]
 
-        datos = obtener_datos("obra_social", columnas, "nombre like "+ id_seleccionado)
-        print(datos)
+        datos = obtener_datos("obra_social", columnas, f"nombre = '{id_seleccionado[0]}' and cuit = '{id_seleccionado[2]}'")
         
         entradas ={}
-        for i, campo in enumerate(campos):     #Devuelve índice y valor de cada elemento 
-            Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
+        for i in datos:     #Devuelve índice y valor de cada elemento 
+            valor = campos[i]
+            Label(frame_detalles, text=valor + ":", bg="#c9c2b2", font=("Robot", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
             #Ingresa los elementos en la combo box y devuelve el valor de la seleccion
-            if campo == "Carácter de AFIP":
+            if campos == "Carácter de AFIP":
                 lista_afip = obtener_datos("afip", ["id_afip", "nombre"])
                 # Crear un diccionario para buscar el ID por el nombre
                 datos_afip = {dato[1]: dato[0] for dato in lista_afip} 
@@ -149,9 +149,9 @@ class Gestion_Obra_Social(Frame):
             else:
                 entry = Entry(frame_detalles, width=40, font=("Robot", 12))
                 entry.grid(row=i, column=1, padx=10, pady=5)
-                entry.insert(0, obra_social[i])  # Insertar el valor actual
+                entry.insert(0, datos[i])  # Insertar el valor actual
                 entry.config(state="readonly" if modo == "ver" else "normal")  # Configurar el estado según el modo
-            entradas[campo] = entry
+            entradas[valor] = entry
             
             if modo == "ver":
                 entry.config(state="readonly")
