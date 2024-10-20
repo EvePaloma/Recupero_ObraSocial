@@ -1,9 +1,9 @@
-'''use recupero_obra_social;
-INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, tipo_tratamiento, siglas, descripcion) 
-            VALUES ("123", "Radiografía torax", "20000", "2024-10-01", "Consulta", "RX TORAX", "Radiografia de torax" ),
-            ("456", "Consulta médica", "6000","2024-09-01", "Consulta", "CONS", "Consulta médica con médico clinico" ),
-             ("789", "Hemograma", "15000", "2024-08-01","Consulta", "CSC", "Laboratorio por fiebre" ),
-             ("321", "Herida brazo", "25000", "2024-07-01", "Consulta", "HR BRAZO", "Herida en brazo izquierdo" ),
-             ("987", "Quemadura", "35000", "2024-06-01","Consulta", "QUEM Pierna", "Quemadura de pie y tobillo derecho" );
+use recupero_obra_social;
+INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, siglas, descripcion) 
+            VALUES ("123", "Radiografía torax", "20000", "2024-10-01", "RX TORAX", "Radiografia de torax" ),
+            ("456", "Consulta médica", "6000","2024-09-01", "CONS", "Consulta médica con médico clinico" ),
+             ("789", "Hemograma", "15000", "2024-08-01","CSC", "Laboratorio por fiebre" ),
+             ("321", "Herida brazo", "25000", "2024-07-01", "HR BRAZO", "Herida en brazo izquierdo" ),
+             ("987", "Quemadura", "35000", "2024-06-01", "QUEM Pierna", "Quemadura de pie y tobillo derecho" );
 
-select * from tratamiento;,'''
+select * from tratamiento;
