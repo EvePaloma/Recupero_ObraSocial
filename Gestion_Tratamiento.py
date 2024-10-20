@@ -7,7 +7,7 @@ from ConexionBD import obtener_conexion
 
 
 class GestionTratamiento(Frame):
-    def __init__(self, master):
+    def __init__(self, master=None):
         Frame.__init__(self, master, bg="#e4c09f", height=780, width=1300)
         self.master = master
         self.pack_propagate(False)
@@ -393,9 +393,9 @@ class GestionTratamiento(Frame):
 
         
 
-ventana = Tk()
+'''ventana = Tk()
 ventana.title("Gestion de Tratamientos")
 ventana.resizable(False,False)
 ventana.geometry("+30+15")
 root = GestionTratamiento(ventana)
-ventana.mainloop()
+ventana.mainloop()'''
