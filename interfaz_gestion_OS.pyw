@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk
+from ConexionBD import *
 
 class Gestion_Obra_Social(Frame):
     def __init__(self, master):
@@ -10,6 +11,21 @@ class Gestion_Obra_Social(Frame):
         self.pack_propagate(False)
         self.pack(expand=True)
         self.createWidgets()
+        self.actualizar_lista_os()
+
+    #Ingresar datos en la tabla de obras sociales
+    def actualizar_lista_os(self):
+        self.tree.delete(*self.tree.get_children())
+        lista_os = obtener_datos("obra_social", ["nombre", "siglas", "cuit"])
+        print(lista_os)
+        for os in lista_os:
+            self.tree.insert("", END, values=os)
+
+    #al seleccionar una opción en la compo, retorna el id
+    def on_seleccion(self, event):
+        seleccion = self.combo_afip.get()
+        self.id_seleccionado = datos_afip[seleccion]
+        return self.id_seleccionado
 
     #Funciones que AGREGAN obra social
     def agregar_OS(self):
@@ -22,13 +38,24 @@ class Gestion_Obra_Social(Frame):
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nueva Obra Social", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.pack(expand=True)
 
-        campos = ["Nombre", "Siglas", "CUIT", "Carácter de AFIP", "Domicilio Casa Central", "Domicilio Carlos Paz", "Mail", "Teléfono", "Detalle"]
+        campos = ["Nombre", "Siglas", "Teléfono", "Detalle", "Domicilio Casa Central", "Domicilio Carlos Paz", "CUIT", "Carácter de AFIP"]
         entradas = {}
 
         for i, campo in enumerate(campos):     #Devuelve índice y valor de cada elemento 
             Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
-            entry = Entry(frame_agregar, width=40, font=("Robot", 12))
-            entry.grid(row=i, column=1, padx=10, pady=5)
+            #Ingresa los elementos en la combo box y devuelve el valor de la seleccion
+            if campo == "Carácter de AFIP":
+                lista_afip = obtener_datos("afip", ["id_afip", "nombre"])
+                # Crear un diccionario para buscar el ID por el nombre
+                datos_afip = {dato[1]: dato[0] for dato in lista_afip} 
+                self.combo_afip = ttk.Combobox(frame_agregar, width=49, font=("Robot", 10), state="readonly")
+                self.combo_afip['values'] = list(datos_afip.keys())
+                self.combo_afip.grid(row=i, column=1, padx=10, pady=5)
+                self.combo_afip.set(self.combo_afip['values'][0])  # Seleccionar el primer valor por defecto
+                self.combo_afip.bind("<<ComboboxSelected>>", self.on_seleccion) 
+            else:
+                entry = Entry(frame_agregar, width=40, font=("Robot", 12))
+                entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
 
         btn_nueva_os = Button(frame_agregar, text="Agregar", font=("Robot", 12),bg="#e6c885", width= 15, command=lambda: self.guardar_nueva_OS(entradas, ventana_agregar))
@@ -37,21 +64,18 @@ class Gestion_Obra_Social(Frame):
     def guardar_nueva_OS(self, entry, ventana):
         nombre = entry["Nombre"].get()
         siglas = entry["Siglas"].get()
-        cuit = entry["CUIT"].get()
-        caracter = entry["Carácter de AFIP"].get()
-        domicilio_cc = entry["Domicilio Casa Central"].get()
-        domicilio_cp = entry["Domicilio Carlos Paz"].get()
-        mail = entry["Mail"].get()
         telefono = entry["Teléfono"].get()
         detalle = entry["Detalle"].get()
+        domicilio_cc = entry["Domicilio Casa Central"].get()
+        domicilio_cp = entry["Domicilio Carlos Paz"].get()
+        cuit = entry["CUIT"].get()
+        id_afip = entry["Carácter de AFIP"].get()
 
-        # Validar datos y agregar al Treeview
-        if nombre and siglas and cuit and caracter and domicilio_cc and domicilio_cp and mail and telefono and detalle:
-            self.tree.insert("", "end", values=(nombre, siglas, cuit))
-            messagebox.showinfo("Información", "Obra social agregado correctamente.")
-            ventana.destroy()
+        # Validar datos y agregar a la base de datos
+        if nombre and siglas and telefono and cuit and id_afip:
+            insertar_os(nombre, siglas, telefono, detalle, domicilio_cc, domicilio_cp, cuit, id_afip)
         else:
-            messagebox.showwarning("Atención", "Complete todos los campos.")
+            messagebox.showwarning("Atención", "Por favor, complete todos los campos.")
     
     #Funciones que VEN y MODIFICAN obra social
     def ver_OS(self):
@@ -76,19 +100,17 @@ class Gestion_Obra_Social(Frame):
         def guardar_cambios(entradas, ventana, seleccion):
             #base de datos
             #messagebox.showinfo("Información", "Cambios guardados correctamente.")# Obtener los nuevos valores de todas las entradas
-            nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
+            nuevos_valores = {campos: entradas[campos].get() for campos in entradas}
             self.tree.item(seleccion, values=list(nuevos_valores.values()))
-            
             # Mostrar mensaje de confirmación
             messagebox.showinfo("Información", "Cambios guardados correctamente.")
-            
             # Cerrar la ventana después de guardar
             ventana.destroy()
+
         def activar_edicion(entradas, btn_guardar):
             # Habilitar la edición en las entradas
             for entry in entradas.values():
                 entry.config(state="normal")  # Permitir edición en todos los Entry
-            
             # Activar el botón "Guardar Cambios"
             btn_guardar.config(state="normal")  # Activar el botón directamente
 
@@ -104,31 +126,46 @@ class Gestion_Obra_Social(Frame):
         frame_detalles = LabelFrame(ventana, text="Detalles de la Obra Social", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre", "Siglas", "CUIT", "Carácter de AFIP", "Domicilio Casa Central", "Domicilio Carlos Paz", "Mail", "Teléfono", "Detalle"]
-        valores = list(obra_social) + ["Caracter ejemplo", "Domicilio Central ejemplo", " ", "Mail ejemplo", "354156542", "Detallin"]  #ejemplo
-        entradas ={}
+        campos = ["Nombre", "Siglas", "CUIT", "Carácter de AFIP", "Domicilio Casa Central", "Domicilio Carlos Paz", "Teléfono", "Detalle"]
+        columnas = ["nombre", "siglas", "cuit", "id_afip", "domicilio_central", "domicilio_cp", "telefono", "detalle"]
 
-        for i, campo in enumerate(campos):
-            Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10)).grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_detalles, width=40)
-            entry.grid(row=i, column=1, padx=10, pady=5)
-            entry.insert(0, valores[i])
+        datos = obtener_datos("obra_social", columnas, "nombre like "+ id_seleccionado)
+        print(datos)
+        
+        entradas ={}
+        for i, campo in enumerate(campos):     #Devuelve índice y valor de cada elemento 
+            Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
+            #Ingresa los elementos en la combo box y devuelve el valor de la seleccion
+            if campo == "Carácter de AFIP":
+                lista_afip = obtener_datos("afip", ["id_afip", "nombre"])
+                # Crear un diccionario para buscar el ID por el nombre
+                datos_afip = {dato[1]: dato[0] for dato in lista_afip} 
+                self.combo_afip = ttk.Combobox(frame_detalles, width=49, font=("Robot", 10), state="readonly")
+                self.combo_afip['values'] = list(datos_afip.keys())
+                self.combo_afip.grid(row=i, column=1, padx=10, pady=5)
+                id_afip = datos
+                nombre_afip = (nombre for nombre, id_ in datos_afip.items() if id_ == id_afip)
+                self.combo_afip.set(nombre_afip)
+            else:
+                entry = Entry(frame_detalles, width=40, font=("Robot", 12))
+                entry.grid(row=i, column=1, padx=10, pady=5)
+                entry.insert(0, obra_social[i])  # Insertar el valor actual
+                entry.config(state="readonly" if modo == "ver" else "normal")  # Configurar el estado según el modo
             entradas[campo] = entry
             
-
             if modo == "ver":
                 entry.config(state="readonly")
-                btn_editar = Button(ventana, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885",
-                                    command=lambda: activar_edicion(entradas, btn_guardar))
+                
+                btn_editar = Button(ventana, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885", command=lambda: activar_edicion(entradas, btn_guardar))
                 btn_editar.grid(row=len(campos), column=0, pady=10)
-
     
-                btn_guardar = Button(frame_detalles, text="Guardar cambios", command= lambda:guardar_cambios(entradas, ventana))
+                btn_guardar = Button(frame_detalles, text="Guardar Cambios", command=lambda: guardar_cambios(entradas, ventana))
                 btn_guardar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
                 btn_guardar.config(state="disabled")  # Iniciar como deshabilitado
                                 
+
         if modo == "modificar":
-            btn_modificar = Button(frame_detalles, text="Guardar Cambios", command= lambda:guardar_cambios(entradas, ventana, id_seleccionado))
+            btn_modificar = Button(frame_detalles, text="Guardar Cambios", command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
             btn_modificar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
     #Función que ELIMINA obra social
@@ -240,14 +277,7 @@ class Gestion_Obra_Social(Frame):
         #Ancho de las columnas y datos centrados
         self.tree.column("Nombre", anchor='center', width=450, stretch=False)
         self.tree.column("Siglas", anchor='center', width=300, stretch=False)
-        self.tree.column("CUIT", anchor='center', width=300, stretch=False)
-
-        
-        #Ejemplo
-        self.tree.insert("", "end", values=("1234", "OS 1", "7455"))
-        self.tree.insert("", "end", values=("5678", "Tratamiento 2", "2456"))
-        self.tree.insert("", "end", values=("91011", "Tratamiento 3", "522"))
-        
+        self.tree.column("CUIT", anchor='center', width=300, stretch=False)        
 
         #Scrollbar para la tabla dentro del frame_tabla
         scrollbar = ttk.Scrollbar(frame_tabla, orient="vertical", command=self.tree.yview)

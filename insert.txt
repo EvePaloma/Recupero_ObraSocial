@@ -12,12 +12,12 @@ select * from tratamiento;
 use recupero_obra_social;
 insert into afip(nombre) values ("CATEGORIA F"), ("CATEGORIA K"), ("CATEGORIA E"), ("CATEGORIA G");
 
-INSERT INTO obra_social (nombre, siglas, email, telefono, anotacion, domicilio_central, domicilio_cp, cuit, id_afip)
-VALUES ("GEA", "GEA", "gea_oficial@gmail.com", "35621544", "", "RIO NEGOR 653", "LA RIOJA 8856", "9854", "2"),
-("OSDE", "OSDE", "osde_oficial@gmail.com", "45866", "", "LAPRIDA 545", "ARIAS 52", "5624", "1"), 
-("GENESIS", "GS", "genesis.of@gmail.com", "986235", "", "jeronimo 5", "Av. de los Pioneros 450", "5648", "1"),
-("APSOT", "apt", "apsot@gmail.com", "321245", "", "montones 78", "Calle de Alcalá 50", "1231", "4"),
-("SCRAIA", "SCR", "scraita_info@gmail.com", "124523", "", "Solís 1423", "San Martín 2245", "3652", "2"), 
-("SMAI", "sm", "smai.mail@gmail.com", "325411", "", "AV los aromos 44", "Rue de Rivoli 10", "1114", "3");
+INSERT INTO obra_social (nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit, id_afip)
+VALUES ("GEA", "GEA", "35621544", "", "RIO NEGOR 653", "LA RIOJA 8856", "9854", "2"),
+("OSDE", "OSDE", "45866", "", "LAPRIDA 545", "ARIAS 52", "5624", "1"), 
+("GENESIS", "GS", "986235", "", "jeronimo 5", "Av. de los Pioneros 450", "5648", "1"),
+("APSOT", "apt", "321245", "", "montones 78", "Calle de Alcalá 50", "1231", "4"),
+("SCRAIA", "SCR", "124523", "", "Solís 1423", "San Martín 2245", "3652", "2"), 
+("SMAI", "sm", "325411", "", "AV los aromos 44", "Rue de Rivoli 10", "1114", "3");
 
 select * from obra_social;
