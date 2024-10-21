@@ -7,7 +7,7 @@ from ConexionBD import obtener_conexion
 
 class Gestion_Obra_Social(Frame):
     def __init__(self, master):
-        Frame.__init__(self, master, bg="#e4c09f", height=780, width=1300)
+        Frame.__init__(self, master, bg="#e4c09f", height=700, width=1350)
         self.master = master
         self.pack_propagate(False)
         self.pack(expand=True)
@@ -50,7 +50,7 @@ class Gestion_Obra_Social(Frame):
             self.tree.delete(item)
         conexion = obtener_conexion()
         cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM obra_social")
+        cursor.execute("SELECT * FROM obra_social where activo = 1")
         lista = cursor.fetchall()
         for os in lista:
             self.tree.insert("", "0", iid=os[0], values=os[1:])
@@ -74,12 +74,13 @@ class Gestion_Obra_Social(Frame):
             conexion.close()
 
     def createWidgets(self):
-        contenedor_total = Frame(self, padx=10, pady=10, bg="#c9c2b2")
-        contenedor_total.pack()
+        contenedor_total = Frame(self, bg="#c9c2b2", height= 800)
+        self.pack_propagate(False)
+        contenedor_total.pack(expand=True, fill= "y")
 
         #primer frame, contiene la imagen y el titulo de la ventana
         contenedor_titulo = Frame(contenedor_total, bg="#c9c2b2")
-        contenedor_titulo.pack()
+        contenedor_titulo.pack(pady= 10)
 
         # Cargar la imagen de fondo
         img_fondo = Image.open("fondo3.png")
@@ -96,31 +97,31 @@ class Gestion_Obra_Social(Frame):
 
         #segundo frame, contiene el buscador y el boton de agregar
         #buscador de os
-        frame_busqueda = Frame(contenedor_total, bg="#e4c09f")
-        frame_busqueda.pack(fill= "x")
+        frame_busqueda = Frame(contenedor_total, bg="#c9c2b2")
+        frame_busqueda.pack(fill= "x", padx = 5)
         #separa el campo de busqueda del botón
         frame_busqueda.columnconfigure(4, weight=1)
 
         #Widgets de búsqueda dentro del frame más chico
-        Label(frame_busqueda, text="Buscar:", bg="#e6c885",font=("Robot",15)).grid(row=1, column=1, padx=5, pady=5, sticky= W)
+        Label(frame_busqueda, text="Buscar:", bg="#c9c2b2",font=("Robot",15)).grid(row=1, column=1, padx=5, pady=2, sticky= W)
 
         self.entrada_buscar = Entry(frame_busqueda,width="50",font=("Robot",13))
-        self.entrada_buscar.grid(row=1, column=2, padx=5, pady=5, sticky= W)
+        self.entrada_buscar.grid(row=1, column=2, padx=5, pady=2, sticky= W)
 
         img_buscar = Image.open("buscar1.png").resize((30, 30), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
-        btn_buscar = Button(frame_busqueda, image=img_buscar, width=30, height=30,bg="#e6c885")
+        btn_buscar = Button(frame_busqueda, image=img_buscar, width=40, height=30,bg="#e6c885", command=self.buscar_obra_social)
         btn_buscar.grid(row=1, column=3, sticky= W)
         btn_buscar.image = img_buscar
 
-        boton_agregar = Button(frame_busqueda, text="Agregar   +", width=15, bg="#e6c885", activebackground="chartreuse4", font=("Robot",15), command=self.agregar_obra_social)
-        boton_agregar.grid(row=1, column=5, padx=10, pady=10, sticky= E)
+        boton_agregar = Button(frame_busqueda, text="Agregar  +", width=15, bg="#e6c885",font=("Robot",15), command=self.agregar_obra_social)
+        boton_agregar.grid(row=1, column=5, padx=10, pady=3, sticky= E)
         #Para que siempre esté atrás de los widgets
         fondo_label.lower()
 
         #Tercer frame, contiene la tabla de OS
         #Frame para el Treeview y el scrollbar
-        frame_tabla = Frame(contenedor_total, bg="#e4c09f", height= 500, width= 1000)  # Frame para contener la tabla y el scrollbar
+        frame_tabla = Frame(contenedor_total, bg="#c9c2b2", width= 1000)  # Frame para contener la tabla y el scrollbar
         frame_tabla.pack(expand=True)
         
         stilo = ttk.Style()
@@ -147,20 +148,20 @@ class Gestion_Obra_Social(Frame):
         self.tree.configure(yscrollcommand=scrollbar.set)
 
         #Cuarto frame, contiene los botones de ver, modificar y eliminar
-        frame_btn = Frame(contenedor_total, bg= "#e4c09f")
-        frame_btn.pack(pady= 8 )
+        frame_btn = Frame(contenedor_total, bg= "#c9c2b2")
+        frame_btn.pack(ipady= 10)
 
         #Botones(ver, modificar, eliminar)
-        btn_ver = Button(frame_btn, text="Ver", width=15, font=("Robot",15),bg="#e6c885", command=self.ver_obra_social)
+        btn_ver = Button(frame_btn, text="Ver", width=15, font=("Robot",15), bg="#e6c885", command=self.ver_obra_social)
         btn_ver.grid(row=0, column=1,padx=50)
 
-        btn_editar = Button(frame_btn, text="Modificar", width=15, font=("Robot",15),bg="#e6c885", command=self.modificar_obra_social)
+        btn_editar = Button(frame_btn, text="Modificar", width=15, font=("Robot",15), bg="#e6c885", command=self.modificar_obra_social)
         btn_editar.grid(row=0, column=2,padx=50)
         
-        btn_eliminar = Button(frame_btn, text="Eliminar", width=15,font=("Robot",15),bg="#e6c885", command=self.eliminar_obra_social)
+        btn_eliminar = Button(frame_btn, text="Eliminar", width=15,font=("Robot",15), bg="#e6c885", command=self.eliminar_obra_social)
         btn_eliminar.grid(row=0, column=3, padx=50)
 
-        btn_volver = Button(frame_btn, text="Volver", width=15,font=("Robot",13),bg="#e6c885")
+        btn_volver = Button(frame_btn, text="Volver", width=15 ,font=("Robot",15), bg="#e6c885")
         btn_volver.grid(row=0, column=4, padx=50)
 
     #Agregar pbra social a la base de datos.
@@ -170,6 +171,9 @@ class Gestion_Obra_Social(Frame):
         ventana_agregar.config(bg="#e4c09f") 
         ventana_agregar.resizable(False,False)
         ventana_agregar.geometry("650x400+400+160")
+
+        validar_letras = ventana_agregar.register(self.solo_letras)
+        validar_numeros = ventana_agregar.register(self.solo_numeros)
 
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nueva Obra Social", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.pack(padx=10, pady=10, fill="both", expand=True)
@@ -192,6 +196,10 @@ class Gestion_Obra_Social(Frame):
                 self.combo_afip.bind("<<ComboboxSelected>>", self.on_seleccion()) 
             else:
                 entry = Entry(frame_agregar, width=40, font=("Robot", 12))
+                if campo in ["Nombre", "Siglas"]:
+                    entry.config(validate="key", validatecommand=(validar_letras, '%S'))
+                if campo in ["Teléfono", "CUIT"]:
+                    entry.config(validate="key", validatecommand=(validar_numeros, '%S'))
                 entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
 
@@ -237,7 +245,7 @@ class Gestion_Obra_Social(Frame):
     def ver_obra_social(self):
         seleccion = self.tree.selection()
         if not seleccion:
-            messagebox.showwarning("Atención", "Por favor, seleccione un obra_social.")
+            messagebox.showwarning("Atención", "Por favor, seleccione una obra social.")
             return
 
         # Usamos el primer elemento seleccionado (ID oculto)
@@ -267,6 +275,9 @@ class Gestion_Obra_Social(Frame):
         ventana.resizable(False, False)
         ventana.geometry("600x400+400+160")
 
+        validar_letras = ventana.register(self.solo_letras)
+        validar_numeros = ventana.register(self.solo_numeros)
+
         frame_detalles = LabelFrame(ventana, text="Detalles de obra social", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.pack(padx=10, pady=10)
 
@@ -293,6 +304,10 @@ class Gestion_Obra_Social(Frame):
                 print(clave_encontrada)
             else:
                 entry = Entry(frame_detalles, width=40, font=("Robot", 10))
+                if campo in ["Nombre", "Siglas"]:
+                    entry.config(validate="key", validatecommand=(validar_letras, '%S'))
+                if campo in ["Teléfono", "CUIT"]:
+                    entry.config(validate="key", validatecommand=(validar_numeros, '%S'))
                 entry.grid(row=i, column=1, padx=10, pady=5)
                 if i + 1 < len(valores):
                     entry.insert(0,str(valores[i + 1]))
@@ -355,8 +370,6 @@ class Gestion_Obra_Social(Frame):
                 messagebox.showinfo("Información", "Obra social modificada correctamente.")
                 ventana.destroy()
                 self.actualizar_treeview()
-                messagebox.showerror("Error", "No se pudo modificar la obra social: ")
-                messagebox.showinfo("Éxito", "Obra social actualizada correctamente.")
             except mysql.connector.Error as err:
                 messagebox.showerror("Error", f"Ocurrió un error al actualizar la obra social: {err}")
             finally:
@@ -366,7 +379,7 @@ class Gestion_Obra_Social(Frame):
     def modificar_obra_social(self):
         seleccion = self.tree.selection()
         if not seleccion:
-            messagebox.showwarning("Atención", "Por favor, seleccione un obra_social.")
+            messagebox.showwarning("Atención", "Por favor, seleccione una obra social.")
             return
         # Usamos el primer elemento seleccionado (ID oculto)
         id_seleccionado = seleccion[0]
@@ -377,8 +390,9 @@ class Gestion_Obra_Social(Frame):
             obra_social_reducido = obra_social_seleccionado[0:]  # Aquí excluimos el ID
             self.abrir_ventana_obra_social(obra_social_reducido, modo="modificar", seleccion=id_seleccionado)
         else:
-            messagebox.showerror("Error", "No se pudo obtener el obra_social para modificar.")
-                
+            messagebox.showerror("Error", "No se pudo obtener la obra social para modificar.")
+    
+    #Se elimina la obra social seleccionada, se pasa de activo a inactivo
     def eliminar_obra_social(self):
         conexion = obtener_conexion()
         if conexion is None:
@@ -386,63 +400,55 @@ class Gestion_Obra_Social(Frame):
             return
         seleccion = self.tree.selection()
         if not seleccion:
-            messagebox.showwarning("Atención", "Por favor, seleccione un obra_social para eliminar.")
+            messagebox.showwarning("Atención", "Por favor, seleccione una obra social para eliminar.")
             return
-        obra_social = self.tree.item(seleccion[0], 'values')[0]
+
+        id_seleccion = seleccion[0]
         #Pregunta al usuario si está seguro de eliminar 
-        respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar el obra_social seleccionado?")
+        respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar la obra social seleccionada?")
         if respuesta:
             try:
                 cursor = conexion.cursor()
-                cursor.execute("DELETE FROM obra_social WHERE codigo = %s", (obra_social,))
+                cursor.execute("UPDATE obra_social SET activo = 0 WHERE id_obra_social = %s", (id_seleccion))
                 conexion.commit()
-                messagebox.showinfo("Información", "obra_social eliminado correctamente.")
+                messagebox.showinfo("Información", "obra social eliminada correctamente.")
                 self.actualizar_treeview()
             except mysql.connector.Error as error:
-                messagebox.showerror("Error", f"No se pudo eliminar el obra_social: {error}")
+                messagebox.showerror("Error", f"No se pudo eliminar la obra social: {error}")
             finally:
                 cursor.close()
                 conexion.close()
-    
-    def cargar_obra_socials(self):
-        # Obtener obra_socials de la base de datos
-        obra_socials = self.obtener_obra_socials()  # Asegúrate de que esta función devuelva una lista de obra_socials
-
-        for obra_social in obra_socials:
-            # Supongamos que el obra_social es una tupla con (id, codigo, nombre, precio, ...)
-            # Agregamos solo los campos que deseas mostrar
-            self.tree.insert('', 'end', iid=obra_social[0], values=(obra_social[1], obra_social[2], obra_social[3]))  # Mostrar solo los campos deseados
 
     def buscar_obra_social(self):
-        busqueda = self.entrada_buscar.get().strip().lower()
+        busqueda = self.entrada_buscar.get().strip().upper()
 
         if not busqueda:
             self.tree.delete(*self.tree.get_children())
             self.actualizar_treeview()
             return
 
-        obra_social_encontrado = False
+        coincidencias = []
 
         for item in self.tree.get_children():
             valores = self.tree.item(item, 'values')
-            codigo = valores[0].lower()
-            nombre = valores[1].lower()
+            nombre = valores[1].upper()
+            siglas = valores[2].upper()
 
-            if busqueda in codigo or busqueda in nombre:
-                obra_social_encontrado = True
-            else:
-                self.tree.delete(item)
+            if busqueda in nombre or busqueda in siglas:
+                coincidencias.append(valores)
 
-        if not obra_social_encontrado:
-            messagebox.showwarning("Atención", "No se encontró el médico.")
+        if not coincidencias:
+            messagebox.showwarning("Atención", "No se encontró la obra social.")
             self.tree.delete(*self.tree.get_children())
             self.actualizar_treeview()
-
-        
+        else:
+            self.tree.delete(*self.tree.get_children())
+            for valores in coincidencias:
+                self.tree.insert('', 'end', values=valores)
 
 ventana = Tk()
 ventana.title("Gestion de obra_socials")
 ventana.resizable(False,False)
-ventana.geometry("+30+15")
+ventana.geometry("+0+0")
 root = Gestion_Obra_Social(ventana)
 ventana.mainloop()
