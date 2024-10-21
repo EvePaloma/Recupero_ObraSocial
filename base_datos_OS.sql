@@ -3,7 +3,7 @@ CREATE DATABASE `recupero_obra_social`;
 USE recupero_obra_social;
 DROP TABLE IF EXISTS `estado`;
 CREATE TABLE `estado` (
-  `id_estado` int NOT NULL AUTO_INCREMENT,
+  `id_estado` int NOT NULL,
   `nombre` varchar(20) NOT NULL,
   PRIMARY KEY (`id_estado`)
 );
