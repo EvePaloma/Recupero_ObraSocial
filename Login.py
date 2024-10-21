@@ -73,8 +73,7 @@ class Login(Frame):
         usuarios_autorizados = self.conectar_usuario()
         for nombre, clave in usuarios_autorizados:
             if self.usario.get() == nombre and self.contraseña.get() == clave:
-                messagebox.showinfo("Login", "Ingresó al menu principal, bienvenid@ " + nombre)
-                return 
+                self.abrir_menu()
             else:
                 messagebox.showerror("Login", "Usuario o contraseña incorrectos")
 
