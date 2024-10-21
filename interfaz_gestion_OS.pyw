@@ -29,7 +29,7 @@ class Gestion_Obra_Social(Frame):
                 cursor.execute(sentencia)  # Ejecuta la consulta
                 datos = cursor.fetchall()  # Obtén todos los resultados
                 cursor.close()  # Cierra el cursor
-                conexion.close()  # Cierra la conexión a la base de datos
+                conexion.close()  # Cierra la conexión a la base de datos. Devuelve la clave y el valor
                 return datos  # Devuelve los datos obtenidos
             except mysql.connector.Error as err:
                 messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}")
@@ -39,7 +39,8 @@ class Gestion_Obra_Social(Frame):
                     conexion.close()
                 messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
                 return
-        #al seleccionar una opción en la compo, retorna el id
+    
+    #al seleccionar una opción en la compo, retorna el id
     def on_seleccion(self):
         seleccion = self.combo_afip.get()
         self.id_seleccionado = self.datos_afip[seleccion]
@@ -301,7 +302,6 @@ class Gestion_Obra_Social(Frame):
                 valor_a_buscar = valores[i+1]
                 clave_encontrada = next((clave for clave, valor in self.datos_afip.items() if valor == valor_a_buscar), None)
                 self.combo_afip.set(clave_encontrada)
-                print(clave_encontrada)
             else:
                 entry = Entry(frame_detalles, width=40, font=("Robot", 10))
                 if campo in ["Nombre", "Siglas"]:
@@ -366,7 +366,6 @@ class Gestion_Obra_Social(Frame):
                     return
                 cursor.execute(sql, val)
                 conexion.commit()
-                print(f"Filas afectadas: {cursor.rowcount}")  # Muestra cuántas filas se actualizaron
                 messagebox.showinfo("Información", "Obra social modificada correctamente.")
                 ventana.destroy()
                 self.actualizar_treeview()

@@ -21,3 +21,8 @@ VALUES ("GEA", "GEA", "35621544", "", "RIO NEGOR 653", "LA RIOJA 8856", "9854", 
 ("SMAI", "sm", "325411", "", "AV los aromos 44", "Rue de Rivoli 10", "1114", "3");
 
 select * from obra_social;
+
+insert into rol(nombre) values ("ADMINISTRADOR"),("USUARIO");
+insert into usuario (nombre, apellido, documento, telefono, clave, id_rol) values ("LUCRECIA", "SALAZAR", "4563255", "3562455", "623", 1);
+
+SELECT * FROM USUARIO;
