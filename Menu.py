@@ -52,10 +52,10 @@ class MENU(Frame):
 
 
 
-if __name__ == "__main__":
+'''if __name__ == "__main__":
     ventana = Tk()
     ventana.wm_title("Menú Recupero de Obra Social")
     ventana.wm_resizable(0,0)
     ventana.geometry("+30+15")
     menu = MENU(ventana)
-    menu.mainloop()
+    menu.mainloop()'''

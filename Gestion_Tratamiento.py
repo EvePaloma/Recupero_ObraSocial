@@ -141,17 +141,16 @@ class GestionTratamiento(Frame):
         if not seleccion:
             messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento.")
             return
-
-        # Usamos el primer elemento seleccionado (ID oculto)
+        #Usamos el primer elemento seleccionado (ID oculto)
         id_seleccionado = seleccion[0]
         
-        # Obtenemos el tratamiento usando el ID
+        #Obtenemos el tratamiento usando el ID
         tratamiento_seleccionado = self.obtener_tratamiento_por_id(id_seleccionado)
 
         if tratamiento_seleccionado:
-            # Abrimos la ventana sin mostrar el ID
-            tratamiento_reducido = tratamiento_seleccionado[0:]  # Aquí excluimos el ID
-            self.abrir_ventana_tratamiento(tratamiento_reducido, modo="ver",seleccion=id_seleccionado)  # Excluimos el ID
+            #Abrimos la ventana sin mostrar el ID
+            tratamiento_reducido = tratamiento_seleccionado[0:]  #Excluimos el ID
+            self.abrir_ventana_tratamiento(tratamiento_reducido, modo="ver",seleccion=id_seleccionado)  #Excluimos el ID
         else:
             messagebox.showerror("Error", "No se pudo obtener el tratamiento.")
 
@@ -160,13 +159,10 @@ class GestionTratamiento(Frame):
         if not seleccion:
             messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento.")
             return
-        # Usamos el primer elemento seleccionado (ID oculto)
         id_seleccionado = seleccion[0]
-        # Aquí obtenemos los valores del tratamiento usando el ID
         tratamiento_seleccionado = self.obtener_tratamiento_por_id(id_seleccionado)
         if tratamiento_seleccionado:
-            # Abrimos la ventana sin mostrar el ID
-            tratamiento_reducido = tratamiento_seleccionado[0:]  # Aquí excluimos el ID
+            tratamiento_reducido = tratamiento_seleccionado[0:]  
             self.abrir_ventana_tratamiento(tratamiento_reducido, modo="modificar", seleccion=id_seleccionado)
         else:
             messagebox.showerror("Error", "No se pudo obtener el tratamiento para modificar.")
@@ -211,7 +207,7 @@ class GestionTratamiento(Frame):
                 btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885", 
                                     command=lambda: self.guardar_cambios(entradas, ventana, seleccion))
                 btn_guardar.grid(row=len(campos), column=1, padx=50,pady=10)
-                btn_guardar.config(state="disabled")  # Iniciar como deshabilitado
+                btn_guardar.config(state="disabled")  
 
         if modo == "modificar":
             frame_btns = Frame(ventana, bg="#e4c09f")
@@ -238,7 +234,6 @@ class GestionTratamiento(Frame):
             return
         nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
         print(nuevos_valores)
-        # Asegúrate de que 'seleccion' no sea None y tenga un valor válido
         if seleccion:
             try:
                 cursor = conexion.cursor()
@@ -250,7 +245,7 @@ class GestionTratamiento(Frame):
                     nuevos_valores['Fecha Precio'], 
                     nuevos_valores['Siglas'], 
                     nuevos_valores['Descripción'],
-                    seleccion  # Usa el ID original del tratamiento que estás modificando
+                    seleccion  #Usa el ID original del tratamiento que estás modificando
                 )
 
                 if any(value is None for value in val[:-1]):
@@ -258,7 +253,7 @@ class GestionTratamiento(Frame):
                     return
                 cursor.execute(sql, val)
                 conexion.commit()
-                print(f"Filas afectadas: {cursor.rowcount}")  # Muestra cuántas filas se actualizaron
+                print(f"Filas afectadas: {cursor.rowcount}")  #Muestra cuántas filas se actualizaron
                 messagebox.showinfo("Información", "Tratamiento modificado correctamente.")
                 ventana.destroy()
                 self.actualizar_treeview()
@@ -306,7 +301,7 @@ class GestionTratamiento(Frame):
         fecha_precio = entry["Fecha Precio"].get()
         siglas = entry["Siglas"].get()
         descripcion = entry["Descripción"].get()
-        # Validar datos y agregar al Treeview
+        #Validar datos y agregar al Treeview
         if codigo and nombre and precio and fecha_precio  and siglas and descripcion:
             try:
                 cursor = conexion.cursor()
@@ -341,12 +336,10 @@ class GestionTratamiento(Frame):
         conexion.close()
     
     def cargar_tratamientos(self):
-        # Obtener tratamientos de la base de datos
-        tratamientos = self.obtener_tratamientos()  # Asegúrate de que esta función devuelva una lista de tratamientos
+        #Obtener tratamientos de la base de datos
+        tratamientos = self.obtener_tratamientos() 
 
         for tratamiento in tratamientos:
-            # Supongamos que el tratamiento es una tupla con (id, codigo, nombre, precio, ...)
-            # Agregamos solo los campos que deseas mostrar
             self.tree.insert('', 'end', iid=tratamiento[0], values=(tratamiento[1], tratamiento[2], tratamiento[3]))  # Mostrar solo los campos deseados
 
     def obtener_tratamiento_por_id(self, id_tratamiento):
