@@ -1,11 +1,12 @@
 import mysql.connector
 from tkinter import messagebox
+from base_datos_OS import *
 
 def obtener_conexion():
     try:
         conexion = mysql.connector.connect(
                 host="localhost",
-                user="sofia", #PONER SU PROPIO USUARIO
+                user="root", #PONER SU PROPIO USUARIO
                 password="12345", #PONER SU PROPIA CLAVE
                 database="recupero_obra_social")
         print("Conexión exitosa")

@@ -2,7 +2,8 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk
-from ConexionBDpacientes import *
+from ConexionBDpaciente import *
+from base_datos_OS import *
 
 class GestionPaciente(Frame):
     def __init__(self, master):
@@ -66,18 +67,18 @@ class GestionPaciente(Frame):
 
 
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("nombre","apellido", "dni", "obra social"), show='headings', height=5)
+        self.tree = ttk.Treeview(frame_tabla, columns=("nombre","apellido", "documento", "obra social"), show='headings', height=5)
 
         #Títulos de columnas
         self.tree.heading("nombre", text="Nombre")
         self.tree.heading("apellido", text="Apellido")
-        self.tree.heading("dni", text="DNI")
+        self.tree.heading("documento", text="DNI")
         self.tree.heading("obra social", text="Obra Social")
 
         #Ancho de las columnas y datos centrados
         self.tree.column("nombre", anchor='center', width=250)
         self.tree.column("apellido", anchor='center', width=250)
-        self.tree.column("dni", anchor='center', width=350)
+        self.tree.column("documento", anchor='center', width=350)
         self.tree.column("obra social", anchor='center', width=250)
 
         #Ejemplo
@@ -234,7 +235,7 @@ class GestionPaciente(Frame):
         respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar el paciente seleccionado?")
         if respuesta:  
             try:
-                conexion= mysql.connector.connect(host="localhost", user="sofia", password="12345", database="hospital")
+                conexion= mysql.connector.connect(host="localhost", user="root", password="12345", database="hospital")
                 cursor = conexion.cursor()
                 cursor.execute("DELETE FROM pacientes WHERE id_paciente = %s", (id_paciente,))
                 conexion.commit()
@@ -277,7 +278,7 @@ class GestionPaciente(Frame):
     def guardar_nuevo_paciente(self, entry, ventana):
         nombre = entry["Nombre"].get()      #Obtenemos los valores que el usuario ingresó.
         apellido = entry["Apellido"].get()
-        dni = entry["DNI"].get()
+        documento = entry["DNI"].get()
         obrasocial = entry["Obra Social"].get()
         obrasocialsec = entry["Obra Social Secundaria"].get()
         propietario = entry["Propietario del Plan"].get()
@@ -287,8 +288,8 @@ class GestionPaciente(Frame):
         contactoemergencia = entry["Contacto de Emergencia"].get()
         numeroafiliado = entry["Número de Afiliado"].get()
         # Validar datos y agregar al Treeview
-        if nombre and apellido and dni and obrasocial and obrasocialsec and propietario and fechanac and telefonopaciente and contactoemergencia and numeroafiliado:
-            self.tree.insert("", "end", values=(nombre, apellido, dni, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado))
+        if nombre and apellido and documento and obrasocial and obrasocialsec and propietario and fechanac and telefonopaciente and contactoemergencia and numeroafiliado:
+            self.tree.insert("", "end", values=(nombre, apellido, documento, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado))
             messagebox.showinfo("Información", "Paciente agregado correctamente.")
             ventana.destroy()
         else:
@@ -306,8 +307,8 @@ class GestionPaciente(Frame):
             valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
             nombre = valores[0].lower()
             apellido = valores[1].lower()
-            dni = valores[2].lower()
-            if busqueda in nombre or busqueda in apellido or dni:
+            documento = valores[2].lower()
+            if busqueda in nombre or busqueda in apellido or documento:
                 self.tree.selection_set(item)         #Selecciona el tratamiento.
                 self.tree.see(item)                   #Hace visible el tratamiento.
                 paciente_encontrado = True
@@ -320,9 +321,9 @@ class GestionPaciente(Frame):
             messagebox.showwarning("Atención", "No se encontró el paciente.")
 
     def cargar_paciente(self):
-        self.tree.insert("", "end", values=("Paciente 1", "dni", "Obra Social"))
-        self.tree.insert("", "end", values=("Maria", "28492834", "osim"))
-        self.tree.insert("", "end", values=("Jose", "7462872", "osde"))
+        self.tree.insert("", "end", values=("Paciente 1", "apellido", "ejemplo doc", "Obra Social"))
+        self.tree.insert("", "end", values=("Maria","apellido", "28492834", "osim"))
+        self.tree.insert("", "end", values=("Jose", "apellido","7462872", "osde"))
 
 ventana = Tk()
 ventana.title("Gestion de Paciente")
