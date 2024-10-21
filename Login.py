@@ -2,6 +2,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 from tkinter import messagebox
 from Menu import *
+from ConexionBD import obtener_conexion
 
 class Login(Frame):
     def __init__(self, master):
@@ -45,13 +46,37 @@ class Login(Frame):
         crear_usuario.bind("<Leave>", lambda e: crear_usuario.config(fg="black", font=("Roboto", 10)))
         crear_usuario.bind("<Button-1>", lambda e: self.pedir_admin_login())
 
-    
+    def conectar_usuario(self):
+            conexion = obtener_conexion()  # Llama a la función que establece la conexión
+            if conexion is None:
+                messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+                return
+            try:
+                cursor = conexion.cursor()  # Crea el cursor
+                sentencia = f"SELECT nombre, clave FROM USUARIO"
+                cursor.execute(sentencia)  # Ejecuta la consulta
+                datos = cursor.fetchall()  # Obtén todos los resultados
+                cursor.close()  # Cierra el cursor
+                conexion.close()  # Cierra la conexión a la base de datos. Devuelve la clave y el valor
+                return datos  # Devuelve los datos obtenidos
+            except mysql.connector.Error as err:
+                messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}")
+                if cursor:
+                    cursor.close()
+                if conexion:
+                    conexion.close()
+                messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+                return
+
 
     def check_login(self):
-        if self.usario.get() == "admin" and self.contraseña.get() == "*":
-            self.abrir_menu()
-        else:
-            messagebox.showerror("Login", "Usuario o contraseña incorrectos")
+        usuarios_autorizados = self.conectar_usuario()
+        for nombre, clave in usuarios_autorizados:
+            if self.usario.get() == nombre and self.contraseña.get() == clave:
+                messagebox.showinfo("Login", "Ingresó al menu principal, bienvenid@ " + nombre)
+                return 
+            else:
+                messagebox.showerror("Login", "Usuario o contraseña incorrectos")
 
     def abrir_menu(self):
         self.master.destroy()
