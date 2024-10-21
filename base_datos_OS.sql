@@ -19,12 +19,6 @@ CREATE TABLE `tipo_matricula` (
   `nombre` varchar(10) NOT NULL,
   PRIMARY KEY (`id_tipo_matricula`)
 );
-DROP TABLE IF EXISTS `tipo_tratamiento`;
-CREATE TABLE `tipo_tratamiento` (
-  `id_tipo_tratamiento` int NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(15) NOT NULL,
-  PRIMARY KEY (`id_tipo_tratamiento`)
-);
 DROP TABLE IF EXISTS `afip`;
 CREATE TABLE `afip` (
   `id_afip` int NOT NULL AUTO_INCREMENT,
@@ -131,11 +125,9 @@ CREATE TABLE `tratamiento` (
   `precio` float NOT NULL,
   `fecha_precio` date NOT NULL,
   `siglas` varchar(20) NOT NULL,
-  `id_tipo_tratamiento` int NOT NULL DEFAULT 1,
   `descripcion` longtext,
   `activo` tinyint NOT NULL DEFAULT 1,
   PRIMARY KEY (`id_tratamiento`),
-  FOREIGN KEY (`id_tipo_tratamiento`) REFERENCES `tipo_tratamiento` (`id_tipo_tratamiento`)
 );
 
 DROP TABLE IF EXISTS `usuario`;
