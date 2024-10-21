@@ -66,23 +66,25 @@ class GestionPaciente(Frame):
 
 
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("nombre", "dni", "obra social"), show='headings', height=5)
+        self.tree = ttk.Treeview(frame_tabla, columns=("nombre","apellido", "dni", "obra social"), show='headings', height=5)
 
         #Títulos de columnas
-        self.tree.heading("nombre", text="Nombre y Apellido")
+        self.tree.heading("nombre", text="Nombre")
+        self.tree.heading("apellido", text="Apellido")
         self.tree.heading("dni", text="DNI")
         self.tree.heading("obra social", text="Obra Social")
 
         #Ancho de las columnas y datos centrados
         self.tree.column("nombre", anchor='center', width=250)
+        self.tree.column("apellido", anchor='center', width=250)
         self.tree.column("dni", anchor='center', width=350)
         self.tree.column("obra social", anchor='center', width=250)
 
-        #Ejemplo´
+        #Ejemplo
         '''''
-        self.tree.insert("", "end", values=("Paciente 1", "dni", "Obra Social"))
-        self.tree.insert("", "end", values=("Maria", "28492834", "osim"))
-        self.tree.insert("", "end", values=("Jose", "7462872", "osde"))'''
+        self.tree.insert("", "end", values=("Paciente 1","apellido", "dni", "Obra Social"))
+        self.tree.insert("", "end", values=("Maria", "apellido","28492834", "osim"))
+        self.tree.insert("", "end", values=("Jose","apellido", "7462872", "osde"))'''
 
         #Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -117,7 +119,7 @@ class GestionPaciente(Frame):
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Paciente", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre y Apellido", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Sexo", "Teléfono del Paciente", "Contacto de Emergencia", "Número de Afiliado"]
+        campos = ["Nombre", "Apellido", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Sexo", "Teléfono del Paciente", "Contacto de Emergencia", "Número de Afiliado"]
         entradas = {}
 
         vcmd_letras = ventana_agregar.register(self.solo_letras)
@@ -165,9 +167,12 @@ class GestionPaciente(Frame):
         frame_detalles = LabelFrame(ventana, text="Detalles del Paciente", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre y Apellido", "DNI", "Obra Social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Sexo", "Teléfono del Paciente", "Contacto de Emergencia", "Número de Afiliado"]
+        campos = ["Nombre", "Apellido", "DNI", "Obra Social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Sexo", "Teléfono del Paciente", "Contacto de Emergencia", "Número de Afiliado"]
         valores = list(tratamiento) + ["Obra Social Ejemplo", "Propietario del Plan Ejemplo", "Fecha de Nacimiento del paciente", "Sexo Ejemplo", "Teléfono del Paciente Ejemplo", "Contacto de Emergencia Ejemplo", "Número de Afiliado Ejemplo"]  #ejemplo
         entradas ={}
+
+        vcqmd_letras = ventana.register(self.solo_letras)
+        vcmd_numeros = ventana.register(self.solo_numeros)
 
         for i, campo in enumerate(campos):
             etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
@@ -176,9 +181,6 @@ class GestionPaciente(Frame):
             entry.grid(row=i, column=1, padx=10, pady=5)
             entry.insert(0, valores[i])
             entradas[campo] = entry
-
-            vcmd_letras = ventana.register(self.solo_letras)
-            vcmd_numeros = ventana.register(self.solo_numeros)
             
 
             if modo == "ver":
@@ -259,7 +261,7 @@ class GestionPaciente(Frame):
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Paciente", font= ("Robot", 11),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre y Apellido", "DNI", "Obra Social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Sexo", "Teléfono del Paciente", "Contacto de Emergencia", "Número de Afiliado"]
+        campos = ["Nombre", "Apellido", "DNI", "Obra Social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Sexo", "Teléfono del Paciente", "Contacto de Emergencia", "Número de Afiliado"]
         entradas = {}
 
         for i, campo in enumerate(campos):
@@ -273,7 +275,8 @@ class GestionPaciente(Frame):
         btn_nuevo_tratamiento.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
     def guardar_nuevo_paciente(self, entry, ventana):
-        nombre = entry["Nombre y Apellido"].get()      #Obtenemos los valores que el usuario ingresó.
+        nombre = entry["Nombre"].get()      #Obtenemos los valores que el usuario ingresó.
+        apellido = entry["Apellido"].get()
         dni = entry["DNI"].get()
         obrasocial = entry["Obra Social"].get()
         obrasocialsec = entry["Obra Social Secundaria"].get()
@@ -284,8 +287,8 @@ class GestionPaciente(Frame):
         contactoemergencia = entry["Contacto de Emergencia"].get()
         numeroafiliado = entry["Número de Afiliado"].get()
         # Validar datos y agregar al Treeview
-        if nombre and dni and obrasocial and obrasocialsec and propietario and fechanac and telefonopaciente and contactoemergencia and numeroafiliado:
-            self.tree.insert("", "end", values=(nombre, dni, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado))
+        if nombre and apellido and dni and obrasocial and obrasocialsec and propietario and fechanac and telefonopaciente and contactoemergencia and numeroafiliado:
+            self.tree.insert("", "end", values=(nombre, apellido, dni, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado))
             messagebox.showinfo("Información", "Paciente agregado correctamente.")
             ventana.destroy()
         else:
@@ -302,8 +305,9 @@ class GestionPaciente(Frame):
         for item in self.tree.get_children():         #Recorre cada fila usando identificador en la lista devuelta por children
             valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
             nombre = valores[0].lower()
-            dni = valores[1].lower()
-            if busqueda in nombre or busqueda in dni:
+            apellido = valores[1].lower()
+            dni = valores[2].lower()
+            if busqueda in nombre or busqueda in apellido or dni:
                 self.tree.selection_set(item)         #Selecciona el tratamiento.
                 self.tree.see(item)                   #Hace visible el tratamiento.
                 paciente_encontrado = True
