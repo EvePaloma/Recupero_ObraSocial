@@ -1,6 +1,7 @@
 from tkinter import *
 from PIL import Image, ImageTk
 from tkinter import messagebox
+from Menu import *
 
 class Login(Frame):
     def __init__(self, master):
@@ -13,7 +14,6 @@ class Login(Frame):
         self.create_widgets()
         
     
-
     def create_widgets(self):
         img_fondo = Image.open("fondo3.png")
         img_fondo = img_fondo.resize((700, 100), Image.Resampling.LANCZOS)
@@ -48,10 +48,19 @@ class Login(Frame):
     
 
     def check_login(self):
-        if self.usario.get() == "admin" and self.contraseña.get() == "admin":
-            messagebox.showinfo("Login", "Ingreso al menu principal")
+        if self.usario.get() == "admin" and self.contraseña.get() == "*":
+            self.abrir_menu()
         else:
             messagebox.showerror("Login", "Usuario o contraseña incorrectos")
+
+    def abrir_menu(self):
+        self.master.destroy()
+        ventana = Tk()
+        ventana.wm_title("Menú Recupero de Obra Social")
+        ventana.wm_resizable(0,0)
+        ventana.geometry("+30+15")
+        menu = MENU(ventana)
+        menu.mainloop()
 
     def pedir_admin_login(self):
         admin_login = Toplevel(self.master)
