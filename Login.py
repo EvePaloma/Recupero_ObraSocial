@@ -122,6 +122,6 @@ class Login(Frame):
 ventana = Tk()
 ventana.configure(bg="#e4c09f") 
 ventana.title("Inicio de Sesión")
-ventana.geometry("900x600")
+ventana.geometry("900x600+210+60")
 root = Login(ventana)
 ventana.mainloop()
