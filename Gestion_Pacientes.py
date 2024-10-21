@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk
+from ConexionBDpacientes import *
 
 class GestionPaciente(Frame):
     def __init__(self, master):
@@ -9,6 +10,13 @@ class GestionPaciente(Frame):
         self.master = master
         self.grid()
         self.createWidgets()
+
+    def solo_letras(self, char):
+        return char.isalpha() or char == " "
+
+    def solo_numeros(self, char):
+        return char.isdigit()
+
 
     def createWidgets(self):
         frame_pacientes = LabelFrame(self, text="Gestión de Pacientes", font=("Robot",10),padx=10, pady=10, bg="#c9c2b2")
@@ -42,7 +50,7 @@ class GestionPaciente(Frame):
         btn_buscar.image = img_buscar
 
         boton_agregar = Button(frame_pacientes, text="Agregar   +", width=15, bg="#e6c885",font=("Robot",13),
-                                command=self.agregar_tratamiento)
+                                command=self.agregar_paciente)
         boton_agregar.grid(row=1, column=5, padx=10, pady=10)
 
         #Para que siempre esté atrás de los widgets
@@ -70,10 +78,11 @@ class GestionPaciente(Frame):
         self.tree.column("dni", anchor='center', width=350)
         self.tree.column("obra social", anchor='center', width=250)
 
-        #Ejemplo
+        #Ejemplo´
+        '''''
         self.tree.insert("", "end", values=("Paciente 1", "dni", "Obra Social"))
         self.tree.insert("", "end", values=("Maria", "28492834", "osim"))
-        self.tree.insert("", "end", values=("Jose", "7462872", "osde"))
+        self.tree.insert("", "end", values=("Jose", "7462872", "osde"))'''
 
         #Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -99,9 +108,9 @@ class GestionPaciente(Frame):
                                command=self.eliminar_paciente)
         btn_eliminar.grid(row=4, column=3, padx=50)
 
-    def agregar_tratamiento(self):
+    def agregar_paciente(self):
         ventana_agregar = Toplevel(self)
-        ventana_agregar.title("Agregar paciente")
+        ventana_agregar.title("Agregar Nuevo Paciente")
         ventana_agregar.config(bg="#e4c09f") 
         ventana.resizable(False,False)
 
@@ -110,6 +119,9 @@ class GestionPaciente(Frame):
 
         campos = ["Nombre y Apellido", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", "Fecha de Nacimiento", "Sexo", "Teléfono del Paciente", "Contacto de Emergencia", "Número de Afiliado"]
         entradas = {}
+
+        vcmd_letras = ventana_agregar.register(self.solo_letras)
+        vcmd_numeros = ventana_agregar.register(self.solo_numeros)
 
         for i, campo in enumerate(campos):     #Devuelve índice y valor de cada elemento 
             etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
@@ -164,6 +176,9 @@ class GestionPaciente(Frame):
             entry.grid(row=i, column=1, padx=10, pady=5)
             entry.insert(0, valores[i])
             entradas[campo] = entry
+
+            vcmd_letras = ventana.register(self.solo_letras)
+            vcmd_numeros = ventana.register(self.solo_numeros)
             
 
             if modo == "ver":
@@ -209,15 +224,33 @@ class GestionPaciente(Frame):
         if not seleccion:
             messagebox.showwarning("Atención", "Por favor, seleccione un paciente para eliminar.")
             return
+        
+        paciente_seleccionado = self.tree.item(seleccion[0], "values")
+        id_paciente = paciente_seleccionado[0]  # Asumiendo que el ID es el primer valor
+        
         #Pregunta al usuario si está seguro de eliminar 
         respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar el paciente seleccionado?")
         if respuesta:  
-            self.tree.delete(seleccion)
+            try:
+                conexion= mysql.connector.connect(host="localhost", user="sofia", password="12345", database="hospital")
+                cursor = conexion.cursor()
+                cursor.execute("DELETE FROM pacientes WHERE id_paciente = %s", (id_paciente,))
+                conexion.commit()
+                messagebox.showinfo("Éxito", "Paciente eliminado correctamente.")
+                self.tree.delete(seleccion)
+            except mysql.connector.Error as err:
+                messagebox.showerror("Error", f"Error al eliminar el paciente: {err}")
+            finally:
+                if conexion.is_connected():
+                    cursor.close()
+                    conexion.close()
+
+            '''        
             messagebox.showinfo("Atención", "Paciente eliminado correctamente.")
         else:
             messagebox.showinfo("Atención", "Eliminación cancelada.")
-
-    def agregar_tratamiento(self):
+'''
+    def agregar_paciente(self):
         ventana_agregar = Toplevel(self)
         ventana_agregar.title("Agregar Paciente")
         ventana_agregar.config(bg="#e4c09f")
@@ -279,8 +312,7 @@ class GestionPaciente(Frame):
        
             
         if not paciente_encontrado:
-            #self.tree.delete(*self.tree.get_children())
-            #self.cargar_tratamiento()
+
             messagebox.showwarning("Atención", "No se encontró el paciente.")
 
     def cargar_paciente(self):
