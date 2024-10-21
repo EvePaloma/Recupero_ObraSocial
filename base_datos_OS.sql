@@ -1,6 +1,12 @@
 DROP DATABASE IF EXISTS `recupero_obra_social`;
 CREATE DATABASE `recupero_obra_social`;
 USE recupero_obra_social;
+DROP TABLE IF EXISTS `estado`;
+CREATE TABLE `estado` (
+  `id_estado` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(20) NOT NULL,
+  PRIMARY KEY (`id_estado`)
+);
 DROP TABLE IF EXISTS `tipo_documento`;
 CREATE TABLE `tipo_documento` (
   `id_tipo_documento` int NOT NULL AUTO_INCREMENT,
@@ -127,7 +133,7 @@ CREATE TABLE `tratamiento` (
   `siglas` varchar(20) NOT NULL,
   `descripcion` longtext,
   `activo` tinyint NOT NULL DEFAULT 1,
-  PRIMARY KEY (`id_tratamiento`),
+  PRIMARY KEY (`id_tratamiento`)
 );
 
 DROP TABLE IF EXISTS `usuario`;
