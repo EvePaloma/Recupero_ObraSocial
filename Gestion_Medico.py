@@ -96,10 +96,14 @@ class Gestionmedico(Frame):
         # Treeview para mostrar la tabla de Medicos dentro del frame_tabla
         self.tree = ttk.Treeview(
             frame_tabla,
-            columns=("nombre", "Apellido", "DNI"),
+            columns=("id_medico", "nombre", "Apellido", "DNI"),
             show="headings",
             height=5,
         )
+
+        # Configurar la columna id_medico como oculta
+        self.tree.column("id_medico", width=0, stretch=False)
+        self.tree.heading("id_medico", text="")
 
         # Títulos de columnas
         self.tree.heading("nombre", text="Nombre")
@@ -112,7 +116,6 @@ class Gestionmedico(Frame):
         self.tree.column("DNI", anchor="center", width=250)
 
         # Ejemplo
-    
 
         # Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -204,6 +207,15 @@ class Gestionmedico(Frame):
         )
         btn_nuevo_medico.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
+        btn_volver = Button(
+            frame_agregar,
+            text="Volver",
+            font=("Robot", 10),
+            bg="#e6c885",
+            command=ventana_agregar.destroy,
+        )
+        btn_volver.grid(row=len(campos) + 1, column=0, columnspan=2, padx=10, pady=10)
+
     def ver_medico(self):
         seleccion = self.tree.selection()
         if not seleccion:
@@ -232,6 +244,77 @@ class Gestionmedico(Frame):
 
         ventana.grid_columnconfigure(0, weight=1)
         ventana.grid_rowconfigure(0, weight=1)
+
+        btn_volver = Button(
+            ventana,
+            text="Volver",
+            font=("Robot", 10),
+            bg="#e6c885",
+            command=ventana.destroy,
+        )      
+        btn_volver.grid(row=1, column=0, padx=10, pady=10)        # Definir la columna id_medico
+        self.tree["columns"] = ("id_medico", "nombre", "Apellido", "DNI")
+        
+        # Configurar la columna id_medico como oculta
+        self.tree.column("id_medico", width=0, stretch=False)
+        self.tree.heading("id_medico", text="")
+        
+        # Configurar las otras columnas
+        self.tree.heading("Apellido", text="Apellido")
+        self.tree.heading("DNI", text="DNI")
+        
+        # Ancho de las columnas y datos centrados
+        self.tree.column("nombre", anchor="center", width=250)
+        self.tree.column("Apellido", anchor="center", width=350)
+        self.tree.column("DNI", anchor="center", width=250)
+        
+        # Ejemplo
+        
+        # Grid del frame_tabla
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        
+        # Scrollbar para la tabla dentro del frame_tabla
+        scrollbar = ttk.Scrollbar(
+            frame_tabla, orient="vertical", command=self.tree.yview
+        )
+        scrollbar.grid(
+            row=0, column=1, sticky="ns"
+        )  # Se expande desde arriba hacia abajo
+        self.tree.configure(yscrollcommand=scrollbar.set)
+        
+        frame_btn = Frame(frame_Medicos, bg="#c9c2b2")
+        frame_btn.grid(row=4, columnspan=6)
+        
+        # Botones(ver, modificar, eliminar)
+        btn_ver = Button(
+            frame_btn,
+            text="Ver",
+            width=15,
+            font=("Robot", 13),
+            bg="#e6c885",
+            command=self.ver_medico,
+        )
+        btn_ver.grid(row=4, column=1, padx=50)
+        
+        btn_editar = Button(
+            frame_btn,
+            text="Modificar",
+            width=15,
+            font=("Robot", 13),
+            bg="#e6c885",
+            command=self.modificar_medico,
+        )
+        btn_editar.grid(row=4, column=2, padx=50)
+        
+        btn_eliminar = Button(
+            frame_btn,
+            text="Eliminar",
+            width=15,
+            font=("Robot", 13),
+            bg="#e6c885",
+            command=self.eliminar_medico,
+        )
+        btn_eliminar.grid(row=4, column=3, padx=50)
 
         frame_detalles = LabelFrame(
             ventana,
