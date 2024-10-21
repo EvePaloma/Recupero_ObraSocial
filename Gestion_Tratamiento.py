@@ -266,29 +266,29 @@ class GestionTratamiento(Frame):
                 conexion.close()
                 
     def eliminar_tratamiento(self):
-        conexion = obtener_conexion()
-        if conexion is None:
-            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
-            return
         seleccion = self.tree.selection()
         if not seleccion:
-            messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento para eliminar.")
+            messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento.")
             return
-        tratamiento = self.tree.item(seleccion[0], 'values')[0]
-        #Pregunta al usuario si está seguro de eliminar 
-        respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar el tratamiento seleccionado?")
+
+        tratamiento_seleccionado = self.tree.item(seleccion[0], "values")
+        id_tratamiento = tratamiento_seleccionado[0]  # Asumiendo que el ID es el primer valor
+
+        respuesta = messagebox.askyesno("Confirmar", "¿Está seguro de que desea eliminar este tratamiento?")
         if respuesta:
             try:
+                conexion = obtener_conexion()
                 cursor = conexion.cursor()
-                cursor.execute("DELETE FROM tratamiento WHERE codigo = %s", (tratamiento,))
+                cursor.execute("UPDATE tratamiento SET activo = 0 WHERE id_tratamiento = %s", (id_tratamiento,))
                 conexion.commit()
-                messagebox.showinfo("Información", "Tratamiento eliminado correctamente.")
-                self.actualizar_treeview()
-            except mysql.connector.Error as error:
-                messagebox.showerror("Error", f"No se pudo eliminar el tratamiento: {error}")
+                messagebox.showinfo("Éxito", "Tratamiento eliminado correctamente.")
+                self.tree.delete(seleccion[0])  # Eliminar de la interfaz
+            except mysql.connector.Error as err:
+                messagebox.showerror("Error", f"Error al eliminar el tratamiento: {err}")
             finally:
-                cursor.close()
-                conexion.close()
+                if conexion.is_connected():
+                    cursor.close()
+                    conexion.close()
 
     def guardar_nuevo_tratamiento(self, entry, ventana):
         conexion = obtener_conexion()
