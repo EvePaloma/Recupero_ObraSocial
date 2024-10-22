@@ -46,6 +46,7 @@ class Login(Frame):
         crear_usuario.bind("<Leave>", lambda e: crear_usuario.config(fg="black", font=("Roboto", 10)))
         crear_usuario.bind("<Button-1>", lambda e: self.pedir_admin_login())
 
+
     def conectar_usuario(self):
             conexion = obtener_conexion()  # Llama a la función que establece la conexión
             if conexion is None:

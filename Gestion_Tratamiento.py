@@ -6,6 +6,7 @@ import mysql.connector
 from ConexionBD import obtener_conexion
 
 
+
 class GestionTratamiento(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master, bg="#e4c09f", height=780, width=1300)
@@ -107,10 +108,26 @@ class GestionTratamiento(Frame):
                                command=self.eliminar_tratamiento)
         btn_eliminar.grid(row=4, column=3, padx=50)
 
-        btn_volver = Button(frame_btn, text="Volver", width=15,font=("Robot",13),bg="#e6c885")
+        btn_volver = Button(frame_btn, text="Volver", width=15,font=("Robot",13),bg="#e6c885",
+                            command=self.volver_menu_principal)
         btn_volver.grid(row=4, column=4, padx=50)
 
+    
+
     def agregar_tratamiento(self):
+        def validar_campos(entradas):
+            for campo, entrada in entradas.items():
+                valor = entrada.get().strip()
+                if not valor:
+                    messagebox.showerror("Error", f"El campo '{campo}' no puede estar vacío.")
+                    return False
+                if campo == "Precio":
+                    try:
+                        float(valor)
+                    except ValueError:
+                        messagebox.showerror("Error", "El campo 'Precio' debe ser un número válido.")
+                        return False
+            return True
         ventana_agregar = Toplevel(self)
         ventana_agregar.title("Agregar Tratamiento")
         ventana_agregar.config(bg="#e4c09f") 
@@ -130,8 +147,10 @@ class GestionTratamiento(Frame):
             entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
 
+
+
         btn_nuevo_tratamiento = Button(frame_agregar, text="Agregar", font=("Robot", 10),bg="#e6c885", 
-                                       command=lambda: self.guardar_nuevo_tratamiento(entradas, ventana_agregar))
+                                       command=lambda:validar_campos(entradas) and  self.guardar_nuevo_tratamiento(entradas, ventana_agregar))
         btn_nuevo_tratamiento.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
     
@@ -141,16 +160,12 @@ class GestionTratamiento(Frame):
         if not seleccion:
             messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento.")
             return
-        #Usamos el primer elemento seleccionado (ID oculto)
         id_seleccionado = seleccion[0]
-        
-        #Obtenemos el tratamiento usando el ID
         tratamiento_seleccionado = self.obtener_tratamiento_por_id(id_seleccionado)
 
         if tratamiento_seleccionado:
-            #Abrimos la ventana sin mostrar el ID
-            tratamiento_reducido = tratamiento_seleccionado[0:]  #Excluimos el ID
-            self.abrir_ventana_tratamiento(tratamiento_reducido, modo="ver",seleccion=id_seleccionado)  #Excluimos el ID
+            tratamiento_reducido = tratamiento_seleccionado[0:]  
+            self.abrir_ventana_tratamiento(tratamiento_reducido, modo="ver",seleccion=id_seleccionado)  
         else:
             messagebox.showerror("Error", "No se pudo obtener el tratamiento.")
 
@@ -380,9 +395,19 @@ class GestionTratamiento(Frame):
                 self.tree.delete(item)
 
         if not tratamiento_encontrado:
-            messagebox.showwarning("Atención", "No se encontró el médico.")
+            messagebox.showwarning("Atención", "No se encontró el tratamiento.")
             self.tree.delete(*self.tree.get_children())
             self.actualizar_treeview()
+
+    def volver_menu_principal(self):
+        from Menu import MENU
+        self.master.destroy()
+        ventana = Tk()
+        ventana.wm_title("Menú Recupero de Obra Social")
+        ventana.wm_resizable(0,0)
+        ventana.geometry("+30+15")
+        menu = MENU(ventana)
+        menu.mainloop()
 
         
 
