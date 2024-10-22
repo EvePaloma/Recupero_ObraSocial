@@ -2,8 +2,6 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk
-from ConexionBDpaciente import *
-from base_datos_OS import *
 import mysql.connector
 
 class GestionPaciente(Frame):
