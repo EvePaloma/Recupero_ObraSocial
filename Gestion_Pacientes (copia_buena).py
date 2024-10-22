@@ -342,28 +342,35 @@ class GestionPaciente(Frame):
 
     def buscar_paciente(self):
         busqueda = self.entrada_buscar.get().strip().lower()
-        paciente_encontrado = False
-    
         if not busqueda:
             self.tree.delete(*self.tree.get_children())
             self.cargar_paciente()
-        #Obtenemos búsqueda
-        for item in self.tree.get_children():         #Recorre cada fila usando identificador en la lista devuelta por children
-            valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
-            nombre = valores[0].lower()
-            apellido = valores[1].lower()
-            documento = valores[2].lower()
-            if busqueda in nombre or busqueda in apellido or documento:
-                self.tree.selection_set(item)         #Selecciona el paciente.
-                self.tree.see(item)                   #Hace visible el paciente.
-                paciente_encontrado = True
-            else:
-                self.tree.detach(item)                #Oculta los otros pacientes.
-       
-            
-        if not paciente_encontrado:
+            return
 
-            messagebox.showwarning("Atención", "No se encontró el paciente.")
+        try:
+            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            cursor = conexion.cursor()
+            query = """
+            SELECT id_paciente, nombre, apellido, dni, obra_social 
+            FROM paciente 
+            WHERE LOWER(nombre) LIKE %s OR LOWER(apellido) LIKE %s OR dni LIKE %s
+            """
+            like_pattern = f"%{busqueda}%"
+            cursor.execute(query, (like_pattern, like_pattern, like_pattern))
+            pacientes = cursor.fetchall()
+            
+            self.tree.delete(*self.tree.get_children())
+            for paciente in pacientes:
+                self.tree.insert("", "end", values=paciente)
+            
+            if not pacientes:
+                messagebox.showwarning("Atención", "No se encontró el paciente.")
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error", f"Error al buscar el paciente: {err}")
+        finally:
+            if conexion.is_connected():
+                cursor.close()
+                conexion.close()
 
     def cargar_paciente(self):
         try:
