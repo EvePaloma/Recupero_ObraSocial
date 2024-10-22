@@ -16,12 +16,12 @@ class GestionTratamiento(Frame):
         self.grid()
         self.createWidgets()
         self.actualizar_treeview()
+        self.master.protocol("WM_DELETE_WINDOW", self.disable_event)
 
-    def solo_letras(self, char):
-        return char.isalpha() or char == " "
 
-    def solo_numeros(self, char):
-        return char.isdigit()
+    def disable_event(self):
+        pass
+
 
     def createWidgets(self):
         frame_tratamientos = LabelFrame(self, text="Gestión de Tratamientos", font=("Robot",10),padx=10, pady=10, bg="#c9c2b2")
@@ -112,27 +112,33 @@ class GestionTratamiento(Frame):
                             command=self.volver_menu_principal)
         btn_volver.grid(row=4, column=4, padx=50)
 
-    
 
     def agregar_tratamiento(self):
         def validar_campos(entradas):
+            campos_vacios = []
             for campo, entrada in entradas.items():
                 valor = entrada.get().strip()
                 if not valor:
-                    messagebox.showerror("Error", f"El campo '{campo}' no puede estar vacío.")
-                    return False
-                if campo == "Precio":
+                    campos_vacios.append(campo)
+                elif campo == "Precio":
                     try:
                         float(valor)
                     except ValueError:
                         messagebox.showerror("Error", "El campo 'Precio' debe ser un número válido.")
                         return False
-            return True
+            
+            if campos_vacios:
+                messagebox.showwarning("Advertencia", f"Los siguientes campos están vacíos: {', '.join(campos_vacios)}.\nPor favor complételos.")
+                return False
+            else:
+                messagebox.showinfo("Éxito","Tratamiento agregado correctamente.")
+                return True
         ventana_agregar = Toplevel(self)
         ventana_agregar.title("Agregar Tratamiento")
         ventana_agregar.config(bg="#e4c09f") 
         ventana_agregar.resizable(False,False)
         ventana_agregar.geometry("455x310+400+160")
+        ventana_agregar.protocol("WM_DELETE_WINDOW", lambda: None)
 
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Tratamiento", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
@@ -149,11 +155,14 @@ class GestionTratamiento(Frame):
 
 
 
-        btn_nuevo_tratamiento = Button(frame_agregar, text="Agregar", font=("Robot", 10),bg="#e6c885", 
+        btn_nuevo_tratamiento = Button(frame_agregar, text="Agregar", font=("Robot", 13),bg="#e6c885", width=15, 
                                        command=lambda:validar_campos(entradas) and  self.guardar_nuevo_tratamiento(entradas, ventana_agregar))
         btn_nuevo_tratamiento.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
-    
+        btn_volver = Button(frame_agregar, text="Volver", font=("Robot", 13),bg="#e6c885", width=15,
+                            command=ventana_agregar.destroy)
+        btn_volver.grid(row=len(campos), column=2, padx=10, pady=10)
+
 
     def ver_tratamiento(self):
         seleccion = self.tree.selection()
@@ -169,6 +178,7 @@ class GestionTratamiento(Frame):
         else:
             messagebox.showerror("Error", "No se pudo obtener el tratamiento.")
 
+
     def modificar_tratamiento(self):
         seleccion = self.tree.selection()
         if not seleccion:
@@ -181,13 +191,15 @@ class GestionTratamiento(Frame):
             self.abrir_ventana_tratamiento(tratamiento_reducido, modo="modificar", seleccion=id_seleccionado)
         else:
             messagebox.showerror("Error", "No se pudo obtener el tratamiento para modificar.")
-        
+
+
     def abrir_ventana_tratamiento(self, tratamiento,modo, seleccion=None):           
         ventana = Toplevel(self)
         ventana.title("Detalles del Tratamiento")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
         ventana.geometry("510x345+400+160")
+        ventana.protocol("WM_DELETE_WINDOW", lambda: None)
         
         ventana.grid_columnconfigure(0, weight=2)
         ventana.grid_rowconfigure(0, weight=2)
@@ -217,12 +229,16 @@ class GestionTratamiento(Frame):
 
                 btn_editar = Button(frame_btns, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885",
                                     command=lambda: self.activar_edicion(entradas,btn_guardar))
-                btn_editar.grid(row=len(campos), column=0, padx=40,pady=10)
+                btn_editar.grid(row=len(campos), column=0, padx=10,pady=10)
 
                 btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885", 
                                     command=lambda: self.guardar_cambios(entradas, ventana, seleccion))
-                btn_guardar.grid(row=len(campos), column=1, padx=50,pady=10)
+                btn_guardar.grid(row=len(campos), column=1, padx=10,pady=10)
                 btn_guardar.config(state="disabled")  
+
+                btn_volver = Button(frame_btns, text="Volver", width=15, font=("Robot", 13), bg="#e6c885",
+                                    command=ventana.destroy)
+                btn_volver.grid(row=len(campos), column=2, padx=10,pady=10)
 
         if modo == "modificar":
             frame_btns = Frame(ventana, bg="#e4c09f")
@@ -241,6 +257,7 @@ class GestionTratamiento(Frame):
         for entry in entradas.values():
             entry.config(state="normal")  
         btn_guardar.config(state="normal") 
+
 
     def guardar_cambios(self, entradas, ventana,seleccion):
         conexion = obtener_conexion()
@@ -279,7 +296,8 @@ class GestionTratamiento(Frame):
             finally:
                 cursor.close()
                 conexion.close()
-                
+
+
     def eliminar_tratamiento(self):
         seleccion = self.tree.selection()
         if not seleccion:
@@ -304,6 +322,7 @@ class GestionTratamiento(Frame):
                 if conexion.is_connected():
                     cursor.close()
                     conexion.close()
+
 
     def guardar_nuevo_tratamiento(self, entry, ventana):
         conexion = obtener_conexion()
@@ -350,12 +369,14 @@ class GestionTratamiento(Frame):
         cursor.close()
         conexion.close()
     
+
     def cargar_tratamientos(self):
         #Obtener tratamientos de la base de datos
         tratamientos = self.obtener_tratamientos() 
 
         for tratamiento in tratamientos:
             self.tree.insert('', 'end', iid=tratamiento[0], values=(tratamiento[1], tratamiento[2], tratamiento[3]))  # Mostrar solo los campos deseados
+
 
     def obtener_tratamiento_por_id(self, id_tratamiento):
         conexion = obtener_conexion()
@@ -373,6 +394,7 @@ class GestionTratamiento(Frame):
         finally:
             cursor.close()
             conexion.close()
+
 
     def buscar_tratamiento(self):
         busqueda = self.entrada_buscar.get().strip().lower()
@@ -398,6 +420,7 @@ class GestionTratamiento(Frame):
             messagebox.showwarning("Atención", "No se encontró el tratamiento.")
             self.tree.delete(*self.tree.get_children())
             self.actualizar_treeview()
+
 
     def volver_menu_principal(self):
         from Menu import MENU

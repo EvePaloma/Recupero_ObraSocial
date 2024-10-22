@@ -11,6 +11,8 @@ class MENU(Frame):
         self.pack(expand=True)
         self.grid()
         self.create_widgets()
+        self.master.protocol("WM_DELETE_WINDOW", lambda: None)
+
 
     def abrir_tratamiento(self):
         self.master.destroy()
