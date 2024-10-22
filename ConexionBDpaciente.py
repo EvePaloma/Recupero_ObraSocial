@@ -1,17 +1,17 @@
-import mysql.connector
+import _mysql_connector
 from tkinter import messagebox
-from base_datos_OS import *
+
 
 def obtener_conexion():
     try:
-        conexion = mysql.connector.connect(
+        conexion = _mysql_connector.connect(
                 host="localhost",
                 user="root", #PONER SU PROPIO USUARIO
                 password="12345", #PONER SU PROPIA CLAVE
                 database="recupero_obra_social")
         print("Conexión exitosa")
         return conexion
-    except mysql.connector.Error as err:
+    except _mysql_connector.Error as err:
         messagebox.showerror("Error de Conexión", f"No se pudo conectar a la base de datos: {err}")
         return None
     
@@ -43,7 +43,7 @@ def actualizar_paciente(nombre, apellido, dni, obrasocial, obrasocialsec, propie
         cursor.execute(sql, val)
         conexion.commit()
         messagebox.showinfo("Éxito", "Registro actualizado correctamente.")
-    except mysql.connector.Error as err:
+    except _mysql_connector.Error as err:
         messagebox.showerror("Error", f"Error al actualizar en la base de datos: {err}")
     finally:
         conexion.close()

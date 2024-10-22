@@ -3,6 +3,8 @@ from tkinter import messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk
 import mysql.connector
+from ConexionBDpaciente import *
+
 
 class GestionPaciente(Frame):
     def __init__(self, master):
