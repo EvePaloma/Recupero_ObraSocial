@@ -21,8 +21,24 @@ class MENU(Frame):
         entradas = GestionTratamiento(ventana)
         entradas.mainloop()
 
-
+    def volver_login(self):
+        self.master.destroy()
+        from Login import Login
+        ventana = Tk()
+        ventana.configure(bg="#e4c09f") 
+        ventana.title("Inicio de Sesión")
+        ventana.geometry("900x600+210+60")
+        root = Login(ventana)
+        ventana.mainloop()
+        
     def create_widgets(self):
+        frame_btn = Frame(self, bg="#e4c09f")
+        frame_btn.grid(row=0, column=0, padx=10, pady=(10, 0),sticky="ne")
+
+        btn_cerrar_sesion = Button(frame_btn, text="Cerrar Sesión", font=("Roboto", 13), bg="#c9c2b2",
+                                   command=self.volver_login)
+        btn_cerrar_sesion.grid(row=0, column=0, pady=(0, 10))
+
         menu = LabelFrame(self, text="Menú", padx=20, pady=20, bg="#c9c2b2", height=500, width=1140)
         menu.grid(row=0, column=0, padx=80, pady= 80)
         menu.grid_propagate(False)
