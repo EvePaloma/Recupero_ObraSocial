@@ -6,18 +6,25 @@ import mysql.connector
 from ConexionBDpaciente import *
 
 
+
+
+
 class GestionPaciente(Frame):
     def __init__(self, master):
         Frame.__init__(self, master, bg="#e4c09f")
         self.master = master
         self.grid()
         self.createWidgets()
+    
+
+    
 
     def solo_letras(self, char):
         return char.isalpha() or char == " "
 
     def solo_numeros(self, char):
         return char.isdigit()
+
 
 
     def createWidgets(self):
