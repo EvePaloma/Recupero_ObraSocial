@@ -4,6 +4,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import mysql.connector
 from ConexionBD import obtener_conexion
+from datetime import datetime
 
 
 
@@ -110,30 +111,11 @@ class GestionTratamiento(Frame):
 
 
     def agregar_tratamiento(self):
-        def validar_campos(entradas):
-            campos_vacios = []
-            for campo, entrada in entradas.items():
-                valor = entrada.get().strip()
-                if not valor:
-                    campos_vacios.append(campo)
-                elif campo == "Precio":
-                    try:
-                        float(valor)
-                    except ValueError:
-                        messagebox.showerror("Error", "El campo 'Precio' debe ser un número válido.")
-                        return False
-            
-            if campos_vacios:
-                messagebox.showwarning("Advertencia", f"Los siguientes campos están vacíos: {', '.join(campos_vacios)}.\nPor favor complételos.")
-                return False
-            else:
-                messagebox.showinfo("Éxito","Tratamiento agregado correctamente.")
-                return True
         ventana_agregar = Toplevel(self)
         ventana_agregar.title("Agregar Tratamiento")
         ventana_agregar.config(bg="#e4c09f") 
         ventana_agregar.resizable(False,False)
-        ventana_agregar.geometry("455x310+400+160")
+        ventana_agregar.geometry("455x345+400+160")
         ventana_agregar.protocol("WM_DELETE_WINDOW", lambda: None)
 
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Tratamiento", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
@@ -149,15 +131,16 @@ class GestionTratamiento(Frame):
             entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
 
+        frame_btns = Frame(ventana_agregar, bg="#e4c09f")
+        frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
+        btn_nuevo_tratamiento = Button(frame_btns, text="Agregar", font=("Robot", 13),bg="#e6c885", width=15, 
+                                       command=lambda:self.validar_campos(entradas) and  self.guardar_nuevo_tratamiento(entradas, ventana_agregar))
+        btn_nuevo_tratamiento.grid(row=len(campos), column=0, padx=40, pady=10)
 
-        btn_nuevo_tratamiento = Button(frame_agregar, text="Agregar", font=("Robot", 13),bg="#e6c885", width=15, 
-                                       command=lambda:validar_campos(entradas) and  self.guardar_nuevo_tratamiento(entradas, ventana_agregar))
-        btn_nuevo_tratamiento.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
-
-        btn_volver = Button(frame_agregar, text="Volver", font=("Robot", 13),bg="#e6c885", width=15,
+        btn_volver = Button(frame_btns, text="Volver", font=("Robot", 13),bg="#e6c885", width=15,
                             command=ventana_agregar.destroy)
-        btn_volver.grid(row=len(campos), column=2, padx=10, pady=10)
+        btn_volver.grid(row=len(campos), column=1, pady=10)
 
 
     def ver_tratamiento(self):
@@ -254,6 +237,30 @@ class GestionTratamiento(Frame):
             entry.config(state="normal")  
         btn_guardar.config(state="normal") 
 
+    
+    def validar_campos(self, entradas):
+            campos_vacios = []
+            for campo, entrada in entradas.items():
+                valor = entrada.get().strip()
+                if not valor:
+                    campos_vacios.append(campo)
+                elif campo == "Precio":
+                    try:
+                        float(valor)
+                    except ValueError:
+                        messagebox.showerror("Error", "El campo 'Precio' debe ser un número válido.")
+                        return False
+                elif campo == "Fecha Precio":
+                    if not self.fecha_valida(valor):
+                        messagebox.showerror("Error", "El campo 'Fecha Precio' debe tener el formato 'YYYY-MM-DD'.")
+                        return False
+            
+            if campos_vacios:
+                messagebox.showwarning("Advertencia", f"Los siguientes campos están vacíos: {', '.join(campos_vacios)}.\nPor favor complételos.")
+                return False
+            else:
+                messagebox.showinfo("Éxito","Tratamiento agregado correctamente.")
+                return True
 
     def guardar_cambios(self, entradas, ventana,seleccion):
         conexion = obtener_conexion()
@@ -261,7 +268,7 @@ class GestionTratamiento(Frame):
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
         nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
-        print(nuevos_valores)
+        
         if seleccion:
             try:
                 cursor = conexion.cursor()
@@ -276,17 +283,11 @@ class GestionTratamiento(Frame):
                     seleccion  #Usa el ID original del tratamiento que estás modificando
                 )
 
-                if any(value is None for value in val[:-1]):
-                    messagebox.showerror("Error", "Hay campos vacíos que no pueden ser actualizados.")
-                    return
                 cursor.execute(sql, val)
                 conexion.commit()
-                print(f"Filas afectadas: {cursor.rowcount}")  #Muestra cuántas filas se actualizaron
                 messagebox.showinfo("Información", "Tratamiento modificado correctamente.")
                 ventana.destroy()
                 self.actualizar_treeview()
-                messagebox.showerror("Error", "No se pudo modificar el tratamiento: ")
-                messagebox.showinfo("Éxito", "Tratamiento actualizado correctamente.")
             except mysql.connector.Error as err:
                 messagebox.showerror("Error", f"Ocurrió un error al actualizar el tratamiento: {err}")
             finally:
@@ -320,7 +321,7 @@ class GestionTratamiento(Frame):
                     conexion.close()
 
 
-    def guardar_nuevo_tratamiento(self, entry, ventana):
+    def guardar_nuevo_tratamiento(self, entry):
         conexion = obtener_conexion()
         if conexion is None:
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
@@ -341,7 +342,6 @@ class GestionTratamiento(Frame):
                 conexion.commit()
                 messagebox.showinfo("Información", "Tratamiento agregado exitosamente")
                 self.tree.insert("", 0, values=(codigo, nombre, precio))
-                ventana.destroy()
                 self.actualizar_treeview()
             except mysql.connector.Error as error:
                 messagebox.showerror("Error", f"No se pudo agregar el tratamiento: {error}")
@@ -416,6 +416,13 @@ class GestionTratamiento(Frame):
             messagebox.showwarning("Atención", "No se encontró el tratamiento.")
             self.tree.delete(*self.tree.get_children())
             self.actualizar_treeview()
+
+    def fecha_valida(self,fecha):
+        try:
+            datetime.strptime(fecha, "%Y-%m-%d")
+            return True
+        except ValueError:
+            return False
 
 
     def volver_menu_principal(self):
