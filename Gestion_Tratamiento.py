@@ -16,11 +16,7 @@ class GestionTratamiento(Frame):
         self.grid()
         self.createWidgets()
         self.actualizar_treeview()
-        self.master.protocol("WM_DELETE_WINDOW", self.disable_event)
-
-
-    def disable_event(self):
-        pass
+        self.master.protocol("WM_DELETE_WINDOW", lambda: None)
 
 
     def createWidgets(self):
