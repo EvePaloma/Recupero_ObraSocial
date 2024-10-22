@@ -135,7 +135,8 @@ class GestionPaciente(Frame):
             entradas[campo] = entry
 
         btn_nuevo_paciente = Button(frame_agregar, text="Agregar", font=("Robot", 10),bg="#e6c885", 
-                                       command=lambda: self.guardar_nuevo_paciente(entradas, ventana_agregar))
+                                       command=lambda: insertar_paciente_bd
+                                       (entradas, ventana_agregar))
         btn_nuevo_paciente.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
     def ver_paciente(self):
@@ -190,16 +191,10 @@ class GestionPaciente(Frame):
                 btn_editar = Button(ventana, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885",
                                     command=lambda: self.activar_edicion(entradas, btn_guardar))
                 btn_editar.grid(row=len(campos), column=0, pady=10)
-
-    
-                btn_guardar = Button(frame_detalles, text="Guardar Cambios", 
-                                     command=lambda: self.guardar_cambios(entradas, ventana))
-                btn_guardar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
-                btn_guardar.config(state="disabled")  # Iniciar como deshabilitado
                                 
 
         if modo == "modificar":
-            btn_modificar = Button(frame_detalles, text="Guardar Cambios", 
+            btn_modificar = Button(frame_detalles, text="Guardar Cambios", bg="#e6c885",
                                    command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
             btn_modificar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
