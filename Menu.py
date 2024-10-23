@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from Gestion_Tratamiento import *   
+from Gestion_obra_social import *
 
 class MENU(Frame):
     def __init__(self, master):
@@ -13,7 +14,6 @@ class MENU(Frame):
         self.create_widgets()
         self.master.protocol("WM_DELETE_WINDOW", lambda: None)
 
-
     def abrir_tratamiento(self):
         self.master.destroy()
         ventana = Tk()
@@ -22,6 +22,15 @@ class MENU(Frame):
         ventana.geometry("+30+15")
         entradas = GestionTratamiento(ventana)
         entradas.mainloop()
+
+    def abrir_obra_social(self):
+        self.master.destroy()
+        ventana = Tk()
+        ventana.wm_title("Gestion de obra_socials")
+        ventana.wm_resizable(0,0)
+        ventana.geometry("+0+0")
+        root = Gestion_Obra_Social(ventana)
+        ventana.mainloop()
 
     def volver_login(self):
         self.master.destroy()
@@ -37,8 +46,7 @@ class MENU(Frame):
         frame_btn = Frame(self, bg="#e4c09f")
         frame_btn.grid(row=0, column=0, padx=10, pady=(10, 0),sticky="ne")
 
-        btn_cerrar_sesion = Button(frame_btn, text="Cerrar Sesión", font=("Roboto", 13), bg="#c9c2b2",
-                                   command=self.volver_login)
+        btn_cerrar_sesion = Button(frame_btn, text="Cerrar Sesión", font=("Roboto", 13), bg="#c9c2b2", command=self.volver_login)
         btn_cerrar_sesion.grid(row=0, column=0, pady=(0, 10))
 
         menu = LabelFrame(self, text="Menú", padx=20, pady=20, bg="#c9c2b2", height=500, width=1140)
@@ -57,7 +65,7 @@ class MENU(Frame):
         btn_medico = Button(menu, text="Gestión de Médico", font=("Roboto", 15), bg="#e4c09f", width=96)
         btn_medico.grid(row=3, column=0, pady=(0, 20))
 
-        btn_obra_social = Button(menu, text="Gestión de Obra Social", font=("Roboto", 15), bg="#e4c09f", width=96)
+        btn_obra_social = Button(menu, text="Gestión de Obra Social", font=("Roboto", 15), bg="#e4c09f", width=96, command=self.abrir_obra_social)
         btn_obra_social.grid(row=4, column=0, pady=(0, 20))
 
         btn_tratamiento = Button(menu, text="Gestión de Tratamiento", font=("Roboto", 15), bg="#e4c09f", width=96,command=self.abrir_tratamiento)
@@ -67,13 +75,10 @@ class MENU(Frame):
         btn_ficha.grid(row=6, column=0, pady=(0, 20))
 
 
-
-
-
-'''if __name__ == "__main__":
+if __name__ == "__main__":
     ventana = Tk()
     ventana.wm_title("Menú Recupero de Obra Social")
     ventana.wm_resizable(0,0)
     ventana.geometry("+30+15")
     menu = MENU(ventana)
-    menu.mainloop()'''
+    menu.mainloop()

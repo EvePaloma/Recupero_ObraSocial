@@ -14,13 +14,19 @@ class Gestion_Obra_Social(Frame):
         self.createWidgets()
         self.actualizar_treeview()
         # Sobrescribe el protocolo de cierre de la ventana
-        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.master.protocol("WM_DELETE_WINDOW", lambda: None)
 
-    def on_closing(self):
-        # Aquí puedes manejar el evento de cierre de la ventana
-        # Por ejemplo, mostrar un mensaje o simplemente no hacer nada
-        messagebox.showinfo("Información", "La opción de cerrar está deshabilitada.")
+    def volver_menu_principal(self):
+        from Menu import MENU
+        self.master.destroy()
+        ventana = Tk()
+        ventana.wm_title("Menú Recupero de Obra Social")
+        ventana.wm_resizable(0,0)
+        ventana.geometry("+30+15")
+        menu = MENU(ventana)
+        menu.mainloop()
 
+    #corregir las validaciones
     def solo_letras(self, char):
         return char.isalpha() or char == " "
     def solo_numeros(self, char):
@@ -186,7 +192,7 @@ class Gestion_Obra_Social(Frame):
         btn_eliminar = Button(frame_btn, text="Eliminar", width=15,font=("Robot",15), bg="#e6c885", command=self.eliminar_obra_social)
         btn_eliminar.grid(row=0, column=3, padx=50)
 
-        btn_volver = Button(frame_btn, text="Volver", width=15 ,font=("Robot",15), bg="#e6c885")
+        btn_volver = Button(frame_btn, text="Volver", width=15 ,font=("Robot",15), bg="#e6c885", command=self.volver_menu_principal)
         btn_volver.grid(row=0, column=4, padx=50)
 
     #Agregar pbra social a la base de datos.
@@ -195,13 +201,16 @@ class Gestion_Obra_Social(Frame):
         ventana_agregar.title("Agregar Obra Social")
         ventana_agregar.config(bg="#e4c09f") 
         ventana_agregar.resizable(False,False)
-        ventana_agregar.geometry("650x400+400+160")
+        ventana_agregar.geometry("700x400+400+160")
 
         validar_letras = ventana_agregar.register(self.solo_letras)
         validar_numeros = ventana_agregar.register(self.solo_numeros)
 
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nueva Obra Social", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.pack(padx=10, pady=10, fill="both", expand=True)
+
+        frame_btns = Frame(ventana_agregar, bg="#e4c09f")
+        frame_btns.pack(pady=3)
 
         campos = ["Nombre", "Siglas", "Teléfono", "Detalle", "Domicilio Casa Central", "Domicilio Carlos Paz", "CUIT", "Carácter de AFIP"]
         entradas = {}
@@ -225,8 +234,11 @@ class Gestion_Obra_Social(Frame):
                 entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
 
-        btn_nueva_obra_social = Button(frame_agregar, text="Agregar", font=("Robot", 10),bg="#e6c885", command=lambda: self.guardar_nueva_obra_social(entradas, ventana_agregar))
-        btn_nueva_obra_social.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
+        btn_nueva_obra_social = Button(frame_btns, text="Agregar", width=15, font=("Robot", 13),bg="#e6c885", command=lambda: self.guardar_nueva_obra_social(entradas, ventana_agregar))
+        btn_nueva_obra_social.grid(row=len(campos), column=0, padx=40, pady=10)
+        
+        btn_cancelar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=ventana_agregar.destroy)
+        btn_cancelar.grid(row=len(campos), column=1, padx= 40, pady=10)
     
     def guardar_nueva_obra_social(self, entry, ventana):
         conexion = obtener_conexion()
@@ -245,7 +257,7 @@ class Gestion_Obra_Social(Frame):
         print(nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit, id_afip)
 
         # Validar datos y agregar al Treeview
-        if nombre and siglas and telefono and cuit and id_afip:
+        if nombre and siglas and telefono and cuit:
             try:
                 cursor = conexion.cursor()
                 sql = "INSERT INTO obra_social (nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit, id_afip) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
