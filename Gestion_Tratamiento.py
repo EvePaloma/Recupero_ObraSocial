@@ -110,6 +110,44 @@ class GestionTratamiento(Frame):
         btn_volver.grid(row=4, column=4, padx=50)
 
 
+    def conectar_tabla(self, tabla):
+            conexion = obtener_conexion()  # Llama a la función que establece la conexión
+            if conexion is None:
+                messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+                return
+            try:
+                cursor = conexion.cursor()  # Crea el cursor
+                sentencia = f"SELECT * from {tabla}"
+                cursor.execute(sentencia)  # Ejecuta la consulta
+                datos = cursor.fetchall()  # Obtén todos los resultados
+                cursor.close()  # Cierra el cursor
+                conexion.close()  # Cierra la conexión a la base de datos. Devuelve la clave y el valor
+                return datos  # Devuelve los datos obtenidos
+            except mysql.connector.Error as err:
+                messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}")
+                if cursor:
+                    cursor.close()
+                if conexion:
+                    conexion.close()
+                messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+                return
+    
+    #al seleccionar una opción en la compo, retorna el id
+    def on_seleccion(self, campo):
+        try:            
+            if campo == "Estado":
+                seleccion = self.combo_valores_2.get()
+                if seleccion in self.datos_tabla_1:
+                    self.dato_estado = self.datos_tabla_1[seleccion]
+                    return self.dato_estado
+                else:
+                    raise ValueError(f"Selección '{seleccion}' no encontrada en datos_tabla.")
+            else:
+                raise ValueError(f"Campo '{campo}' no es válido.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            return None
+
     def agregar_tratamiento(self):
         ventana_agregar = Toplevel(self)
         ventana_agregar.title("Agregar Tratamiento")
@@ -186,22 +224,37 @@ class GestionTratamiento(Frame):
         frame_detalles = LabelFrame(ventana, text="Detalles del Tratamiento", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Código", "Nombre", "Precio", "Fecha Precio", "Siglas", "Descripción"]
+        campos = ["Código", "Nombre", "Precio", "Fecha Precio", "Siglas", "Descripción", "Estado"]
         valores = list(tratamiento)
         entradas = {}
 
         for i, campo in enumerate(campos):
             etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
             etiqueta.grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_detalles, width=40, font=("Robot", 10))
-            entry.grid(row=i, column=1, padx=10, pady=5)
-            if i + 1 < len(valores):
-                entry.insert(0,str(valores[i + 1])) 
-                entradas[campo] = entry
+            if campo == "Estado":
+                lista = self.conectar_tabla("estado")
+                print(lista)
+                # Crear un diccionario para buscar el ID por el nombre
+                self.datos_tabla_1 = {dato[1]: dato[0] for dato in lista} 
+                self.combo_valores_2 = ttk.Combobox(frame_detalles, width=38, font=("Robot", 10), state="disabled")
+                self.combo_valores_2['values'] = list(self.datos_tabla_1.keys())
+                self.combo_valores_2.grid(row=i, column=1, padx=10, pady=5)
+                #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
+                valor_a_buscar = valores[i+1]
+                clave_encontrada = next((clave for clave, valor in self.datos_tabla_1.items() if valor == valor_a_buscar), None)
+                self.combo_valores_2.set(clave_encontrada)
+            else:
+                entry = Entry(frame_detalles, width=40, font=("Robot", 10))
+                entry.grid(row=i, column=1, padx=10, pady=5)
+                if i + 1 < len(valores):
+                    entry.insert(0,str(valores[i + 1])) 
+            entradas[campo] = entry
 
         if modo == "ver":
                 for entry in entradas.values():
                     entry.config(state="readonly")
+
+                self.combo_valores_2.config(state="disabled")
                 
                 frame_btns = Frame(ventana, bg="#e4c09f")
                 frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
@@ -220,6 +273,8 @@ class GestionTratamiento(Frame):
                 btn_volver.grid(row=len(campos), column=2, padx=10,pady=10)
 
         if modo == "modificar":
+            self.combo_valores_2.config(state="readonly")
+            self.combo_valores_2.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Estado"))
             frame_btns = Frame(ventana, bg="#e4c09f")
             frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
@@ -236,6 +291,7 @@ class GestionTratamiento(Frame):
         for entry in entradas.values():
             entry.config(state="normal")  
         btn_guardar.config(state="normal") 
+        self.combo_valores_2.config(state="readonly")
 
     
     def validar_campos(self, entradas):
@@ -268,11 +324,12 @@ class GestionTratamiento(Frame):
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
         nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
-        
+        nuevos_valores["Estado"] = self.on_seleccion("Estado")
+        print(nuevos_valores)
         if seleccion:
             try:
                 cursor = conexion.cursor()
-                sql = "UPDATE tratamiento SET codigo=%s, nombre=%s, precio=%s, fecha_precio=%s, siglas=%s, descripcion=%s WHERE id_tratamiento=%s"
+                sql = "UPDATE tratamiento SET codigo=%s, nombre=%s, precio=%s, fecha_precio=%s, siglas=%s, descripcion=%s, activo=%s WHERE id_tratamiento=%s"
                 val = (
                     nuevos_valores['Código'], 
                     nuevos_valores['Nombre'],
@@ -280,6 +337,7 @@ class GestionTratamiento(Frame):
                     nuevos_valores['Fecha Precio'], 
                     nuevos_valores['Siglas'], 
                     nuevos_valores['Descripción'],
+                    nuevos_valores['Estado'],
                     seleccion  #Usa el ID original del tratamiento que estás modificando
                 )
 
