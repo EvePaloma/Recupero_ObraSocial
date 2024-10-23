@@ -3,6 +3,7 @@ from tkinter import messagebox
 from tkinter import ttk
 from Gestion_Tratamiento import *   
 from Gestion_obra_social import *
+from Gestion_Medico import *
 
 class MENU(Frame):
     def __init__(self, master):
@@ -30,6 +31,15 @@ class MENU(Frame):
         ventana.wm_resizable(0,0)
         ventana.geometry("+0+0")
         root = Gestion_Obra_Social(ventana)
+        ventana.mainloop()
+    
+    def abrir_medico(self):
+        self.master.destroy()
+        ventana = Tk()
+        ventana.wm_title("Gestion de medicos")
+        ventana.wm_resizable(0,0)
+        ventana.geometry("+0+0")
+        root = Gestion_Medico(ventana)
         ventana.mainloop()
 
     def volver_login(self):
