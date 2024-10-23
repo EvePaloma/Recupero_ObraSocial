@@ -1,4 +1,4 @@
-from tkinter import *
+'''from tkinter import *
 from PIL import Image, ImageTk
 from tkinter import messagebox
 from Menu import *
@@ -148,8 +148,8 @@ ventana.configure(bg="#e4c09f")
 ventana.title("Inicio de Sesión")
 ventana.geometry("900x600+210+60")
 root = Login(ventana)
-ventana.mainloop()
-"""from tkinter import *
+ventana.mainloop()'''
+from tkinter import *
 from PIL import Image, ImageTk
 from tkinter import messagebox
 from ConexionBD import obtener_conexion
@@ -172,12 +172,13 @@ class Login(Frame):
         menu.mainloop()
 
     def create_widgets(self):
-        contenedor_total = Frame(self, bg="#c9c2b2")
-        contenedor_total.pack(expand=True, pady= 80, ipady= 20)
+        contenedor_total = Frame(self, bg="#c9c2b2", height=600, width=900)
+        contenedor_total.pack_propagate(False)
+        contenedor_total.pack(expand=True, pady= 80, ipady= 60)
 
         # Crear un contenedor para el título
         contenedor_titulo = Frame(contenedor_total, bg="#c9c2b2")
-        contenedor_titulo.pack(pady= 10)
+        contenedor_titulo.pack(pady= 50)
 
         # Cargar la imagen de fondo
         img_fondo = Image.open("fondo3.png")
@@ -303,4 +304,4 @@ ventana.title("Inicio de Sesión")
 ventana.geometry("900x600+220+50")
 root = Login(ventana)
 ventana.mainloop()
-"""
+
