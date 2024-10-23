@@ -273,15 +273,6 @@ class Gestionmedico(Frame):
         if modo == "ver":
             for entry in entradas.values():
                 entry.config(state="readonly")
-            btn_editar = Button(
-                ventana,
-                text="Modificar",
-                width=15,
-                font=("Robot", 13),
-                bg="#e6c885",
-                command=lambda: self.activar_edicion(entradas, btn_guardar),
-            )
-            btn_editar.grid(row=len(campos), column=0, pady=10)
 
             btn_guardar = Button(
                 frame_detalles,
@@ -295,6 +286,16 @@ class Gestionmedico(Frame):
             )
             btn_guardar.config(state="disabled")
 
+            btn_editar = Button(
+                ventana,
+                text="Modificar",
+                width=15,
+                font=("Robot", 13),
+                bg="#e6c885",
+                command=lambda: self.activar_edicion(entradas, btn_guardar),
+            )
+            btn_editar.grid(row=len(campos), column=0, pady=10)
+
         if modo == "modificar":
             btn_modificar = Button(
                 frame_detalles,
@@ -306,9 +307,7 @@ class Gestionmedico(Frame):
             btn_modificar.grid(
                 row=len(campos), column=0, columnspan=2, padx=10, pady=10
             )
-            btn_modificar.grid(
-                row=len(campos), column=0, columnspan=2, padx=10, pady=10
-            )
+
 
     def activar_edicion(self, entradas, btn_guardar):
         for entry in entradas.values():
@@ -418,11 +417,44 @@ class Gestionmedico(Frame):
             self.tree.delete(*self.tree.get_children())
             self.cargar_medicos()
 
+
+
+    def buscar_todo(self): 
+        busqueda = self.entrada_buscar.get().strip().lower()
+
+        if not busqueda:
+            self.tree.delete(*self.tree.get_children())
+            self.cargar_medicos()
+            return
+
+        try:
+            conexion = obtener_conexion()
+            cursor = conexion.cursor()
+            query = """
+            SELECT id_medico, nombre, apellido, documento, telefono, matricula 
+            FROM medico 
+            WHERE LOWER(nombre) LIKE %s OR LOWER(apellido) LIKE %s OR documento LIKE %s
+            """
+            like_pattern = f"%{busqueda}%"
+            cursor.execute(query, (like_pattern, like_pattern, like_pattern))
+            medicos = cursor.fetchall()
+            self.tree.delete(*self.tree.get_children())
+            for medico in medicos:
+             self.tree.insert("", "end", values=medico)
+            if not medicos:
+                messagebox.showwarning("Atención", "No se encontró el médico.")
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error", f"Error al buscar los médicos: {err}")
+        finally:
+            if conexion.is_connected():
+                cursor.close()
+                conexion.close()
+
     def cargar_medicos(self):
         try:
             conexion = obtener_conexion()
             cursor = conexion.cursor()
-            cursor.execute("SELECT id_medico, nombre, apellido, documento,  telefono, matricula FROM medico")
+            cursor.execute("SELECT id_medico, nombre, apellido, documento,  telefono, matricula FROM medico WHERE activo = 1")
 
             medicos = cursor.fetchall()
             self.tree.delete(*self.tree.get_children())
