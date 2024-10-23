@@ -13,23 +13,30 @@ class Gestion_Obra_Social(Frame):
         self.pack(expand=True)
         self.createWidgets()
         self.actualizar_treeview()
+        # Sobrescribe el protocolo de cierre de la ventana
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def on_closing(self):
+        # Aquí puedes manejar el evento de cierre de la ventana
+        # Por ejemplo, mostrar un mensaje o simplemente no hacer nada
+        messagebox.showinfo("Información", "La opción de cerrar está deshabilitada.")
 
     def solo_letras(self, char):
         return char.isalpha() or char == " "
     def solo_numeros(self, char):
         return char.isdigit()
-    def conectar_afip(self):
+    def conectar_tabla(self, tabla):
             conexion = obtener_conexion()  # Llama a la función que establece la conexión
             if conexion is None:
                 messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
                 return
             try:
                 cursor = conexion.cursor()  # Crea el cursor
-                sentencia = f"SELECT id_afip, nombre from afip"
+                sentencia = f"SELECT * from {tabla}"
                 cursor.execute(sentencia)  # Ejecuta la consulta
                 datos = cursor.fetchall()  # Obtén todos los resultados
                 cursor.close()  # Cierra el cursor
-                conexion.close()  # Cierra la conexión a la base de datos
+                conexion.close()  # Cierra la conexión a la base de datos. Devuelve la clave y el valor
                 return datos  # Devuelve los datos obtenidos
             except mysql.connector.Error as err:
                 messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}")
@@ -39,11 +46,29 @@ class Gestion_Obra_Social(Frame):
                     conexion.close()
                 messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
                 return
-        #al seleccionar una opción en la compo, retorna el id
-    def on_seleccion(self):
-        seleccion = self.combo_afip.get()
-        self.id_seleccionado = self.datos_afip[seleccion]
-        return self.id_seleccionado
+    
+    #al seleccionar una opción en la compo, retorna el id
+    def on_seleccion(self, campo):
+        try:
+            if campo == "Carácter de AFIP":
+                seleccion = self.combo_valores.get()
+                if seleccion in self.datos_tabla:
+                    self.dato_afip = self.datos_tabla[seleccion]
+                    return self.dato_afip
+                else:
+                    raise ValueError(f"Selección '{seleccion}' no encontrada en datos_tabla.")
+            elif campo == "Estado":
+                seleccion = self.combo_valores_2.get()
+                if seleccion in self.datos_tabla_1:
+                    self.dato_estado = self.datos_tabla_1[seleccion]
+                    return self.dato_estado
+                else:
+                    raise ValueError(f"Selección '{seleccion}' no encontrada en datos_tabla.")
+            else:
+                raise ValueError(f"Campo '{campo}' no es válido.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            return None
 
     def actualizar_treeview(self):
         for item in self.tree.get_children():
@@ -185,19 +210,16 @@ class Gestion_Obra_Social(Frame):
             Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
             #Ingresa los elementos en la combo box y devuelve el valor de la seleccion
             if campo == "Carácter de AFIP":
-                self.id_seleccionado = None
-                lista_afip = self.conectar_afip()
+                lista = self.conectar_tabla("afip")
                 # Crear un diccionario para buscar el ID por el nombre
-                self.datos_afip = {dato[1]: dato[0] for dato in lista_afip} 
-                self.combo_afip = ttk.Combobox(frame_agregar, width=49, font=("Robot", 10), state="readonly")
-                self.combo_afip['values'] = list(self.datos_afip.keys())
-                self.combo_afip.grid(row=i, column=1, padx=10, pady=5)
-                self.combo_afip.set(self.combo_afip['values'][0])  # Seleccionar el primer valor por defecto
-                self.combo_afip.bind("<<ComboboxSelected>>", self.on_seleccion()) 
+                self.datos_tabla = {dato[1]: dato[0] for dato in lista} 
+                self.combo_valores = ttk.Combobox(frame_agregar, width=49, font=("Robot", 10), state="readonly")
+                self.combo_valores['values'] = list(self.datos_tabla.keys())
+                self.combo_valores.grid(row=i, column=1, padx=10, pady=5)
+                self.combo_valores.set(self.combo_valores['values'][0])  # Seleccionar el primer valor por defecto
+                self.combo_valores.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Carácter de AFIP")) 
             else:
                 entry = Entry(frame_agregar, width=40, font=("Robot", 12))
-                if campo in ["Nombre", "Siglas"]:
-                    entry.config(validate="key", validatecommand=(validar_letras, '%S'))
                 if campo in ["Teléfono", "CUIT"]:
                     entry.config(validate="key", validatecommand=(validar_numeros, '%S'))
                 entry.grid(row=i, column=1, padx=10, pady=5)
@@ -219,7 +241,8 @@ class Gestion_Obra_Social(Frame):
         domicilio_central = entry["Domicilio Casa Central"].get().upper()
         domicilio_cp = entry["Domicilio Carlos Paz"].get().upper()
         cuit = entry["CUIT"].get()
-        id_afip = self.id_seleccionado
+        id_afip = self.dato_afip
+        print(nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit, id_afip)
 
         # Validar datos y agregar al Treeview
         if nombre and siglas and telefono and cuit and id_afip:
@@ -267,13 +290,15 @@ class Gestion_Obra_Social(Frame):
             for entry in entradas.values():
                 entry.config(state="normal")
             btn_guardar.config(state="normal")
-            self.combo_afip.config(state="readonly") 
+            self.combo_valores.config(state="readonly")
+            self.combo_valores_2.config(state="readonly")  
 
         ventana = Toplevel(self)
         ventana.title("Detalles de obra social")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
-        ventana.geometry("600x400+400+160")
+        ventana.geometry("600x450+400+160")
+        print(obra_social)
 
         validar_letras = ventana.register(self.solo_letras)
         validar_numeros = ventana.register(self.solo_numeros)
@@ -282,26 +307,38 @@ class Gestion_Obra_Social(Frame):
         frame_detalles.pack(padx=10, pady=10)
 
         frame_btns = Frame(ventana, bg="#e4c09f")
-        frame_btns.pack(pady=10, padx=10)
+        frame_btns.pack(pady=8, padx=10)
 
-        campos = ["Nombre", "Siglas", "Teléfono", "Detalle", "Domicilio Casa Central", "Domicilio Carlos Paz", "CUIT", "Carácter de AFIP"]
+        campos = ["Nombre", "Siglas", "Teléfono", "Detalle", "Domicilio Casa Central", "Domicilio Carlos Paz", "CUIT", "Carácter de AFIP", "Estado"]
         valores = list(obra_social)
         entradas = {}
 
         for i, campo in enumerate(campos):
             Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
             if campo == "Carácter de AFIP":
-                lista_afip = self.conectar_afip()
+                lista = self.conectar_tabla("afip")
+                print(lista) 
                 # Crear un diccionario para buscar el ID por el nombre
-                self.datos_afip = {dato[1]: dato[0] for dato in lista_afip} 
-                self.combo_afip = ttk.Combobox(frame_detalles, width=38, font=("Robot", 10), state="disabled")
-                self.combo_afip['values'] = list(self.datos_afip.keys())
-                self.combo_afip.grid(row=i, column=1, padx=10, pady=5)
-                #se ingresa en la combo como valor inicial el nombre del caracter de afip
+                self.datos_tabla = {dato[1]: dato[0] for dato in lista} 
+                self.combo_valores = ttk.Combobox(frame_detalles, width=38, font=("Robot", 10), state="disabled")
+                self.combo_valores['values'] = list(self.datos_tabla.keys())
+                self.combo_valores.grid(row=i, column=1, padx=10, pady=5)
+                #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
                 valor_a_buscar = valores[i+1]
-                clave_encontrada = next((clave for clave, valor in self.datos_afip.items() if valor == valor_a_buscar), None)
-                self.combo_afip.set(clave_encontrada)
-                print(clave_encontrada)
+                clave_encontrada = next((clave for clave, valor in self.datos_tabla.items() if valor == valor_a_buscar), None)
+                self.combo_valores.set(clave_encontrada)
+            elif campo == "Estado":
+                lista = self.conectar_tabla("estado")
+                print(lista)
+                # Crear un diccionario para buscar el ID por el nombre
+                self.datos_tabla_1 = {dato[1]: dato[0] for dato in lista} 
+                self.combo_valores_2 = ttk.Combobox(frame_detalles, width=38, font=("Robot", 10), state="disabled")
+                self.combo_valores_2['values'] = list(self.datos_tabla_1.keys())
+                self.combo_valores_2.grid(row=i, column=1, padx=10, pady=5)
+                #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
+                valor_a_buscar = valores[i+1]
+                clave_encontrada = next((clave for clave, valor in self.datos_tabla_1.items() if valor == valor_a_buscar), None)
+                self.combo_valores_2.set(clave_encontrada)
             else:
                 entry = Entry(frame_detalles, width=40, font=("Robot", 10))
                 if campo in ["Nombre", "Siglas"]:
@@ -316,24 +353,31 @@ class Gestion_Obra_Social(Frame):
         if modo == "ver":
             for entry in entradas.values():
                 entry.config(state="readonly")
-            self.combo_afip.config(state="disabled")
+
+            self.combo_valores.config(state="disabled")
+            self.combo_valores_2.config(state="disabled")
 
             btn_editar = Button(frame_btns, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885", command=lambda: activar_edicion(entradas,btn_guardar))
-            btn_editar.grid(row = 0, column=0, padx=40,pady=10)
+            btn_editar.grid(row = 0, column=0, padx=25,pady=10)
 
             btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885", command=lambda: self.guardar_cambios(entradas, ventana, seleccion))
-            btn_guardar.grid(row = 0, column=1, padx=50,pady=10)
+            btn_guardar.grid(row = 0, column=1, padx=25,pady=10)
             btn_guardar.config(state="disabled")  # Iniciar como deshabilitado
 
+            btn_editar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=ventana.destroy)
+            btn_editar.grid(row = 0, column=2, padx=25,pady=10)
+
         if modo == "modificar":
-            self.combo_afip.config(state="readonly")
-            self.combo_afip.bind("<<ComboboxSelected>>", self.on_seleccion())
+            self.combo_valores.config(state="readonly")
+            self.combo_valores_2.config(state="readonly")
+            self.combo_valores.bind("<<ComboboxSelected>>", self.on_seleccion("Carácter de AFIP"))
+            self.combo_valores_2.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Estado"))
 
             btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885", command=lambda: self.guardar_cambios(entradas, ventana, seleccion))
-            btn_guardar.grid(row=len(campos), column=0,  padx=60, pady=10)
+            btn_guardar.grid(row=len(campos), column=0,  padx=40, pady=10)
 
             btn_cancelar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=ventana.destroy)
-            btn_cancelar.grid(row=len(campos), column=1, pady=10)
+            btn_cancelar.grid(row=len(campos), column=1, padx= 40, pady=10)
     
     def guardar_cambios(self, entradas, ventana, seleccion):
         conexion = obtener_conexion()
@@ -341,13 +385,14 @@ class Gestion_Obra_Social(Frame):
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
         nuevos_valores = {campo: entradas[campo].get().upper() for campo in entradas}
-        nuevos_valores['Carácter de AFIP'] = self.on_seleccion()
-        print(nuevos_valores)
+        nuevos_valores['Carácter de AFIP'] = self.on_seleccion("Carácter de AFIP")
+        nuevos_valores['Estado'] = self.on_seleccion("Estado")
+        print("nuevos valores ", nuevos_valores)
         # Asegúrate de que 'seleccion' no sea None y tenga un valor válido
         if seleccion:
             try:
                 cursor = conexion.cursor()
-                sql = "UPDATE obra_social SET nombre = %s, siglas = %s, telefono = %s, detalle = %s, domicilio_central = %s, domicilio_cp = %s, cuit = %s, id_afip = %s WHERE id_obra_social=%s"
+                sql = "UPDATE obra_social SET nombre = %s, siglas = %s, telefono = %s, detalle = %s, domicilio_central = %s, domicilio_cp = %s, cuit = %s, id_afip = %s, activo = %s WHERE id_obra_social=%s"
                 val = (
                     nuevos_valores['Nombre'], 
                     nuevos_valores['Siglas'],
@@ -357,6 +402,7 @@ class Gestion_Obra_Social(Frame):
                     nuevos_valores['Domicilio Carlos Paz'],
                     nuevos_valores['CUIT'],
                     nuevos_valores['Carácter de AFIP'],
+                    nuevos_valores['Estado'],
                     seleccion  # Usa el ID original del obra_social que estás modificando
                 )
                 obligatorios = ['nombre', 'siglas', 'telefono', 'cuit', 'id_afip']
@@ -366,7 +412,6 @@ class Gestion_Obra_Social(Frame):
                     return
                 cursor.execute(sql, val)
                 conexion.commit()
-                print(f"Filas afectadas: {cursor.rowcount}")  # Muestra cuántas filas se actualizaron
                 messagebox.showinfo("Información", "Obra social modificada correctamente.")
                 ventana.destroy()
                 self.actualizar_treeview()
@@ -409,7 +454,7 @@ class Gestion_Obra_Social(Frame):
         if respuesta:
             try:
                 cursor = conexion.cursor()
-                cursor.execute("UPDATE obra_social SET activo = 0 WHERE id_obra_social = %s", (id_seleccion))
+                cursor.execute("UPDATE obra_social SET activo = 0 WHERE id_obra_social = %s", (id_seleccion,))
                 conexion.commit()
                 messagebox.showinfo("Información", "obra social eliminada correctamente.")
                 self.actualizar_treeview()
