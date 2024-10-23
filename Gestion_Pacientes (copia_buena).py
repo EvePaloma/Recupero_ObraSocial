@@ -4,9 +4,17 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import mysql.connector
 from ConexionBDpaciente import *
+'''
+def Validar_entrada_letra(char):
+    if char.isdigit():
+        return True
+    return False
 
-
-
+def Validar_entrada_numero(char):
+    if char.isalpha():
+        return True
+    return False    
+'''
 
 
 class GestionPaciente(Frame):
@@ -15,8 +23,6 @@ class GestionPaciente(Frame):
         self.master = master
         self.grid()
         self.createWidgets()
-    
-
     
 
     def solo_letras(self, char):
@@ -173,7 +179,7 @@ class GestionPaciente(Frame):
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         campos = ["ID", "Nombre", "Apellido", "DNI", "Obra Social", "Propietario del Plan", "Sexo", "Teléfono del Paciente", "Número de Afiliado"]
-        id_paciente = paciente[0]
+        id_paciente = paciente[0] #ACA ES
         
         try:
             conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")

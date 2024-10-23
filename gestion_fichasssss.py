@@ -2,6 +2,8 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk
+import mysql.connector
+from ConexionBDpaciente import *
 
 class GestionFicha(Frame):
     def __init__(self, master):
@@ -70,12 +72,12 @@ class GestionFicha(Frame):
         self.tree.heading("Código", text="Código")
 
         #Ancho de las columnas y datos centrados
-        self.tree.column("DNI", anchor='center', width=200)
-        self.tree.column("Nombre", anchor='center', width=350)
-        self.tree.column("Apellido", anchor='center', width=350)
+        self.tree.column("DNI", anchor='center', width=100)
+        self.tree.column("Nombre", anchor='center', width=320)
+        self.tree.column("Apellido", anchor='center', width=320)
         self.tree.column("Servicio", anchor='center', width=250)
-        self.tree.column("Fecha prestación medica", anchor='center', width=220)
-        self.tree.column("Código", anchor='center', width=200)
+        self.tree.column("Fecha prestación medica", anchor='center', width=160)
+        self.tree.column("Código", anchor='center', width=100)
 
         #Ejemplo
         self.tree.insert("", "end", values=("DNI", "Sabrina Carpenter", "Estudio", "12-05-2024", "342"))
@@ -103,7 +105,7 @@ class GestionFicha(Frame):
         btn_editar.grid(row=4, column=2,padx=50)
         
         btn_eliminar = Button(frame_btn, text="Eliminar", width=15,font=("Robot",13),bg="#e6c885",
-                               command=self.eliminar_paciente)
+                               command=self.eliminar_ficha)
         btn_eliminar.grid(row=4, column=3, padx=50)
 
     def agregar_ficha(self):
@@ -136,8 +138,8 @@ class GestionFicha(Frame):
             messagebox.showwarning("Atención", "Por favor, seleccione una ficha.")
             return
         
-        paciente_seleccionado = self.tree.item(seleccion[0], 'values')   #Item= valor del elemento
-        self.abrir_ventana_ficha(paciente_seleccionado,seleccion[0],modo="ver")
+        ficha_seleccionada = self.tree.item(seleccion[0], 'values')   #Item= valor del elemento
+        self.abrir_ventana_ficha(ficha_seleccionada,seleccion[0],modo="ver")
 
     def modificar_ficha(self):
         seleccion = self.tree.selection()
@@ -148,7 +150,7 @@ class GestionFicha(Frame):
         ficha_seleccionada = self.tree.item(seleccion[0], 'values')
         self.abrir_ventana_ficha(ficha_seleccionada, seleccion[0],modo="modificar")    
     
-    def abrir_ventana_ficha(self, tratamiento, id_seleccionado, modo="ver"):
+    def abrir_ventana_ficha(self, ficha, id_seleccionado, modo="ver"):
         ventana = Toplevel(self)
         ventana.title("Detalles de la Ficha")
         ventana.config(bg="#e4c09f")
@@ -159,13 +161,33 @@ class GestionFicha(Frame):
         ventana.grid_columnconfigure(0, weight=1)
         ventana.grid_rowconfigure(0, weight=1)
 
-        frame_detalles = LabelFrame(ventana, text="Detalles del Paciente", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
+        frame_detalles = LabelFrame(ventana, text="Detalles la ficha", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=1, sticky="nsew")
 
         campos = ["Nombre" ,"Apellido", "DNI", "Obra social", "Obra Social Secundaria", "Propietario del Plan", 
         "Fecha de Nacimiento", "Número de Afiliado", "Nombre y apellido del médico","Especialidad","Tipo de matrícula", "Matrícula",
         "Servicio", "Fecha de prestación médica", "Código", "Nombre del procedimiento", "Precio", "Tipo de tratamiento", "Siglas"] #ejemplo
-        entradas ={}
+        id_fichas = ficha[0]
+        #entradas ={}
+
+        try:
+            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            cursor = conexion.cursor()
+            cursor.execute("SELECT id_fichas, nombre, apellido, dni, obra_social, propietario, sexo, telefono, nro_afiliado FROM paciente WHERE id_fichas = %s", (id_fichas,))
+            valores = cursor.fetchone()
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error", f"Error al cargar los datos del paciente: {err}")
+            ventana.destroy()
+            return
+        finally:
+            if conexion.is_connected():
+                cursor.close()
+                conexion.close()
+            
+        entradas = {}
+
+        vcqmd_letras = ventana.register(self.solo_letras)
+        vcmd_numeros = ventana.register(self.solo_numeros)
 
 
         for i, campo in enumerate(campos):
@@ -207,26 +229,64 @@ class GestionFicha(Frame):
         #base de datos
         #messagebox.showinfo("Información", "Cambios guardados correctamente.")# Obtener los nuevos valores de todas las entradas
         nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
-        self.tree.item(seleccion, values=list(nuevos_valores.values()))
+        id_ficha = self.tree.item(seleccion, 'values')[0]
         
-        # Mostrar mensaje de confirmación
-        messagebox.showinfo("Información", "Cambios guardados correctamente.")
-        
-        # Cerrar la ventana después de guardar
-        ventana.destroy()
+        try:
+            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            cursor = conexion.cursor()
+            query = """
+            UPDATE paciente
+            SET nombre = %s, apellido = %s, dni = %s, obra_social = %s, propietario = %s, sexo = %s, telefono = %s, nro_afiliado = %s
+            WHERE id_paciente = %s
+            """
+            cursor.execute(query, (
+                nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["DNI"], nuevos_valores["Obra Social"],
+                nuevos_valores["Propietario del Plan"], nuevos_valores["Sexo"],
+                nuevos_valores["Número de Afiliado"], id_ficha
+            ))
+            conexion.commit()
+            
+            # Actualizar los valores en el Treeview
+            self.tree.item(seleccion, values=(id_ficha, *nuevos_valores.values()))
+            
+            # Mostrar mensaje de confirmación
+            messagebox.showinfo("Información", "Cambios guardados correctamente.")
+            
+            # Cerrar la ventana después de guardar
+            ventana.destroy()
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error", f"Error al guardar los cambios: {err}")
+        finally:
+            if conexion.is_connected():
+                cursor.close()
+                conexion.close()
 
-    def eliminar_paciente(self):
+    def eliminar_ficha(self):
         seleccion = self.tree.selection()
         if not seleccion:
-            messagebox.showwarning("Atención", "Por favor, seleccione una ficha para eliminar.")
+            messagebox.showwarning("Atención", "Por favor, seleccione un paciente para eliminar.")
             return
+        
+        ficha_seleccionada = self.tree.item(seleccion[0], "values")
+        id_ficha = ficha_seleccionada[0]  # Asumiendo que el ID es el primer valor
+        
         #Pregunta al usuario si está seguro de eliminar 
         respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar la ficha seleccionada?")
         if respuesta:  
-            self.tree.delete(seleccion)
-            messagebox.showinfo("Atención", "Ficha eliminada correctamente.")
-        else:
-            messagebox.showinfo("Atención", "Eliminación cancelada.")
+            try:
+                conexion= mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+                cursor = conexion.cursor()
+                cursor.execute("UPDATE paciente SET activo = 0 WHERE id_paciente = %s", (id_ficha,))
+                conexion.commit()
+                messagebox.showinfo("Éxito", "ficha eliminada correctamente.")
+                self.tree.delete(seleccion)
+            except mysql.connector.Error as err:
+                messagebox.showerror("Error", f"Error al eliminar la ficha: {err}")
+            finally:
+                if conexion.is_connected():
+                    cursor.close()
+                    conexion.close()
+
 
     def guardar_nueva_ficha(self, entry, ventana):
         nombre = entry["Nombre"].get()      #Obtenemos los valores que el usuario ingresó.
@@ -247,21 +307,63 @@ class GestionFicha(Frame):
         precio=entry["Precio"].get()
         tipotratamiento=entry["Tipo de tratamiento"].get()
         siglas=entry["Siglas"].get()
+
         # Validar datos y agregar al Treeview
         if nombre and apellido and dni and obrasocial and obrasocialsec and propietario and fechanac and numeroafiliado and nombre_medico and especialidad and tipomatricula and servicio and fechaprestacion and codigo and nombreprocedimiento and precio and tipotratamiento and siglas:
-            self.tree.insert("", "end", values=(nombre, apellido, dni, obrasocial, propietario, fechanac, numeroafiliado, nombre_medico, especialidad, tipomatricula, servicio, fechaprestacion, codigo, nombreprocedimiento,precio,tipotratamiento, siglas))
-            messagebox.showinfo("Información", "Paciente agregado correctamente.")
-            ventana.destroy()
+            try:
+                conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+                cursor = conexion.cursor()
+                query = """
+                INSERT INTO ficha (nombre, apellido, dni, obra_social, propietario, sexo, telefono, nro_afiliado)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                cursor.execute(query, (nombre, apellido, dni, obrasocial, propietario, numeroafiliado))
+                conexion.commit()
+                messagebox.showinfo("Información", "Paciente agregado correctamente.")
+                ventana.destroy()
+                self.cargar_paciente()  # Recargar la lista de fichas
+            except mysql.connector.Error as err:
+                messagebox.showerror("Error", f"Error al agregar la ficha: {err}")
+            finally:
+                if conexion.is_connected():
+                    cursor.close()
+                    conexion.close()
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
 
     def buscar_ficha(self):
-        busqueda = self.entrada_buscar.get().strip().lower()
-        paciente_encontrado = False
-    
+        busqueda = self.entrada_buscar.get().strip().lower() 
         if not busqueda:
             self.tree.delete(*self.tree.get_children())
             self.cargar_ficha()
+            return
+
+        try:
+            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            cursor = conexion.cursor()
+            query = """
+            SELECT id_ficha, nombre, apellido, dni, obra_social 
+            FROM ficha 
+            WHERE LOWER(nombre) LIKE %s OR LOWER(apellido) LIKE %s OR dni LIKE %s
+            """
+            like_pattern = f"%{busqueda}%"
+            cursor.execute(query, (like_pattern, like_pattern, like_pattern))
+            fichas = cursor.fetchall()
+            
+            self.tree.delete(*self.tree.get_children())
+            for ficha in fichas:
+                self.tree.insert("", "end", values=fichas)
+            
+            if not fichas:
+                messagebox.showwarning("Atención", "No se encontró la ficha.")
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error", f"Error al buscar la ficha: {err}")
+        finally:
+            if conexion.is_connected():
+                cursor.close()
+                conexion.close()
+
+
         #Obtenemos búsqueda
         for item in self.tree.get_children():         #Recorre cada fila usando identificador en la lista devuelta por children
             valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
@@ -271,19 +373,29 @@ class GestionFicha(Frame):
             if busqueda in nombre or busqueda in dni or busqueda in apellido:
                 self.tree.selection_set(item)         #Selecciona el tratamiento.
                 self.tree.see(item)                   #Hace visible el tratamiento.
-                paciente_encontrado = True
+                ficha_encontrada = True
             else:
                 self.tree.detach(item)                #Oculta los otros tratamientos.
        
             
-        if not paciente_encontrado:
+        if not ficha_encontrada:
 
             messagebox.showwarning("Atención", "No se encontró la ficha.")
 
     def cargar_ficha(self):
-        self.tree.insert("", "end", values=("DNI", "Sabrina Carpenter", "Estudio", "12-05-2024", "342"))
-        self.tree.insert("", "end", values=("29319319", "María Gomez", "Resonancia", "30-08-2024", "421"))
-        self.tree.insert("", "end", values=("1661617", "José Perez", "Fisioterapia", "12-10-2024", "23"))
+        try:
+            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            cursor = conexion.cursor()
+            cursor.execute("SELECT id_ficha, nombre, apellido, dni, obra_social FROM ficha")
+            fichas = cursor.fetchall()
+            for ficha in fichas:
+                self.tree.insert("", "end", values=ficha)
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error", f"Error al cargar las fichas: {err}")
+        finally:
+            if conexion.is_connected():
+                cursor.close()
+                conexion.close()
 
 ventana = Tk()
 ventana.title("Gestion de Fichas")
