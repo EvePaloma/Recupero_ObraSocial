@@ -173,7 +173,7 @@ class GestionFicha(Frame):
         try:
             conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
             cursor = conexion.cursor()
-            cursor.execute("SELECT id_fichas, nombre, apellido, dni, obra_social, propietario, sexo, telefono, nro_afiliado FROM paciente WHERE id_fichas = %s", (id_fichas,))
+            cursor.execute("SELECT nombre, apellido, dni, obra_social, propietario, sexo, telefono, nro_afiliado FROM paciente WHERE id_fichas = %s", (id_fichas,))
             valores = cursor.fetchone()
         except mysql.connector.Error as err:
             messagebox.showerror("Error", f"Error al cargar los datos del paciente: {err}")
