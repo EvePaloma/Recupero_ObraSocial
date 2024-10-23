@@ -75,10 +75,10 @@ class MENU(Frame):
         btn_ficha.grid(row=6, column=0, pady=(0, 20))
 
 
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     ventana = Tk()
     ventana.wm_title("Menú Recupero de Obra Social")
     ventana.wm_resizable(0,0)
     ventana.geometry("+30+15")
     menu = MENU(ventana)
-    menu.mainloop()
+    menu.mainloop()"""

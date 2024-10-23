@@ -26,9 +26,8 @@ class Gestion_Obra_Social(Frame):
         menu = MENU(ventana)
         menu.mainloop()
 
-    #corregir las validaciones
-    def solo_letras(self, char):
-        return char.isalpha() or char == " "
+    def solo_letras_numeros(self, char):
+        return char.isalpha() or char == " " or char.isdigit()
     def solo_numeros(self, char):
         return char.isdigit()
     def conectar_tabla(self, tabla):
@@ -203,7 +202,7 @@ class Gestion_Obra_Social(Frame):
         ventana_agregar.resizable(False,False)
         ventana_agregar.geometry("700x400+400+160")
 
-        validar_letras = ventana_agregar.register(self.solo_letras)
+        validar_letynum = ventana_agregar.register(self.solo_letras_numeros)
         validar_numeros = ventana_agregar.register(self.solo_numeros)
 
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nueva Obra Social", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
@@ -229,7 +228,9 @@ class Gestion_Obra_Social(Frame):
                 self.combo_valores.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Carácter de AFIP")) 
             else:
                 entry = Entry(frame_agregar, width=40, font=("Robot", 12))
-                if campo in ["Teléfono", "CUIT"]:
+                if campo in ["Nombre", "Siglas"]:
+                    entry.config(validate="key", validatecommand=(validar_letynum, '%S'))
+                elif campo in ["Teléfono", "CUIT"]:
                     entry.config(validate="key", validatecommand=(validar_numeros, '%S'))
                 entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
@@ -312,7 +313,7 @@ class Gestion_Obra_Social(Frame):
         ventana.geometry("600x450+400+160")
         print(obra_social)
 
-        validar_letras = ventana.register(self.solo_letras)
+        validar_letynum = ventana.register(self.solo_letras_numeros)
         validar_numeros = ventana.register(self.solo_numeros)
 
         frame_detalles = LabelFrame(ventana, text="Detalles de obra social", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
@@ -354,7 +355,7 @@ class Gestion_Obra_Social(Frame):
             else:
                 entry = Entry(frame_detalles, width=40, font=("Robot", 10))
                 if campo in ["Nombre", "Siglas"]:
-                    entry.config(validate="key", validatecommand=(validar_letras, '%S'))
+                    entry.config(validate="key", validatecommand=(validar_letynum, '%S'))
                 if campo in ["Teléfono", "CUIT"]:
                     entry.config(validate="key", validatecommand=(validar_numeros, '%S'))
                 entry.grid(row=i, column=1, padx=10, pady=5)
@@ -503,9 +504,9 @@ class Gestion_Obra_Social(Frame):
             for valores in coincidencias:
                 self.tree.insert('', 'end', values=valores)
 
-ventana = Tk()
+"""ventana = Tk()
 ventana.title("Gestion de obra_socials")
 ventana.resizable(False,False)
 ventana.geometry("+0+0")
 root = Gestion_Obra_Social(ventana)
-ventana.mainloop()
+ventana.mainloop()"""
