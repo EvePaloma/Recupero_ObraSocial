@@ -149,6 +149,7 @@ ventana.title("Inicio de Sesión")
 ventana.geometry("900x600+210+60")
 root = Login(ventana)
 ventana.mainloop()'''
+
 from tkinter import *
 from PIL import Image, ImageTk
 from tkinter import messagebox
@@ -172,7 +173,7 @@ class Login(Frame):
         menu.mainloop()
 
     def create_widgets(self):
-        contenedor_total = Frame(self, bg="#c9c2b2", height=600, width=900)
+        contenedor_total = Frame(self, bg="#c9c2b2", height=600, width=1000)
         contenedor_total.pack_propagate(False)
         contenedor_total.pack(expand=True, pady= 80, ipady= 60)
 
@@ -182,7 +183,7 @@ class Login(Frame):
 
         # Cargar la imagen de fondo
         img_fondo = Image.open("fondo3.png")
-        img_fondo = img_fondo.resize((600, 120), Image.Resampling.LANCZOS)
+        img_fondo = img_fondo.resize((700, 150), Image.Resampling.LANCZOS)
         self.img_fondo = ImageTk.PhotoImage(img_fondo)
         # Crear un Label para la imagen de fondo
         fondo_label = Label(contenedor_titulo, image=self.img_fondo)
@@ -191,15 +192,15 @@ class Login(Frame):
         texto_label = Label(contenedor_titulo, text="INICIO DE SESIÓN", font=("Robot", 20), bg="Black", fg="White")
         texto_label.place(relx=0.5, rely=0.5, anchor="center")
 
-        Label(contenedor_total, text="Ingrese usuario", padx=10, pady=10,font=("Robot",13), bg="#c9c2b2").pack()
-        self.usario = Entry(contenedor_total, font=("Robot",13), width=30)
+        Label(contenedor_total, text="Ingrese usuario", padx=10, pady=10,font=("Robot",15), bg="#c9c2b2").pack()
+        self.usario = Entry(contenedor_total, font=("Robot",15), width=30)
         self.usario.pack()
 
-        Label(contenedor_total, text="Ingrese contraseña", padx=10, pady=10,font=("Robot",13), bg="#c9c2b2").pack()
-        self.contraseña = Entry(contenedor_total, font=("Robot",13), width=30)
+        Label(contenedor_total, text="Ingrese contraseña", padx=10, pady=10,font=("Robot",15), bg="#c9c2b2").pack()
+        self.contraseña = Entry(contenedor_total, font=("Robot",15), width=30)
         self.contraseña.pack()
 
-        login = Button(contenedor_total, text="Ingresar", command=self.check_login, font=("Robot",13), bg="#e4c09f")
+        login = Button(contenedor_total, text="Ingresar", command=self.check_login, font=("Robot",15), bg="#e4c09f")
         login.pack(pady=(20, 0))
 
         crear_usuario = Label(contenedor_total, text="Crear Usuario", font=("Roboto", 10), fg="black", cursor="hand2", bg="#c9c2b2")
@@ -301,7 +302,7 @@ class Login(Frame):
 ventana = Tk()
 ventana.configure(bg="#e4c09f") 
 ventana.title("Inicio de Sesión")
-ventana.geometry("900x600+220+50")
+ventana.wm_geometry("1360x700+0+0")
 root = Login(ventana)
 ventana.mainloop()
 
