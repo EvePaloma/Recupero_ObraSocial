@@ -96,17 +96,19 @@ class Gestionmedico(Frame):
         # Treeview para mostrar la tabla de Medicos dentro del frame_tabla
         self.tree = ttk.Treeview(
             frame_tabla,
-            columns=("nombre", "Apellido", "DNI"),
+            columns=("id_medico","nombre", "Apellido", "DNI"),
             show="headings",
             height=5,
         )
 
         # Títulos de columnas
+        self.tree.heading("id_medico", text="ID")
         self.tree.heading("nombre", text="Nombre")
         self.tree.heading("Apellido", text="Apellido")
         self.tree.heading("DNI", text="DNI")
 
         # Ancho de las columnas y datos centrados
+        self.tree.column("id_medico", anchor="center",width=250)
         self.tree.column("nombre", anchor="center", width=250)
         self.tree.column("Apellido", anchor="center", width=350)
         self.tree.column("DNI", anchor="center", width=250)
@@ -305,40 +307,24 @@ class Gestionmedico(Frame):
             entry.config(state="normal")
         btn_guardar.config(state="normal")
 
-    def guardar_cambios(self, entradas, ventana, id_seleccionado):
-        nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
-        id_medico = id_seleccionado  # Asumiendo que el ID es el primer valor
+    def guardar_cambios(self, entradas, ventana, seleccion):
+        nombre = entradas["Nombre"].get()
+        apellido = entradas["Apellido"].get()
+        dni = entradas["DNI"].get()
+        telefono = entradas["Telefono"].get()
+        matricula = entradas["Matricula"].get()
+        descripcion = entradas["Especialidad"].get()
 
-        try:
-            conexion = obtener_conexion()
-            
-            cursor = conexion.cursor()
-            query = """
-            UPDATE medico
-            SET nombre = %s, apellido = %s, dni = %s, telefono = %s, matricula = %s, especialidad = %s
-            WHERE id_medico = %s
-            """
-            cursor.execute(query, (
-                nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["DNI"], nuevos_valores["Telefono"],
-                nuevos_valores["Matricula"], nuevos_valores["Especialidad"], id_medico
-            ))
-            conexion.commit()
-            
-            # Actualizar los valores en el Treeview
-            self.tree.item(id_seleccionado, values=(nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["DNI"]))
-            
-            # Mostrar mensaje de confirmación
-            messagebox.showinfo("Información", "Cambios guardados correctamente.")
-            
-            # Cerrar la ventana después de guardar
-            ventana.destroy()
-        except mysql.connector.Error as err:
-            messagebox.showerror("Error", f"Error al guardar los cambios: {err}")
-        finally:
-            if conexion.is_connected():
-                cursor.close()
-                conexion.close()
-
+        if nombre and apellido and dni and telefono and matricula and descripcion:
+            try:
+                actualizar_medico(seleccion, nombre, apellido, matricula, telefono, dni)
+                self.tree.item(seleccion, values=(nombre, apellido, dni, telefono, matricula, descripcion))
+                messagebox.showinfo("Información", "Cambios guardados correctamente.")
+                ventana.destroy()
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo guardar los cambios: {e}")
+        else:
+            messagebox.showwarning("Atención", "Complete todos los campos.")
 
     def eliminar_medico(self):
         seleccion = self.tree.selection()
@@ -352,14 +338,9 @@ class Gestionmedico(Frame):
         respuesta = messagebox.askyesno("Confirmar", "¿Está seguro de que desea eliminar este médico?")
         if respuesta:
             try:
-                conexion = mysql.connector.connect(
-                    host="localhost",
-                    user="Gaspar",
-                    password="yarco7mysql",
-                    database="hospital"
-                )
+                conexion = obtener_conexion()
                 cursor = conexion.cursor()
-                cursor.execute("DELETE FROM medico WHERE id_medico = %s", (id_medico,))
+                cursor.execute("UPDATE medico SET activo = 0 WHERE id_medico = %s", (id_medico,))
                 conexion.commit()
                 messagebox.showinfo("Éxito", "Médico eliminado correctamente.")
                 self.tree.delete(seleccion[0])  # Eliminar de la interfaz
@@ -420,7 +401,7 @@ class Gestionmedico(Frame):
         try:
             conexion = obtener_conexion()
             cursor = conexion.cursor()
-            cursor.execute("SELECT nombre, apellido, documento, telefono, matricula FROM medico")
+            cursor.execute("SELECT id_medico, nombre, apellido, documento, telefono, matricula FROM medico WHERE activo = 1")
             medicos = cursor.fetchall()
             for medico in medicos:
                 self.tree.insert("", "end", values=medico)

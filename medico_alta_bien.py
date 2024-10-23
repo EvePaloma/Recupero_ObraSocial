@@ -96,17 +96,19 @@ class Gestionmedico(Frame):
         # Treeview para mostrar la tabla de Medicos dentro del frame_tabla
         self.tree = ttk.Treeview(
             frame_tabla,
-            columns=("nombre", "Apellido", "DNI"),
+            columns=("id_medico","nombre", "Apellido", "DNI"),
             show="headings",
             height=5,
         )
 
         # Títulos de columnas
+        self.tree.heading("id_medico", text="ID")
         self.tree.heading("nombre", text="Nombre")
         self.tree.heading("Apellido", text="Apellido")
         self.tree.heading("DNI", text="DNI")
 
         # Ancho de las columnas y datos centrados
+        self.tree.column("id_medico", anchor="center",width=250)
         self.tree.column("nombre", anchor="center", width=250)
         self.tree.column("Apellido", anchor="center", width=350)
         self.tree.column("DNI", anchor="center", width=250)
@@ -176,7 +178,7 @@ class Gestionmedico(Frame):
         )
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre", "Apellido", "DNI", "Telefono", "Matricula", "Especialidad"]
+        campos = ["Nombre", "Apellido", "DNI", "Telefono", "Matricula"]
         entradas = {}
 
         vcmd_letras = ventana_agregar.register(self.solo_letras)
@@ -210,10 +212,10 @@ class Gestionmedico(Frame):
             messagebox.showwarning("Atención", "Por favor, seleccione un medico.")
             return
 
-        medico_seleccionado = self.tree.item(
-            seleccion[0], "values"
-        )  # Item= valor del elemento
-        self.abrir_ventana_medico(medico_seleccionado, seleccion[0], modo="ver")
+        medico_seleccionado = self.tree.item(seleccion[0], "values")
+        # Exclude the ID (first value) from the details
+        detalles_medico = medico_seleccionado[1:]
+        self.abrir_ventana_medico(detalles_medico, seleccion[0], modo="ver")
 
     def modificar_medico(self):
         seleccion = self.tree.selection()
@@ -222,7 +224,11 @@ class Gestionmedico(Frame):
             return
 
         medico_seleccionado = self.tree.item(seleccion[0], "values")
-        self.abrir_ventana_medico(medico_seleccionado, seleccion[0], modo="modificar")
+        # Extract the ID (first value) separately
+        id_medico = medico_seleccionado[0]
+        # Exclude the ID from the details
+        detalles_medico = medico_seleccionado[1:]
+        self.abrir_ventana_medico(detalles_medico, id_medico, modo="modificar")
 
     def abrir_ventana_medico(self, medico, id_seleccionado, modo="ver"):
         ventana = Toplevel(self)
@@ -243,7 +249,7 @@ class Gestionmedico(Frame):
         )
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre", "Apellido", "DNI", "Telefono", "Matricula", "Especialidad"]
+        campos = [ "Nombre", "Apellido", "DNI", "Telefono", "Matricula"]
         entradas = {}
 
         vcmd_letras = ventana.register(self.solo_letras)
@@ -260,7 +266,8 @@ class Gestionmedico(Frame):
             elif campo in ["DNI", "Telefono"]:
                 entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
             entry.grid(row=i, column=1, padx=10, pady=5)
-            entry.insert(0, medico[i])
+            if i < len(medico):
+                entry.insert(0, medico[i])
             entradas[campo] = entry
 
         if modo == "ver":
@@ -299,6 +306,9 @@ class Gestionmedico(Frame):
             btn_modificar.grid(
                 row=len(campos), column=0, columnspan=2, padx=10, pady=10
             )
+            btn_modificar.grid(
+                row=len(campos), column=0, columnspan=2, padx=10, pady=10
+            )
 
     def activar_edicion(self, entradas, btn_guardar):
         for entry in entradas.values():
@@ -306,40 +316,37 @@ class Gestionmedico(Frame):
         btn_guardar.config(state="normal")
 
     def guardar_cambios(self, entradas, ventana, id_seleccionado):
-        nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
-        id_medico = id_seleccionado  # Asumiendo que el ID es el primer valor
+        nombre = entradas["Nombre"].get()
+        apellido = entradas["Apellido"].get()
+        dni = entradas["DNI"].get()
+        telefono = entradas["Telefono"].get()
+        matricula = entradas["Matricula"].get()
 
-        try:
-            conexion = obtener_conexion()
-            
-            cursor = conexion.cursor()
-            query = """
-            UPDATE medico
-            SET nombre = %s, apellido = %s, dni = %s, telefono = %s, matricula = %s, especialidad = %s
-            WHERE id_medico = %s
-            """
-            cursor.execute(query, (
-                nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["DNI"], nuevos_valores["Telefono"],
-                nuevos_valores["Matricula"], nuevos_valores["Especialidad"], id_medico
-            ))
-            conexion.commit()
-            
-            # Actualizar los valores en el Treeview
-            self.tree.item(id_seleccionado, values=(nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["DNI"]))
-            
-            # Mostrar mensaje de confirmación
-            messagebox.showinfo("Información", "Cambios guardados correctamente.")
-            
-            # Cerrar la ventana después de guardar
-            ventana.destroy()
-        except mysql.connector.Error as err:
-            messagebox.showerror("Error", f"Error al guardar los cambios: {err}")
-        finally:
-            if conexion.is_connected():
-                cursor.close()
-                conexion.close()
-
-
+        if nombre and apellido and dni and telefono and matricula:
+            try:
+                conexion = obtener_conexion()
+                cursor = conexion.cursor()
+                cursor.execute(
+                    """
+                    UPDATE medico
+                    SET nombre = %s, apellido = %s, documento = %s, telefono = %s, matricula = %s
+                    WHERE id_medico = %s
+                    """,
+                    (nombre, apellido, dni, telefono, matricula, id_seleccionado)
+                )
+                conexion.commit()
+                messagebox.showinfo("Éxito", "Datos del médico actualizados correctamente.")
+                self.cargar_medicos()
+                ventana.destroy()
+            except mysql.connector.Error as err:
+                messagebox.showerror("Error", f"Error al actualizar los datos del médico: {err}")
+            finally:
+                if conexion.is_connected():
+                    cursor.close()
+                    conexion.close()
+        else:
+            messagebox.showwarning("Atención", "Complete todos los campos.")
+        
     def eliminar_medico(self):
         seleccion = self.tree.selection()
         if not seleccion:
@@ -352,14 +359,9 @@ class Gestionmedico(Frame):
         respuesta = messagebox.askyesno("Confirmar", "¿Está seguro de que desea eliminar este médico?")
         if respuesta:
             try:
-                conexion = mysql.connector.connect(
-                    host="localhost",
-                    user="Gaspar",
-                    password="yarco7mysql",
-                    database="hospital"
-                )
+                conexion = obtener_conexion()
                 cursor = conexion.cursor()
-                cursor.execute("DELETE FROM medico WHERE id_medico = %s", (id_medico,))
+                cursor.execute("UPDATE medico SET activo = 0 WHERE id_medico = %s", (id_medico,))
                 conexion.commit()
                 messagebox.showinfo("Éxito", "Médico eliminado correctamente.")
                 self.tree.delete(seleccion[0])  # Eliminar de la interfaz
@@ -377,12 +379,13 @@ class Gestionmedico(Frame):
         dni = entradas["DNI"].get()
         telefono = entradas["Telefono"].get()
         matricula = entradas["Matricula"].get()
-        descripcion = entradas["Especialidad"].get()
 
-        if nombre and apellido and dni and telefono and matricula and descripcion:
+        
+
+        if nombre and apellido and dni and telefono and matricula  :
             try:
-                insertar_medico(nombre, apellido, matricula, telefono, dni)
-                self.tree.insert("", "end", values=(nombre, apellido, dni, telefono, matricula, descripcion))
+                insertar_medico(nombre, apellido, matricula, telefono, dni,)
+                self.tree.insert("", "end", values=(nombre, apellido, dni, telefono, matricula, ))
                 messagebox.showinfo("Información", "Médico agregado correctamente.")
                 ventana.destroy()
             except Exception as e:
@@ -416,17 +419,21 @@ class Gestionmedico(Frame):
             self.cargar_medicos()
 
     def cargar_medicos(self):
-        self.tree.delete(*self.tree.get_children())
         try:
             conexion = obtener_conexion()
             cursor = conexion.cursor()
-            cursor.execute("SELECT nombre, apellido, documento, telefono, matricula FROM medico")
+            cursor.execute("SELECT id_medico, nombre, apellido, documento,  telefono, matricula FROM medico")
+
             medicos = cursor.fetchall()
+            self.tree.delete(*self.tree.get_children())
             for medico in medicos:
                 self.tree.insert("", "end", values=medico)
-            conexion.close()
-        except mysql.connector.Error as e:
-            messagebox.showerror("Error", f"Error al cargar los médicos: {e}")
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error", f"Error al cargar los médicos: {err}")
+        finally:
+            if conexion.is_connected():
+                cursor.close()
+                conexion.close()
 
 ventana = Tk()
 ventana.title("Gestion de Medicos")

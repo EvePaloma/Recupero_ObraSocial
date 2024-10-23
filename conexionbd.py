@@ -30,14 +30,14 @@ def insertar_medico(nombre, apellido, matricula, telefono, documento):
     finally:
         conexion.close()
 
-def actualizar_medico(id_medico, nombre, apellido, matricula, telefono, documento):
+def actualizar_medico(id_medico, nombre, apellido,documento,telefono , matricula, especialidad):
     conexion = obtener_conexion()
     if conexion is None:
         return
     try:
         cursor = conexion.cursor()
-        sql = "UPDATE medico SET nombre=%s, apellido=%s, matricula=%s, telefono=%s, documento=%s WHERE id=%s"
-        val = (nombre, apellido, matricula, telefono, documento, id_medico)
+        sql = "UPDATE medico SET id_medico =%s, nombre=%s, apellido=%s, matricula=%s, telefono=%s, documento=%s WHERE id=%s"
+        val = (id_medico, nombre, apellido, documento, telefono, matricula,especialidad)
         cursor.execute(sql, val)
         conexion.commit()
         messagebox.showinfo("Éxito", "Registro actualizado correctamente.")
