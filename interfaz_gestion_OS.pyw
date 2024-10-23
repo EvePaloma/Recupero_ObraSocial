@@ -213,8 +213,6 @@ class Gestion_Obra_Social(Frame):
                 self.combo_valores.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Carácter de AFIP")) 
             else:
                 entry = Entry(frame_agregar, width=40, font=("Robot", 12))
-                if campo in ["Nombre", "Siglas"]:
-                    entry.config(validate="key", validatecommand=(validar_letras, '%S'))
                 if campo in ["Teléfono", "CUIT"]:
                     entry.config(validate="key", validatecommand=(validar_numeros, '%S'))
                 entry.grid(row=i, column=1, padx=10, pady=5)
@@ -353,23 +351,26 @@ class Gestion_Obra_Social(Frame):
             self.combo_valores_2.config(state="disabled")
 
             btn_editar = Button(frame_btns, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885", command=lambda: activar_edicion(entradas,btn_guardar))
-            btn_editar.grid(row = 0, column=0, padx=40,pady=10)
+            btn_editar.grid(row = 0, column=0, padx=25,pady=10)
 
             btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885", command=lambda: self.guardar_cambios(entradas, ventana, seleccion))
-            btn_guardar.grid(row = 0, column=1, padx=50,pady=10)
+            btn_guardar.grid(row = 0, column=1, padx=25,pady=10)
             btn_guardar.config(state="disabled")  # Iniciar como deshabilitado
+
+            btn_editar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=ventana.destroy)
+            btn_editar.grid(row = 0, column=2, padx=25,pady=10)
 
         if modo == "modificar":
             self.combo_valores.config(state="readonly")
             self.combo_valores_2.config(state="readonly")
-            self.combo_valores.bind("<<ComboboxSelected>>", self.on_seleccion("Caráceter de AFIP"))
+            self.combo_valores.bind("<<ComboboxSelected>>", self.on_seleccion("Carácter de AFIP"))
             self.combo_valores_2.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Estado"))
 
             btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885", command=lambda: self.guardar_cambios(entradas, ventana, seleccion))
-            btn_guardar.grid(row=len(campos), column=0,  padx=60, pady=10)
+            btn_guardar.grid(row=len(campos), column=0,  padx=40, pady=10)
 
             btn_cancelar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=ventana.destroy)
-            btn_cancelar.grid(row=len(campos), column=1, pady=10)
+            btn_cancelar.grid(row=len(campos), column=1, padx= 40, pady=10)
     
     def guardar_cambios(self, entradas, ventana, seleccion):
         conexion = obtener_conexion()
@@ -379,7 +380,7 @@ class Gestion_Obra_Social(Frame):
         nuevos_valores = {campo: entradas[campo].get().upper() for campo in entradas}
         nuevos_valores['Carácter de AFIP'] = self.on_seleccion("Carácter de AFIP")
         nuevos_valores['Estado'] = self.on_seleccion("Estado")
-        print(nuevos_valores)
+        print("nuevos valores ", nuevos_valores)
         # Asegúrate de que 'seleccion' no sea None y tenga un valor válido
         if seleccion:
             try:
@@ -446,7 +447,7 @@ class Gestion_Obra_Social(Frame):
         if respuesta:
             try:
                 cursor = conexion.cursor()
-                cursor.execute("UPDATE obra_social SET activo = 0 WHERE id_obra_social = %s", (id_seleccion))
+                cursor.execute("UPDATE obra_social SET activo = 0 WHERE id_obra_social = %s", (id_seleccion,))
                 conexion.commit()
                 messagebox.showinfo("Información", "obra social eliminada correctamente.")
                 self.actualizar_treeview()
