@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk
-from conexionbd import *
+from conexionmedico import *
 
 class Gestionmedico(Frame):
 
