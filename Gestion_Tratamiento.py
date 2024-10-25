@@ -327,13 +327,16 @@ class GestionTratamiento(Frame):
                     if not self.fecha_valida(valor):
                         messagebox.showerror("Error", "El campo 'Fecha Precio' debe tener el formato 'YYYY-MM-DD'.")
                         return False
+                    
+                elif campo == "Código":
+                    if not self.validar_repetidos(valor):
+                        messagebox.showerror("Error", "El tratamiento con ese código ya existe.")
+                        return False
             
             if campos_vacios:
                 messagebox.showwarning("Advertencia", f"Los siguientes campos están vacíos: {', '.join(campos_vacios)}.\nPor favor complételos.")
                 return False
-            else:
-                messagebox.showinfo("Éxito","Tratamiento agregado correctamente.")
-                return True
+            return True
 
     def limpiar_marcador(self, entry):
         if entry.get() == "AAAA-MM-DD":
@@ -432,6 +435,9 @@ class GestionTratamiento(Frame):
 
 
     def guardar_nuevo_tratamiento(self, entry):
+        if not self.validar_campos(entry):
+            return
+        
         conexion = obtener_conexion()
         if conexion is None:
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
@@ -442,28 +448,21 @@ class GestionTratamiento(Frame):
         fecha_precio = entry["Fecha Precio"].get()
         siglas = entry["Siglas"].get()
         descripcion = entry["Descripción"].get()
-
-        if not self.validar_repetidos(codigo):
-            messagebox.showerror("Error", "El tratamiento con ese código ya existe.")
-        elif not self.fecha_valida(fecha_precio):
-            messagebox.showerror("Error", "El campo 'Fecha Precio' debe tener el formato 'YYYY-MM-DD'.")
-            return
-        else:
-            if codigo and nombre and precio and fecha_precio and siglas and descripcion:
-                try:
-                    cursor = conexion.cursor()
-                    sql = "INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, siglas, descripcion) VALUES (%s, %s, %s, %s, %s, %s)"
-                    val = (codigo, nombre, precio, fecha_precio, siglas, descripcion)
-                    cursor.execute(sql, val)
-                    conexion.commit()
-                    messagebox.showinfo("Información", "Tratamiento agregado exitosamente")
-                    self.tree.insert("", 0, values=(codigo, nombre, precio))
-                    self.actualizar_treeview()
-                except mysql.connector.Error as error:
-                    messagebox.showerror("Error", f"No se pudo agregar el tratamiento: {error}")  
-                finally:
-                    cursor.close()
-                    conexion.close()   
+        if codigo and nombre and precio and fecha_precio and siglas and descripcion:
+            try:
+                cursor = conexion.cursor()
+                sql = "INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, siglas, descripcion) VALUES (%s, %s, %s, %s, %s, %s)"
+                val = (codigo, nombre, precio, fecha_precio, siglas, descripcion)
+                cursor.execute(sql, val)
+                conexion.commit()
+                messagebox.showinfo("Información", "Tratamiento agregado exitosamente")
+                self.tree.insert("", 0, values=(codigo, nombre, precio))
+                self.actualizar_treeview()
+            except mysql.connector.Error as error:
+                messagebox.showerror("Error", f"No se pudo agregar el tratamiento: {error}")  
+            finally:
+                cursor.close()
+                conexion.close()   
         
 
     
