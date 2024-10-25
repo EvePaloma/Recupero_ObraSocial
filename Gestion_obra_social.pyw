@@ -226,7 +226,7 @@ class Gestion_Obra_Social(Frame):
         ventana_agregar.title("Agregar Obra Social")
         ventana_agregar.config(bg="#e4c09f") 
         ventana_agregar.resizable(False,False)
-        ventana_agregar.geometry("700x400+400+160")
+        ventana_agregar.geometry("700x450+350+120")
 
         validar_letynum = ventana_agregar.register(self.solo_letras_numeros)
         validar_numeros = ventana_agregar.register(self.solo_numeros)
@@ -247,11 +247,14 @@ class Gestion_Obra_Social(Frame):
                 lista = self.conectar_tabla("afip")
                 # Crear un diccionario para buscar el ID por el nombre
                 self.datos_tabla = {dato[1]: dato[0] for dato in lista} 
-                self.combo_valores = ttk.Combobox(frame_agregar, width=49, font=("Robot", 10), state="readonly")
+                self.combo_valores = ttk.Combobox(frame_agregar, width=49, font=("Robot", 11), state="readonly")
                 self.combo_valores['values'] = list(self.datos_tabla.keys())
                 self.combo_valores.grid(row=i, column=1, padx=10, pady=5)
                 self.combo_valores.set(self.combo_valores['values'][0])  # Seleccionar el primer valor por defecto
-                self.combo_valores.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Carácter de AFIP")) 
+                self.combo_valores.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Carácter de AFIP"))
+            elif campo == "Detalle":
+                self.texto = Text(frame_agregar, height=3, width=51, wrap='word', font=("Robot", 10))
+                self.texto.grid(row=i, column=1, padx=10, pady=5) 
             else:
                 entry = Entry(frame_agregar, width=40, font=("Robot", 12))
                 if campo in ["Nombre", "Siglas"]:
@@ -276,7 +279,7 @@ class Gestion_Obra_Social(Frame):
         nombre = entry["Nombre"].get().upper()
         siglas = entry["Siglas"].get().upper()
         telefono = entry["Teléfono"].get()
-        detalle = entry["Detalle"].get().upper()
+        detalle = self.texto.get("1.0", "end-1c").upper() 
         domicilio_central = entry["Domicilio Casa Central"].get().upper()
         domicilio_cp = entry["Domicilio Carlos Paz"].get().upper()
         cuit = entry["CUIT"].get()
@@ -340,10 +343,10 @@ class Gestion_Obra_Social(Frame):
         ventana.title("Detalles de obra social")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
-        ventana.geometry("650x450+400+160")
+        ventana.geometry("700x450+350+120")
         print(obra_social)
 
-        frame_detalles = LabelFrame(ventana, text="Detalles de obra social", font=("Robot", 10), bg="#c9c2b2")
+        frame_detalles = LabelFrame(ventana, text="Detalles de obra social", font=("Robot", 12), bg="#c9c2b2")
         frame_detalles.pack(padx=10, pady=10)
 
         frame_btns = Frame(ventana, bg="#e4c09f")
@@ -357,13 +360,13 @@ class Gestion_Obra_Social(Frame):
         entradas = {}
 
         for i, campo in enumerate(campos):
-            Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
+            Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
             if campo == "Carácter de AFIP":
                 lista = self.conectar_tabla("afip")
                 print(lista) 
                 # Crear un diccionario para buscar el ID por el nombre
                 self.datos_tabla = {dato[1]: dato[0] for dato in lista} 
-                self.combo_valores = ttk.Combobox(frame_detalles, width=39, font=("Robot", 10), state="disabled")
+                self.combo_valores = ttk.Combobox(frame_detalles, width=49, font=("Robot", 10), state="disabled")
                 self.combo_valores['values'] = list(self.datos_tabla.keys())
                 self.combo_valores.grid(row=i, column=1, padx=10, pady=5)
                 #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
@@ -374,7 +377,7 @@ class Gestion_Obra_Social(Frame):
                 lista = self.conectar_tabla("estado")
                 # Crear un diccionario para buscar el ID por el nombre
                 self.datos_tabla_1 = {dato[1]: dato[0] for dato in lista} 
-                self.combo_valores_2 = ttk.Combobox(frame_detalles, width=39, font=("Robot", 10), state="disabled")
+                self.combo_valores_2 = ttk.Combobox(frame_detalles, width=49, font=("Robot", 11), state="disabled")
                 self.combo_valores_2['values'] = list(self.datos_tabla_1.keys())
                 self.combo_valores_2.grid(row=i, column=1, padx=10, pady=5)
                 #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
@@ -382,11 +385,11 @@ class Gestion_Obra_Social(Frame):
                 clave_encontrada = next((clave for clave, valor in self.datos_tabla_1.items() if valor == valor_a_buscar), None)
                 self.combo_valores_2.set(clave_encontrada)
             elif campo == "Detalle":
-                self.texto = Text(frame_detalles, height=3, width=42, wrap='word', font=("Robot", 10))
+                self.texto = Text(frame_detalles, height=3, width=51, wrap='word', font=("Robot", 10))
                 self.texto.insert("1.0", valores[i+1])
                 self.texto.grid(row=i, column=1, padx=10, pady=5)
             else:
-                entry = Entry(frame_detalles, width=42, font=("Robot", 10))
+                entry = Entry(frame_detalles, width=40, font=("Robot", 12))
                 """if campo in ["Nombre", "Siglas"]:
                     entry.config(validate="key", validatecommand= validar_letynum)
                 if campo in ["Teléfono", "CUIT"]:
