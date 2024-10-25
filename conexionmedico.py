@@ -7,7 +7,7 @@ def obtener_conexion():
             host="localhost",
             user="Gaspar",
             password="yarco7mysql",
-            database="hospital"
+            database="recupero_obra_social"
         )
         return conexion
     except mysql.connector.Error as err:
