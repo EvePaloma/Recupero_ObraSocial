@@ -4,6 +4,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import mysql.connector
 from ConexionBD import obtener_conexion
+import re
 
 class Gestion_Obra_Social(Frame):
     def __init__(self, master):
@@ -14,7 +15,7 @@ class Gestion_Obra_Social(Frame):
         self.createWidgets()
         self.actualizar_treeview()
         # Sobrescribe el protocolo de cierre de la ventana
-        self.master.protocol("WM_DELETE_WINDOW", lambda: None)
+        #self.master.protocol("WM_DELETE_WINDOW", lambda: None)
 
     def volver_menu_principal(self):
         from Menu import MENU
@@ -27,7 +28,8 @@ class Gestion_Obra_Social(Frame):
         menu.mainloop()
 
     def solo_letras_numeros(self, char):
-        return char.isalpha() or char == " " or char.isdigit()
+        #return char.isalnum() or char in [" ", "-", "."]
+        return bool(re.match(r'^[a-zA-Z0-9.\- ]*$', char))
     def solo_numeros(self, char):
         return char.isdigit() or char == "-"
     def conectar_tabla(self, tabla):
@@ -332,22 +334,23 @@ class Gestion_Obra_Social(Frame):
             btn_guardar.config(state="normal")
             self.combo_valores.config(state="readonly")
             self.combo_valores_2.config(state="readonly")  
+            self.texto.config(state="normal")
 
         ventana = Toplevel(self)
         ventana.title("Detalles de obra social")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
-        ventana.geometry("600x450+400+160")
+        ventana.geometry("650x450+400+160")
         print(obra_social)
 
-        validar_letynum = ventana.register(self.solo_letras_numeros)
-        validar_numeros = ventana.register(self.solo_numeros)
-
-        frame_detalles = LabelFrame(ventana, text="Detalles de obra social", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
+        frame_detalles = LabelFrame(ventana, text="Detalles de obra social", font=("Robot", 10), bg="#c9c2b2")
         frame_detalles.pack(padx=10, pady=10)
 
         frame_btns = Frame(ventana, bg="#e4c09f")
         frame_btns.pack(pady=8, padx=10)
+
+        validar_letynum = ventana.register(self.solo_letras_numeros)
+        validar_numeros = ventana.register(self.solo_numeros)
 
         campos = ["Nombre", "Siglas", "Teléfono", "Detalle", "Domicilio Casa Central", "Domicilio Carlos Paz", "CUIT", "Carácter de AFIP", "Estado"]
         valores = list(obra_social)
@@ -360,7 +363,7 @@ class Gestion_Obra_Social(Frame):
                 print(lista) 
                 # Crear un diccionario para buscar el ID por el nombre
                 self.datos_tabla = {dato[1]: dato[0] for dato in lista} 
-                self.combo_valores = ttk.Combobox(frame_detalles, width=38, font=("Robot", 10), state="disabled")
+                self.combo_valores = ttk.Combobox(frame_detalles, width=39, font=("Robot", 10), state="disabled")
                 self.combo_valores['values'] = list(self.datos_tabla.keys())
                 self.combo_valores.grid(row=i, column=1, padx=10, pady=5)
                 #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
@@ -369,31 +372,34 @@ class Gestion_Obra_Social(Frame):
                 self.combo_valores.set(clave_encontrada)
             elif campo == "Estado":
                 lista = self.conectar_tabla("estado")
-                print(lista)
                 # Crear un diccionario para buscar el ID por el nombre
                 self.datos_tabla_1 = {dato[1]: dato[0] for dato in lista} 
-                self.combo_valores_2 = ttk.Combobox(frame_detalles, width=38, font=("Robot", 10), state="disabled")
+                self.combo_valores_2 = ttk.Combobox(frame_detalles, width=39, font=("Robot", 10), state="disabled")
                 self.combo_valores_2['values'] = list(self.datos_tabla_1.keys())
                 self.combo_valores_2.grid(row=i, column=1, padx=10, pady=5)
                 #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
                 valor_a_buscar = valores[i+1]
                 clave_encontrada = next((clave for clave, valor in self.datos_tabla_1.items() if valor == valor_a_buscar), None)
                 self.combo_valores_2.set(clave_encontrada)
+            elif campo == "Detalle":
+                self.texto = Text(frame_detalles, height=3, width=42, wrap='word', font=("Robot", 10))
+                self.texto.insert("1.0", valores[i+1])
+                self.texto.grid(row=i, column=1, padx=10, pady=5)
             else:
-                entry = Entry(frame_detalles, width=40, font=("Robot", 10))
-                if campo in ["Nombre", "Siglas"]:
-                    entry.config(validate="key", validatecommand=(validar_letynum, '%S'))
-                """if campo in ["Teléfono", "CUIT"]:
+                entry = Entry(frame_detalles, width=42, font=("Robot", 10))
+                """if campo in ["Nombre", "Siglas"]:
+                    entry.config(validate="key", validatecommand= validar_letynum)
+                if campo in ["Teléfono", "CUIT"]:
                     entry.config(validate="key", validatecommand=(validar_numeros, '%S'))"""
                 entry.grid(row=i, column=1, padx=10, pady=5)
                 if i + 1 < len(valores):
-                    entry.insert(0,str(valores[i + 1]))
+                    entry.insert(0,str(valores[i + 1]).upper())
             entradas[campo] = entry
 
         if modo == "ver":
             for entry in entradas.values():
                 entry.config(state="readonly")
-
+            self.texto.config(state="disabled")
             self.combo_valores.config(state="disabled")
             self.combo_valores_2.config(state="disabled")
 
@@ -424,10 +430,11 @@ class Gestion_Obra_Social(Frame):
         if conexion is None:
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
+            
         nuevos_valores = {campo: entradas[campo].get().upper() for campo in entradas}
+        nuevos_valores['Detalle'] = self.texto.get("1.0", "end-1c").upper() 
         nuevos_valores['Carácter de AFIP'] = self.on_seleccion("Carácter de AFIP")
         nuevos_valores['Estado'] = self.on_seleccion("Estado")
-        print("nuevos valores ", nuevos_valores)
         # Asegúrate de que 'seleccion' no sea None y tenga un valor válido
         if seleccion :
             try:
