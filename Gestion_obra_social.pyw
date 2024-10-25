@@ -29,7 +29,7 @@ class Gestion_Obra_Social(Frame):
     def solo_letras_numeros(self, char):
         return char.isalpha() or char == " " or char.isdigit()
     def solo_numeros(self, char):
-        return char.isdigit()
+        return char.isdigit() or char == "-"
     def conectar_tabla(self, tabla):
             conexion = obtener_conexion()  # Llama a la función que establece la conexión
             if conexion is None:
@@ -83,7 +83,7 @@ class Gestion_Obra_Social(Frame):
         cursor.execute("SELECT * FROM obra_social where activo = 1")
         lista = cursor.fetchall()
         for os in lista:
-            self.tree.insert("", "0", iid=os[0], values=os[1:])
+            self.tree.insert("", "0", iid=os[0], values= (os[1], os[2], os[7]))
         cursor.close()
         conexion.close()
 
@@ -102,6 +102,30 @@ class Gestion_Obra_Social(Frame):
         finally:
             cursor.close()
             conexion.close()
+
+    def validar_repetidos(self, nombre, siglas):
+        conexion = obtener_conexion()
+        if conexion is None:
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
+        try:
+            cursor = conexion.cursor()
+            sentencia = "SELECT COUNT(*) FROM obra_social WHERE nombre = %s OR siglas = %s"
+            cursor.execute(sentencia, (nombre, siglas))
+            resultado = cursor.fetchone()
+            cursor.close()
+            conexion.close()
+            if resultado[0] > 0:
+                return False
+            return True
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}")
+            if cursor:
+                cursor.close()
+            if conexion:
+                conexion.close()
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
 
     def createWidgets(self):
         contenedor_total = Frame(self, bg="#c9c2b2", height= 800)
@@ -194,7 +218,7 @@ class Gestion_Obra_Social(Frame):
         btn_volver = Button(frame_btn, text="Volver", width=15 ,font=("Robot",15), bg="#e6c885", command=self.volver_menu_principal)
         btn_volver.grid(row=0, column=4, padx=50)
 
-    #Agregar pbra social a la base de datos.
+    #Agregar obra social a la base de datos.
     def agregar_obra_social(self):
         ventana_agregar = Toplevel(self)
         ventana_agregar.title("Agregar Obra Social")
@@ -254,28 +278,31 @@ class Gestion_Obra_Social(Frame):
         domicilio_central = entry["Domicilio Casa Central"].get().upper()
         domicilio_cp = entry["Domicilio Carlos Paz"].get().upper()
         cuit = entry["CUIT"].get()
-        id_afip = self.dato_afip
-        print(nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit, id_afip)
+        id_afip = self.on_seleccion("Carácter de AFIP")
 
-        # Validar datos y agregar al Treeview
-        if nombre and siglas and telefono and cuit:
-            try:
-                cursor = conexion.cursor()
-                sql = "INSERT INTO obra_social (nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit, id_afip) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-                val = (nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit, id_afip)
-                cursor.execute(sql, val)
-                conexion.commit()
-                messagebox.showinfo("Información", "Obra social agregada exitosamente")
-                self.tree.insert("", 0, values=(nombre, siglas, cuit))
-                ventana.destroy()
-                self.actualizar_treeview()
-            except mysql.connector.Error as error:
-                messagebox.showerror("Error", f"No se pudo agregar el obra social: {error}")
-            finally:
-                cursor.close()
-                conexion.close()
+        if not self.validar_repetidos(nombre, siglas):
+            messagebox.showerror("Error", "El nombre o las siglas ya existen en la base de datos.")
         else:
-            messagebox.showwarning("Atención", "Complete todos los campos.")
+            # Validar datos y agregar al Treeview
+            if nombre and siglas and telefono and cuit:
+                try:
+                    cursor = conexion.cursor()
+                    sql = "INSERT INTO obra_social (nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit, id_afip) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                    val = (nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit, id_afip)
+                    cursor.execute(sql, val)
+                    conexion.commit()
+                    cursor.close()
+                    messagebox.showinfo("Información", "Obra social agregada exitosamente")
+                    self.tree.insert("", 0, values=(nombre, siglas, cuit))
+                    ventana.destroy()
+                    self.actualizar_treeview()
+                except mysql.connector.Error as error:
+                    messagebox.showerror("Error", f"No se pudo agregar la obra social: {error}")
+                finally:
+                    cursor.close()
+                    conexion.close()
+            else:
+                messagebox.showwarning("Atención", "Complete todos los campos.")
 
     #Ver datos de las obras sociales
     def ver_obra_social(self):
@@ -356,8 +383,8 @@ class Gestion_Obra_Social(Frame):
                 entry = Entry(frame_detalles, width=40, font=("Robot", 10))
                 if campo in ["Nombre", "Siglas"]:
                     entry.config(validate="key", validatecommand=(validar_letynum, '%S'))
-                if campo in ["Teléfono", "CUIT"]:
-                    entry.config(validate="key", validatecommand=(validar_numeros, '%S'))
+                """if campo in ["Teléfono", "CUIT"]:
+                    entry.config(validate="key", validatecommand=(validar_numeros, '%S'))"""
                 entry.grid(row=i, column=1, padx=10, pady=5)
                 if i + 1 < len(valores):
                     entry.insert(0,str(valores[i + 1]))
@@ -402,7 +429,7 @@ class Gestion_Obra_Social(Frame):
         nuevos_valores['Estado'] = self.on_seleccion("Estado")
         print("nuevos valores ", nuevos_valores)
         # Asegúrate de que 'seleccion' no sea None y tenga un valor válido
-        if seleccion:
+        if seleccion :
             try:
                 cursor = conexion.cursor()
                 sql = "UPDATE obra_social SET nombre = %s, siglas = %s, telefono = %s, detalle = %s, domicilio_central = %s, domicilio_cp = %s, cuit = %s, id_afip = %s, activo = %s WHERE id_obra_social=%s"
@@ -419,7 +446,6 @@ class Gestion_Obra_Social(Frame):
                     seleccion  # Usa el ID original del obra_social que estás modificando
                 )
                 obligatorios = ['nombre', 'siglas', 'telefono', 'cuit', 'id_afip']
-
                 if any(elemento  == "" for elemento in obligatorios):
                     messagebox.showerror("Error", "Hay campos obligatorios vacíos.")
                     return
@@ -504,9 +530,9 @@ class Gestion_Obra_Social(Frame):
             for valores in coincidencias:
                 self.tree.insert('', 'end', values=valores)
 
-"""ventana = Tk()
+ventana = Tk()
 ventana.title("Gestion de obra_socials")
 ventana.resizable(False,False)
 ventana.geometry("+0+0")
 root = Gestion_Obra_Social(ventana)
-ventana.mainloop()"""
+ventana.mainloop()
