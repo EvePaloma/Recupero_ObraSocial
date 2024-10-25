@@ -334,7 +334,7 @@ class Gestion_Obra_Social(Frame):
             btn_guardar.config(state="normal")
             self.combo_valores.config(state="readonly")
             self.combo_valores_2.config(state="readonly")  
-            texto.config(state="normal")
+            self.texto.config(state="normal")
 
         ventana = Toplevel(self)
         ventana.title("Detalles de obra social")
@@ -382,11 +382,9 @@ class Gestion_Obra_Social(Frame):
                 clave_encontrada = next((clave for clave, valor in self.datos_tabla_1.items() if valor == valor_a_buscar), None)
                 self.combo_valores_2.set(clave_encontrada)
             elif campo == "Detalle":
-                texto = Text(frame_detalles, height=3, width=42, wrap='word', font=("Robot", 10))
-                texto.insert("1.0", valores[i+1])
-                texto.grid(row=i, column=1, padx=10, pady=5)
-                entradas[campo] = texto
-                print(texto.get("1.0", "end-1c"))
+                self.texto = Text(frame_detalles, height=3, width=42, wrap='word', font=("Robot", 10))
+                self.texto.insert("1.0", valores[i+1])
+                self.texto.grid(row=i, column=1, padx=10, pady=5)
             else:
                 entry = Entry(frame_detalles, width=42, font=("Robot", 10))
                 """if campo in ["Nombre", "Siglas"]:
@@ -401,7 +399,7 @@ class Gestion_Obra_Social(Frame):
         if modo == "ver":
             for entry in entradas.values():
                 entry.config(state="readonly")
-            texto.config(state="disabled")
+            self.texto.config(state="disabled")
             self.combo_valores.config(state="disabled")
             self.combo_valores_2.config(state="disabled")
 
@@ -432,17 +430,11 @@ class Gestion_Obra_Social(Frame):
         if conexion is None:
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
-
-        for campo in entradas.items():
-            if isinstance(widget, Text):  # Si es un Text widget
-                nuevos_valores[campo] = widget.get("1.0", "end-1c").upper()  # Obtener el texto completo
-            else:  # Si es un Entry widget
-                nuevos_valores[campo] = widget.get().upper()
-
+            
         nuevos_valores = {campo: entradas[campo].get().upper() for campo in entradas}
+        nuevos_valores['Detalle'] = self.texto.get("1.0", "end-1c").upper() 
         nuevos_valores['Carácter de AFIP'] = self.on_seleccion("Carácter de AFIP")
         nuevos_valores['Estado'] = self.on_seleccion("Estado")
-        print("nuevos valores ", nuevos_valores)
         # Asegúrate de que 'seleccion' no sea None y tenga un valor válido
         if seleccion :
             try:
