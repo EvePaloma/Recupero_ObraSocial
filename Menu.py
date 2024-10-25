@@ -3,6 +3,8 @@ from tkinter import messagebox
 from tkinter import ttk
 from Gestion_Tratamiento import *   
 from Gestion_obra_social import *
+from Gestion_Medico_completa import *
+from conexionmedico import *
 
 class MENU(Frame):
     def __init__(self, master):
@@ -31,6 +33,15 @@ class MENU(Frame):
         ventana.geometry("+0+0")
         root = Gestion_Obra_Social(ventana)
         ventana.mainloop()
+
+    def abrir_medico(self):
+        self.master.destroy()
+        ventana = Tk()
+        ventana.wm_title("Gestión de Médicos")
+        ventana.wm_resizable(0,0)
+        ventana.geometry("+30+15")
+        entradas = Gestionmedico(ventana)
+        entradas.mainloop()
 
     def volver_login(self):
         self.master.destroy()
@@ -62,7 +73,7 @@ class MENU(Frame):
         btn_paciente = Button(menu, text="Gestión de Paciente", font=("Roboto", 15), bg="#e4c09f", width=96)
         btn_paciente.grid(row=2, column=0, pady=(0, 20))
 
-        btn_medico = Button(menu, text="Gestión de Médico", font=("Roboto", 15), bg="#e4c09f", width=96)
+        btn_medico = Button(menu, text="Gestión de Médico", font=("Roboto", 15), bg="#e4c09f", width=96,command=self.abrir_medico)
         btn_medico.grid(row=3, column=0, pady=(0, 20))
 
         btn_obra_social = Button(menu, text="Gestión de Obra Social", font=("Roboto", 15), bg="#e4c09f", width=96, command=self.abrir_obra_social)
@@ -75,10 +86,10 @@ class MENU(Frame):
         btn_ficha.grid(row=6, column=0, pady=(0, 20))
 
 
-"""if __name__ == "__main__":
+if __name__ == "__main__":
     ventana = Tk()
     ventana.wm_title("Menú Recupero de Obra Social")
     ventana.wm_resizable(0,0)
     ventana.geometry("+30+15")
     menu = MENU(ventana)
-    menu.mainloop()"""
+    menu.mainloop()
