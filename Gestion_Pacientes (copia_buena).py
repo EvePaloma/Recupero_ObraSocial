@@ -23,6 +23,7 @@ class GestionPaciente(Frame):
         self.master = master
         self.grid()
         self.createWidgets()
+        #self.actualizar_treeview()
     
 
     def solo_letras(self, char):
@@ -33,7 +34,7 @@ class GestionPaciente(Frame):
 
 
     def createWidgets(self):
-        frame_pacientes = LabelFrame(self, text="Gestión de Pacientes", font=("Robot",10),padx=10, pady=10, bg="#c9c2b2")
+        frame_pacientes = LabelFrame(self, text="Gestión de Pacientes", font=("Roboto",10),padx=10, pady=10, bg="#c9c2b2")
         frame_pacientes.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         #Carga la imagen de fondo
@@ -58,6 +59,7 @@ class GestionPaciente(Frame):
 
         img_buscar = Image.open("buscar1.png").resize((30, 30), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
+
         btn_buscar = Button(frame_busqueda, image=img_buscar, width=30, height=30,bg="#e6c885", 
                             command=self.buscar_paciente)
         btn_buscar.grid(row=1, column=3)
@@ -358,6 +360,8 @@ class GestionPaciente(Frame):
             self.tree.delete(*self.tree.get_children())
             self.cargar_paciente()
             return
+        
+        paciente_encontrado = False
 
         try:
             conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
@@ -375,7 +379,7 @@ class GestionPaciente(Frame):
             for paciente in pacientes:
                 self.tree.insert("", "end", values=paciente)
             
-            if not pacientes:
+            if not paciente_encontrado:
                 messagebox.showwarning("Atención", "No se encontró el paciente.")
         except mysql.connector.Error as err:
             messagebox.showerror("Error", f"Error al buscar el paciente: {err}")

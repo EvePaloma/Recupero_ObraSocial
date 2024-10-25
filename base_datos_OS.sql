@@ -175,3 +175,4 @@ CREATE TABLE `detalle_ficha` (
   FOREIGN KEY (`id_ficha`) REFERENCES `ficha` (`id_ficha`),
   FOREIGN KEY (`id_tratamiento`) REFERENCES `tratamiento` (`id_tratamiento`)
 );
+

@@ -362,7 +362,6 @@ class GestionPaciente(Frame):
        
             
         if not paciente_encontrado:
-
             messagebox.showwarning("Atención", "No se encontró el paciente.")
 
     def cargar_paciente(self):
