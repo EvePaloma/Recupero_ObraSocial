@@ -162,6 +162,10 @@ class Gestionmedico(Frame):
         )
         btn_eliminar.grid(row=4, column=3, padx=50)
 
+    def actualizar_treeview(self):
+        self.tree.delete(*self.tree.get_children())
+        self.cargar_medicos()
+
     def agregar_medico(self):
         ventana_agregar = Toplevel(self)
         ventana_agregar.title("Agregar medico")
@@ -205,6 +209,8 @@ class Gestionmedico(Frame):
             command=lambda: self.guardar_nuevo_medico(entradas, ventana_agregar),
         )
         btn_nuevo_medico.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
+        self.actualizar_treeview()
+        
 
     def ver_medico(self):
         seleccion = self.tree.selection()
@@ -225,6 +231,7 @@ class Gestionmedico(Frame):
 
         medico_seleccionado = self.tree.item(seleccion[0], "values")
         self.abrir_ventana_medico(medico_seleccionado, seleccion[0], modo="modificar")
+        self.actualizar_treeview()
 
     def abrir_ventana_medico(self, medico, id_seleccionado, modo="ver"):
         ventana = Toplevel(self)
@@ -326,6 +333,9 @@ class Gestionmedico(Frame):
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
 
+        self.actualizar_treeview()
+
+
     def eliminar_medico(self):
         seleccion = self.tree.selection()
         if not seleccion:
@@ -350,6 +360,8 @@ class Gestionmedico(Frame):
                 if conexion.is_connected():
                     cursor.close()
                     conexion.close()
+        
+        self.actualizar_treeview()
 
 
     def guardar_nuevo_medico(self, entradas, ventana):
@@ -383,8 +395,8 @@ class Gestionmedico(Frame):
 
         for item in self.tree.get_children():
             valores = self.tree.item(item, 'values')
-            nombre = valores[0].lower()
-            apellido = valores[1].lower()
+            nombre = valores[1].lower()
+            apellido = valores[2].lower()
 
             if busqueda in nombre or busqueda in apellido:
                 medico_encontrado = True
