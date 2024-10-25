@@ -24,7 +24,6 @@ def insertar_medico(nombre, apellido, matricula, telefono, documento):
         val = (nombre, apellido, matricula, telefono, documento)
         cursor.execute(sql, val)
         conexion.commit()
-        messagebox.showinfo("Éxito", "Registro insertado correctamente.")
     except mysql.connector.Error as err:
         messagebox.showerror("Error", f"Error al insertar en la base de datos: {err}")
     finally:
