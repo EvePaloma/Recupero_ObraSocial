@@ -32,7 +32,6 @@ class GestionPaciente(Frame):
         return char.isdigit()
 
 
-
     def createWidgets(self):
         frame_pacientes = LabelFrame(self, text="Gestión de Pacientes", font=("Robot",10),padx=10, pady=10, bg="#c9c2b2")
         frame_pacientes.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")

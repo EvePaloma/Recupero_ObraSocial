@@ -237,10 +237,10 @@ class GestionFicha(Frame):
             conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
             cursor = conexion.cursor()
             query = """
-            UPDATE ficha
+            UPDATE paciente
             SET nombre = %s, apellido = %s, dni = %s, obra_social = %s, propietario = %s, telefono = %s, nro_afiliado = %s, nombre_medico = %s, apellido_medico = %s, especialidad = %s, tipo_matricula = %s,
             matricula = %s, servicio = %s, fecha = %s, codigo = %s, nombre_procedimiento = %s, precio = %s, tipo_tratamiento = %s, siglas = %s
-            WHERE id_ficha = %s
+            WHERE id_paciente = %s
             """
             cursor.execute(query, (
                 nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["DNI"], nuevos_valores["Obra Social"],
