@@ -109,6 +109,8 @@ class GestionTratamiento(Frame):
                             command=self.volver_menu_principal)
         btn_volver.grid(row=4, column=4, padx=50)
 
+    def solo_numeros(self, num):
+        return num.isdigit()
 
     def conectar_tabla(self, tabla):
             conexion = obtener_conexion()  # Llama a la función que establece la conexión
@@ -147,6 +149,7 @@ class GestionTratamiento(Frame):
         except Exception as e:
             messagebox.showerror("Error", str(e))
             return None
+        
 
     def agregar_tratamiento(self):
         ventana_agregar = Toplevel(self)
@@ -165,15 +168,27 @@ class GestionTratamiento(Frame):
         for i, campo in enumerate(campos):     #Devuelve índice y valor de cada elemento 
             etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
             etiquetas.grid(row=i, column=0, padx=10, pady=5)
+
             entry = Entry(frame_agregar, width=40, font=("Robot", 10))
             entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
+
+            if campo == "Precio":
+                solo_num = ventana_agregar.register(self.solo_numeros)
+                entry.config(validate="key", validatecommand=(solo_num, "%S"))
+
+            #Configura marcador de posición para el campo "Fecha Precio"
+            if campo == "Fecha Precio":
+                entry.insert(0, "AAAA-MM-DD")  #Agrega marcador de posición
+                entry.config(fg="gray")
+                entry.bind("<FocusIn>", lambda event, e=entry: self.limpiar_marcador(e))
+                entry.bind("<FocusOut>", lambda event, e=entry: self.restaurar_marcador(e))
 
         frame_btns = Frame(ventana_agregar, bg="#e4c09f")
         frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
         btn_nuevo_tratamiento = Button(frame_btns, text="Agregar", font=("Robot", 13),bg="#e6c885", width=15, 
-                                       command=lambda:self.validar_campos(entradas) and  self.guardar_nuevo_tratamiento(entradas, ventana_agregar))
+                                       command=lambda:self.validar_campos(entradas) and self.guardar_nuevo_tratamiento(entradas))
         btn_nuevo_tratamiento.grid(row=len(campos), column=0, padx=40, pady=10)
 
         btn_volver = Button(frame_btns, text="Volver", font=("Robot", 13),bg="#e6c885", width=15,
@@ -302,7 +317,9 @@ class GestionTratamiento(Frame):
                     campos_vacios.append(campo)
                 elif campo == "Precio":
                     try:
-                        float(valor)
+                        precio = float(valor)
+                        if precio <= 0:
+                            messagebox.showerror("El precio debe ser mayor que 0.")
                     except ValueError:
                         messagebox.showerror("Error", "El campo 'Precio' debe ser un número válido.")
                         return False
@@ -318,6 +335,16 @@ class GestionTratamiento(Frame):
                 messagebox.showinfo("Éxito","Tratamiento agregado correctamente.")
                 return True
 
+    def limpiar_marcador(self, entry):
+        if entry.get() == "AAAA-MM-DD":
+            entry.delete(0, "end")
+            entry.config(fg="black")
+
+    def restaurar_marcador(self,entry):
+        if not entry.get():
+            entry.insert(0, "AAAA-MM-DD")
+            entry.config(fg="gray")
+
     def guardar_cambios(self, entradas, ventana,seleccion):
         conexion = obtener_conexion()
         if conexion is None:
@@ -326,6 +353,7 @@ class GestionTratamiento(Frame):
         nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
         nuevos_valores["Estado"] = self.on_seleccion("Estado")
         print(nuevos_valores)
+       
         if seleccion:
             try:
                 cursor = conexion.cursor()
@@ -390,24 +418,30 @@ class GestionTratamiento(Frame):
         fecha_precio = entry["Fecha Precio"].get()
         siglas = entry["Siglas"].get()
         descripcion = entry["Descripción"].get()
+        
+        if not self.fecha_valida(fecha_precio):
+            messagebox.showerror("Error", "El campo 'Fecha Precio' debe tener el formato 'YYYY-MM-DD'.")
+            return
+        
         #Validar datos y agregar al Treeview
-        if codigo and nombre and precio and fecha_precio  and siglas and descripcion:
-            try:
-                cursor = conexion.cursor()
-                sql = "INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, siglas, descripcion) VALUES (%s, %s, %s, %s, %s, %s)"
-                val = (codigo, nombre, precio, fecha_precio, siglas, descripcion)
-                cursor.execute(sql, val)
-                conexion.commit()
-                messagebox.showinfo("Información", "Tratamiento agregado exitosamente")
-                self.tree.insert("", 0, values=(codigo, nombre, precio))
-                self.actualizar_treeview()
-            except mysql.connector.Error as error:
-                messagebox.showerror("Error", f"No se pudo agregar el tratamiento: {error}")
-            finally:
-                cursor.close()
-                conexion.close()   
-        else:
+        if not all([codigo, nombre, precio, fecha_precio, siglas, descripcion]):
             messagebox.showwarning("Atención", "Complete todos los campos.")
+            return
+        try:
+            cursor = conexion.cursor()
+            sql = "INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, siglas, descripcion) VALUES (%s, %s, %s, %s, %s, %s)"
+            val = (codigo, nombre, precio, fecha_precio, siglas, descripcion)
+            cursor.execute(sql, val)
+            conexion.commit()
+            messagebox.showinfo("Información", "Tratamiento agregado exitosamente")
+            self.tree.insert("", 0, values=(codigo, nombre, precio))
+            self.actualizar_treeview()
+        except mysql.connector.Error as error:
+            messagebox.showerror("Error", f"No se pudo agregar el tratamiento: {error}")  
+        finally:
+            cursor.close()
+            conexion.close()   
+    
 
     
     def actualizar_treeview(self):
@@ -480,6 +514,7 @@ class GestionTratamiento(Frame):
             datetime.strptime(fecha, "%Y-%m-%d")
             return True
         except ValueError:
+            messagebox.showerror("Error", "El campo 'Fecha Precio' debe tener el formato 'YYYY-MM-DD'.")
             return False
 
 
