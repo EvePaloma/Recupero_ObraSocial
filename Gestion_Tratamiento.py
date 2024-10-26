@@ -427,16 +427,18 @@ class GestionTratamiento(Frame):
             messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento.")
             return
 
-        tratamiento_seleccionado = self.tree.item(seleccion[0], "values")
-        id_tratamiento = tratamiento_seleccionado[0]  # Asumiendo que el ID es el primer valor
-
+        #tratamiento_seleccionado = self.tree.item(seleccion[0], "values")
+        id_tratamiento = seleccion[0]  # Asumiendo que el ID es el primer valor
+        print(f"ID del tratamiento a eliminar: {id_tratamiento}")
         respuesta = messagebox.askyesno("Confirmar", "¿Está seguro de que desea eliminar este tratamiento?")
         if respuesta:
             try:
                 conexion = obtener_conexion()
                 cursor = conexion.cursor()
+                print(f"ID del tratamiento a eliminar: {id_tratamiento}")  # Mensaje de depuración
                 cursor.execute("UPDATE tratamiento SET activo = 0 WHERE id_tratamiento = %s", (id_tratamiento,))
                 conexion.commit()
+                print("Tratamiento marcado como inactivo en la base de datos.")  # Mensaje de depuración
                 messagebox.showinfo("Éxito", "Tratamiento eliminado correctamente.")
                 self.tree.delete(seleccion[0])  # Eliminar de la interfaz
             except mysql.connector.Error as err:
@@ -487,14 +489,15 @@ class GestionTratamiento(Frame):
         cursor = conexion.cursor()
         seleccion = self.combo_activos.get()
         if seleccion == "Activos":
-            cursor.execute("SELECT * FROM tratamiento WHERE activo = 1")
+            cursor.execute("SELECT * FROM tratamiento where activo = 1")
         elif seleccion == "Inactivos":
-            cursor.execute("SELECT * FROM tratamiento WHERE activo = 0")
+            cursor.execute("SELECT * FROM tratamiento where activo = 0")
         elif seleccion == "Todos":
             cursor.execute("SELECT * FROM tratamiento")
         tratamientos = cursor.fetchall()
         for tratamiento in tratamientos:
             self.tree.insert("", "0", iid=tratamiento[0], values=tratamiento[1:])
+        
         cursor.close()
         conexion.close()
     
