@@ -280,6 +280,8 @@ class Gestion_Obra_Social(Frame):
         
         btn_cancelar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=ventana_agregar.destroy)
         btn_cancelar.grid(row=len(campos), column=1, padx= 40, pady=10)
+
+        ventana_agregar.mainloop()
     
     def guardar_nueva_obra_social(self, entry, ventana):
         conexion = obtener_conexion()
@@ -551,9 +553,9 @@ class Gestion_Obra_Social(Frame):
             for valores in coincidencias:
                 self.tree.insert('', 'end', values=valores)
 
-ventana = Tk()
+"""ventana = Tk()
 ventana.title("Gestion de obra_socials")
 ventana.resizable(False,False)
 ventana.geometry("+0+0")
 root = Gestion_Obra_Social(ventana)
-ventana.mainloop()
+ventana.mainloop()"""
