@@ -25,7 +25,7 @@ class GestionTratamiento(Frame):
         frame_tratamientos.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         #Carga la imagen de fondo
-        img_fondo = Image.open("fondo3.png")
+        img_fondo = Image.open("Logos_MVCP_Web.jpg")
         img_fondo = img_fondo.resize((1250, 200), Image.Resampling.LANCZOS)
         self.img_fondo = ImageTk.PhotoImage(img_fondo)
 
@@ -36,6 +36,11 @@ class GestionTratamiento(Frame):
         #Frame más chico para label y entry de búsqueda
         frame_busqueda = Frame(frame_tratamientos, bg="#e6c885")
         frame_busqueda.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="w")
+
+        self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 14), state="readonly")
+        self.combo_activos['values'] = ("Activos", "Inactivos", "Todos")
+        self.combo_activos.set("Activos")
+        self.combo_activos.grid(row=1, column=4, padx=20, pady=3)
 
         #Widgets de búsqueda dentro del frame más chico
         etiqueta_buscar = Label(frame_busqueda, text="Buscar:", bg="#e6c885",font=("Robot",13))
@@ -230,7 +235,7 @@ class GestionTratamiento(Frame):
         ventana.title("Detalles del Tratamiento")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
-        ventana.geometry("510x345+400+160")
+        ventana.geometry("510x360+400+160")
         ventana.protocol("WM_DELETE_WINDOW", lambda: None)
         
         ventana.grid_columnconfigure(0, weight=2)
@@ -471,11 +476,16 @@ class GestionTratamiento(Frame):
             self.tree.delete(item)
         conexion = obtener_conexion()
         cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM tratamiento")
+        seleccion = self.combo_activos.get()
+        if seleccion == "Activos":
+            cursor.execute("SELECT * FROM tratamiento WHERE activo = 1")
+        elif seleccion == "Inactivos":
+            cursor.execute("SELECT * FROM tratamiento WHERE activo = 0")
+        elif seleccion == "Todos":
+            cursor.execute("SELECT * FROM tratamiento")
         tratamientos = cursor.fetchall()
         for tratamiento in tratamientos:
             self.tree.insert("", "0", iid=tratamiento[0], values=tratamiento[1:])
-        
         cursor.close()
         conexion.close()
     

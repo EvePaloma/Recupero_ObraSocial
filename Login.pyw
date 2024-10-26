@@ -182,15 +182,15 @@ class Login(Frame):
         contenedor_titulo.pack(pady= 50)
 
         # Cargar la imagen de fondo
-        img_fondo = Image.open("fondo3.png")
+        img_fondo = Image.open("Logos_MVCP_Web.jpg")
         img_fondo = img_fondo.resize((700, 150), Image.Resampling.LANCZOS)
         self.img_fondo = ImageTk.PhotoImage(img_fondo)
         # Crear un Label para la imagen de fondo
         fondo_label = Label(contenedor_titulo, image=self.img_fondo)
         fondo_label.pack(expand=True, fill="both")
         # Crear un Label para el texto y colocarlo encima del Label de la imagen
-        texto_label = Label(contenedor_titulo, text="INICIO DE SESIÓN", font=("Robot", 20), bg="Black", fg="White")
-        texto_label.place(relx=0.5, rely=0.5, anchor="center")
+        #texto_label = Label(contenedor_titulo, text="INICIO DE SESIÓN", font=("Robot", 20), bg="Black", fg="White")
+        #texto_label.place(relx=0.5, rely=0.5, anchor="center")
 
         Label(contenedor_total, text="Ingrese usuario", padx=10, pady=10,font=("Robot",15), bg="#c9c2b2").pack()
         self.usario = Entry(contenedor_total, font=("Robot",15), width=30)
