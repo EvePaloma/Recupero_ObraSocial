@@ -13,6 +13,70 @@ class GestionFicha(Frame):
         self.pack(expand=True)
         self.createWidgets()
 
+    def buscar_elemento_paciente(self, elemento):
+        conexion = obtener_conexion()  # Llama a la función que establece la conexión
+        if conexion is None:
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
+        try:
+            cursor = conexion.cursor()
+            sentencia = "SELECT COUNT(*) from paciente WHERE documento = %s"
+            cursor.execute(sentencia, (elemento,))
+            resultado = cursor.fetchall()
+            cursor.close()
+            conexion.close()
+            print(resultado)
+            return resultado[0]
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}")
+            if cursor:
+                cursor.close()
+            if conexion:
+                conexion.close()
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
+
+    def obtener_paciente(self, elemento):
+        conexion = obtener_conexion()
+        print(elemento)
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT * FROM paciente WHERE documento = %s", (elemento,))
+            paciente = cursor.fetchall()
+            print(paciente)
+            if paciente is None:
+                messagebox.showwarning("Advertencia", "No se encontró ningún paciente con ese DNI.")
+            return paciente
+        except mysql.connector.Error as error:
+            messagebox.showerror("Error", f"No se pudo recuperar el paciente: {error}")
+        finally:
+            cursor.close()
+            conexion.close()
+    
+    def buscar_elemento(self):
+        busqueda = self.buscar_paciente.get()
+        cantidad = len(busqueda)  # Asegúrate de obtener el valor sin espacios en blanco
+        if busqueda:
+            if cantidad == 0:
+                messagebox.showwarning("Atención", "No se encontró el paciente.1")
+                return
+            if cantidad == 1:
+                campos= ["Nombre", "Apellido", "DNI"]
+                valores = list(self.obtener_paciente(busqueda))
+                for campo in campos:
+                    Label(frame_datos_pacientes, text=campos_abajo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=2, column=j, padx=10, sticky=W)
+                    entry = Entry(frame_datos_pacientes, width=40, font=("Robot", 12))
+                    entry.grid(row=3, column=j, padx=10)
+                    if campo == "DNI":
+                        entry.config(state="readonly")
+                        entry.insert(0, valores[5])
+                    elif campo == "Nombre":
+                        entry.insert(0, valores[1])
+                    elif campo == "Apellido":
+                        entry.insert(0, valores[2])
+        else:
+            print("La búsqueda está vacía.")
+
     def volver_menu_principal(self):
         from Menu import MENU
         self.master.destroy()
@@ -120,7 +184,8 @@ class GestionFicha(Frame):
         btn_volver = Button(frame_btn, text="Volver", width=15 ,font=("Robot",15), bg="#e6c885")
         btn_volver.grid(row=0, column=4, padx=50)
 
-    def agregar_ficha(self):
+    #AGREGAR NUEVA FICHA 
+    def agregar_ficha(self):        
         ventana_agregar = Toplevel(self)
         ventana_agregar.title("Agregar ficha")
         ventana_agregar.config(bg="#e4c09f") 
@@ -141,7 +206,7 @@ class GestionFicha(Frame):
         self.buscar_paciente.grid(row=0, column=2, padx=5, pady=2, sticky= W)
         img_buscar = Image.open("buscar1.png").resize((20, 20), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
-        btn_buscar = Button(frame_busqueda, image=img_buscar, width=25, height=25,bg="#e6c885")
+        btn_buscar = Button(frame_busqueda, image=img_buscar, width=25, height=25,bg="#e6c885", command=lambda: self.buscar_elemento())
         btn_buscar.grid(row=0, column=3, sticky= W)
         btn_buscar.image = img_buscar
 
@@ -177,8 +242,8 @@ class GestionFicha(Frame):
         frame_busqueda_medico = Frame(frame_medico, bg="#c9c2b2")
         frame_busqueda_medico.pack(fill="x", pady=5)
         Label(frame_busqueda_medico, text="Buscar:", bg="#c9c2b2",font=("Robot", 13)).grid(row=0, column=1, padx=5, pady=2, sticky= W)
-        self.buscar_paciente = Entry(frame_busqueda_medico, width=20,font=("Robot",12))
-        self.buscar_paciente.grid(row=0, column=2, padx=5, pady=2, sticky= W)
+        self.buscar_medico = Entry(frame_busqueda_medico, width=20,font=("Robot",12))
+        self.buscar_medico.grid(row=0, column=2, padx=5, pady=2, sticky= W)
         img_buscar = Image.open("buscar1.png").resize((20, 20), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
         btn_buscar = Button(frame_busqueda_medico, image=img_buscar, width=25, height=25,bg="#e6c885")
@@ -188,7 +253,7 @@ class GestionFicha(Frame):
         frame_busqueda_medico.columnconfigure(4, weight=2)
         frame_busqueda_medico.columnconfigure(5, weight=2)
 
-        btn_nuevo_medico = Button(frame_busqueda_medico, text="Agregar Médico", font=("Robot", 11, "bold"),bg="#e6c885", command=agregar_obra_social)
+        btn_nuevo_medico = Button(frame_busqueda_medico, text="Agregar Médico", font=("Robot", 11, "bold"),bg="#e6c885")
         btn_nuevo_medico.grid(row = 0, column=6, padx=15)
 
         #Frame para los datos del medico
@@ -210,8 +275,8 @@ class GestionFicha(Frame):
         buscar_tratamiento = Frame(frame_tratamiento, bg="#c9c2b2")
         buscar_tratamiento.pack(fill="x", pady=5)
         Label(buscar_tratamiento, text="Buscar:", bg="#c9c2b2",font=("Robot", 13)).grid(row=0, column=1, padx=5, pady=2, sticky= W)
-        self.buscar_paciente = Entry(buscar_tratamiento, width=20,font=("Robot",12))
-        self.buscar_paciente.grid(row=0, column=2, padx=5, pady=2, sticky= W)
+        self.buscar_tratamiento = Entry(buscar_tratamiento, width=20,font=("Robot",12))
+        self.buscar_tratamiento.grid(row=0, column=2, padx=5, pady=2, sticky= W)
         img_buscar = Image.open("buscar1.png").resize((20, 20), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
         btn_buscar = Button(buscar_tratamiento, image=img_buscar, width=25, height=25,bg="#e6c885")
