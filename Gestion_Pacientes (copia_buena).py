@@ -4,17 +4,6 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import mysql.connector
 from ConexionBDpaciente import *
-'''
-def Validar_entrada_letra(char):
-    if char.isdigit():
-        return True
-    return False
-
-def Validar_entrada_numero(char):
-    if char.isalpha():
-        return True
-    return False    
-'''
 
 
 class GestionPaciente(Frame):
@@ -23,6 +12,7 @@ class GestionPaciente(Frame):
         self.master = master
         self.grid()
         self.createWidgets()
+        self.cargar_paciente()
         #self.actualizar_treeview()
     
 
@@ -191,24 +181,33 @@ class GestionPaciente(Frame):
 
             if i < len(valores):
                 entry.insert(0, valores[i])
-            entradas[campo] = entry           
+            entradas[campo] = entry     
 
-            if modo == "ver":
-                entry.config(state="readonly")
-                btn_guardar = Button(ventana, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885",
+                # ComboBox for Estado
+        '''
+        etiqueta_estado = Label(frame_detalles, text="Estado:", bg="#c9c2b2", font=("Roboto", 10))
+        etiqueta_estado.grid(row=len(campos), column=0, padx=10, pady=5)
+        combo_estado = ttk.Combobox(frame_detalles, values=["1", "0"], width=37)
+        combo_estado.grid(row=len(campos), column=1, padx=10, pady=5)
+        combo_estado.set("1" if paciente[-1] == "1" else "0")
+        entradas["Estado"] = combo_estado     '''
+
+        if modo == "ver":
+            entry.config(state="readonly")
+            btn_guardar = Button(ventana, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885",
                                      command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
-                btn_guardar.grid(row=len(campos), column=0, pady=10)
-                btn_guardar.config(state="disabled")  # Initially disabled
+            btn_guardar.grid(row=len(campos), column=0, pady=10)
+            btn_guardar.config(state="disabled")  # Initially disabled
 
-                btn_editar = Button(ventana, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885",
+            btn_editar = Button(ventana, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885",
                                     command=lambda: self.activar_edicion(entradas, btn_guardar))
-                btn_editar.grid(row=len(campos) + 1, column=0, pady=10)
+            btn_editar.grid(row=len(campos) + 1, column=0, pady=10)
                                 
 
         if modo == "modificar":
             btn_modificar = Button(frame_detalles, text="Guardar Cambios", bg="#e6c885",
                                    command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
-            btn_modificar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
+            btn_modificar.grid(row=10, column=1, columnspan=2, padx=10, pady=0)
 
     def activar_edicion(self, entradas, btn_guardar):
     # Habilitar la edición en las entradas
@@ -227,7 +226,7 @@ class GestionPaciente(Frame):
             cursor = conexion.cursor()
             query = """
             UPDATE paciente
-            SET nombre = %s, apellido = %s, dni = %s, obra_social = %s, propietario = %s, sexo = %s, telefono = %s, nro_afiliado = %s
+            SET nombre = %s, apellido = %s, dni = %s, obra_social = %s, propietario = %s, sexo = %s, telefono = %s, nro_afiliado = %s, activo = %s
             WHERE id_paciente = %s
             """
             cursor.execute(query, (
@@ -236,6 +235,8 @@ class GestionPaciente(Frame):
                 nuevos_valores["Número de Afiliado"], id_paciente
             ))
             conexion.commit()
+
+            #,nuevos_valores["Estado"]
             
             # Actualizar los valores en el Treeview
             self.tree.item(seleccion, values=(id_paciente, *nuevos_valores.values()))
