@@ -41,6 +41,7 @@ class GestionTratamiento(Frame):
         self.combo_activos['values'] = ("Activos", "Inactivos", "Todos")
         self.combo_activos.set("Activos")
         self.combo_activos.grid(row=1, column=4, padx=20, pady=3)
+        self.combo_activos.bind("<<ComboboxSelected>>", lambda event: self.actualizar_treeview())
 
         #Widgets de búsqueda dentro del frame más chico
         etiqueta_buscar = Label(frame_busqueda, text="Buscar:", bg="#e6c885",font=("Robot",13))
