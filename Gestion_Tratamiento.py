@@ -267,7 +267,7 @@ class GestionTratamiento(Frame):
                 entry = Entry(frame_detalles, width=40, font=("Robot", 10))
                 entry.grid(row=i, column=1, padx=10, pady=5)
                 if i + 1 < len(valores):
-                    entry.insert(0,str(valores[i + 1])) 
+                    entry.insert(0,str(valores[i + 1]).upper()) 
             entradas[campo] = entry
 
         if modo == "ver":
@@ -382,7 +382,7 @@ class GestionTratamiento(Frame):
         if conexion is None:
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
-        nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
+        nuevos_valores = {campo: entradas[campo].get().upper() for campo in entradas}
         nuevos_valores["Estado"] = self.on_seleccion("Estado")
         print(nuevos_valores)
        
@@ -447,12 +447,12 @@ class GestionTratamiento(Frame):
         if conexion is None:
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
-        codigo = entry["Código"].get()      #Obtenemos los valores que el usuario ingresó.
-        nombre = entry["Nombre"].get()
+        codigo = entry["Código"].get().upper()      #Obtenemos los valores que el usuario ingresó.
+        nombre = entry["Nombre"].get().upper()
         precio = entry["Precio"].get()
         fecha_precio = entry["Fecha Precio"].get()
-        siglas = entry["Siglas"].get()
-        descripcion = entry["Descripción"].get()
+        siglas = entry["Siglas"].get().upper()
+        descripcion = entry["Descripción"].get().upper()
         if codigo and nombre and precio and fecha_precio and siglas and descripcion:
             try:
                 cursor = conexion.cursor()
@@ -517,7 +517,7 @@ class GestionTratamiento(Frame):
 
 
     def buscar_tratamiento(self):
-        busqueda = self.entrada_buscar.get().strip().lower()
+        busqueda = self.entrada_buscar.get().strip().upper()
 
         if not busqueda:
             self.tree.delete(*self.tree.get_children())
@@ -528,8 +528,8 @@ class GestionTratamiento(Frame):
 
         for item in self.tree.get_children():
             valores = self.tree.item(item, 'values')
-            codigo = valores[0].lower()
-            nombre = valores[1].lower()
+            codigo = valores[0].upper()
+            nombre = valores[1].upper()
 
             if busqueda in codigo or busqueda in nombre:
                 tratamiento_encontrado = True
