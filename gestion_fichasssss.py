@@ -13,6 +13,19 @@ class GestionFicha(Frame):
         self.pack(expand=True)
         self.createWidgets()
 
+    def conexion_bd_os(self, id):
+        conexion = obtener_conexion()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT * FROM obra_social WHERE id_obra_social = %s", (id,))
+            obra_social = cursor.fetchall()
+            return obra_social
+        except mysql.connector.Error as error:
+            messagebox.showerror("Error", f"No se pudo recuperar la obra social: {error}")
+        finally:
+            cursor.close()
+            conexion.close()
+
     def buscar_elemento_paciente(self, elemento):
         conexion = obtener_conexion()  # Llama a la función que establece la conexión
         if conexion is None:
@@ -43,7 +56,6 @@ class GestionFicha(Frame):
             cursor = conexion.cursor()
             cursor.execute("SELECT * FROM paciente WHERE documento = %s", (elemento,))
             paciente = cursor.fetchall()
-            print(paciente)
             if paciente is None:
                 messagebox.showwarning("Advertencia", "No se encontró ningún paciente con ese DNI.")
             return paciente
@@ -53,29 +65,53 @@ class GestionFicha(Frame):
             cursor.close()
             conexion.close()
     
-    def buscar_elemento(self):
-        busqueda = self.buscar_paciente.get()
-        cantidad = len(busqueda)  # Asegúrate de obtener el valor sin espacios en blanco
-        if busqueda:
-            if cantidad == 0:
-                messagebox.showwarning("Atención", "No se encontró el paciente.1")
+    def buscar_elemento(self, tabla):
+        if tabla == "paciente":
+            elemento = self.buscar_paciente.get()
+            if not elemento:
+                messagebox.showwarning("Atención", "Ingrese un DNI para buscar.")
                 return
-            if cantidad == 1:
-                campos= ["Nombre", "Apellido", "DNI"]
-                valores = list(self.obtener_paciente(busqueda))
-                for campo in campos:
-                    Label(frame_datos_pacientes, text=campos_abajo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=2, column=j, padx=10, sticky=W)
-                    entry = Entry(frame_datos_pacientes, width=40, font=("Robot", 12))
-                    entry.grid(row=3, column=j, padx=10)
-                    if campo == "DNI":
-                        entry.config(state="readonly")
+            if not elemento.isdigit():
+                messagebox.showwarning("Atención", "Ingrese un DNI válido.")
+                return
+            resultado = self.buscar_elemento_paciente(elemento)
+            if resultado[0] == 0:
+                messagebox.showwarning("Atención", "No se encontró ningún paciente con ese DNI.")
+                return
+            elif resultado[0] == 1:
+                paciente = self.obtener_paciente(elemento)
+                campos_arriba = ["Nombre", "Apellido", "DNI"]
+                campos_abajo = ["Obra Social", "Número de Afiliado"]
+                self.datos_ficha = {}
+                valores = list(paciente[0])
+                for i, campos_arriba in enumerate(campos_arriba):
+                    Label(self.frame_datos_pacientes, text=campos_arriba + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=i, padx=10, sticky=W)
+                    entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
+                    entry.grid(row=1, column=i, padx=10)
+                    if campos_arriba == "DNI":
                         entry.insert(0, valores[5])
-                    elif campo == "Nombre":
+                    elif campos_arriba == "Nombre":
                         entry.insert(0, valores[1])
-                    elif campo == "Apellido":
+                    elif campos_arriba == "Apellido":
                         entry.insert(0, valores[2])
-        else:
-            print("La búsqueda está vacía.")
+                    entry.config(state="readonly")
+                    self.datos_ficha[campos_arriba] = entry  # Guarda la entrada en un diccionario
+                for j, campos_abajo in enumerate(campos_abajo):
+                    Label(self.frame_datos_pacientes, text=campos_abajo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=2, column=j, padx=10, sticky=W)
+                    entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
+                    entry.grid(row=3, column=j, padx=10)
+                    if campos_abajo == "Obra Social":
+                        nombre = self.conexion_bd_os(valores[6])
+                        entry.insert(0, nombre[0][1])
+                        self.datos_ficha[campos_arriba] = valores[6]  #guarda el id de la obra social
+                    elif campos_abajo == "Número de Afiliado":
+                        entry.insert(0, valores[7])
+                        self.datos_ficha[campos_arriba] = entry      #guarda el número de afiliado
+                    entry.config(state="readonly")
+                self.buscar_paciente.delete(0, END)
+                if paciente is None:
+                    return
+        
 
     def volver_menu_principal(self):
         from Menu import MENU
@@ -206,7 +242,7 @@ class GestionFicha(Frame):
         self.buscar_paciente.grid(row=0, column=2, padx=5, pady=2, sticky= W)
         img_buscar = Image.open("buscar1.png").resize((20, 20), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
-        btn_buscar = Button(frame_busqueda, image=img_buscar, width=25, height=25,bg="#e6c885", command=lambda: self.buscar_elemento())
+        btn_buscar = Button(frame_busqueda, image=img_buscar, width=25, height=25,bg="#e6c885", command=lambda: self.buscar_elemento("paciente"))
         btn_buscar.grid(row=0, column=3, sticky= W)
         btn_buscar.image = img_buscar
 
@@ -217,20 +253,20 @@ class GestionFicha(Frame):
         btn_nuevo_paciente.grid(row = 0, column=6, padx=15)
 
         #Frame para los datos del paciente
-        frame_datos_pacientes = Label(frame_paciente, bg="#c9c2b2", font=("Robot", 10))
-        frame_datos_pacientes.pack(pady=5)
+        self.frame_datos_pacientes = Label(frame_paciente, bg="#c9c2b2", font=("Robot", 10))
+        self.frame_datos_pacientes.pack(pady=5)
 
         campos_arriba = ["Nombre", "Apellido", "DNI"]
         campos_abajo = ["Obra Social", "Número de Afiliado"]
         entradas_pacientes = {}
         for i, campos_arriba in enumerate(campos_arriba):
-            Label(frame_datos_pacientes, text=campos_arriba + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=i, padx=10, sticky=W)
-            entry = Entry(frame_datos_pacientes, width=40, font=("Robot", 12))
+            Label(self.frame_datos_pacientes, text=campos_arriba + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=i, padx=10, sticky=W)
+            entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
             entry.grid(row=1, column=i, padx=10)
             entradas_pacientes[campos_arriba] = entry
         for j, campos_abajo in enumerate(campos_abajo):
-            Label(frame_datos_pacientes, text=campos_abajo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=2, column=j, padx=10, sticky=W)
-            entry = Entry(frame_datos_pacientes, width=40, font=("Robot", 12))
+            Label(self.frame_datos_pacientes, text=campos_abajo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=2, column=j, padx=10, sticky=W)
+            entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
             entry.grid(row=3, column=j, padx=10)
             entradas_pacientes[campos_abajo] = entry
 
