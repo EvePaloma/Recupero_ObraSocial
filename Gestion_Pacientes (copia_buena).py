@@ -121,32 +121,6 @@ class GestionPaciente(Frame):
                                command=self.eliminar_paciente)
         btn_eliminar.grid(row=4, column=3, padx=50)
 
-    def agregar_paciente(self):
-        ventana_agregar = Toplevel(self)
-        ventana_agregar.title("Agregar Nuevo Paciente")
-        ventana_agregar.config(bg="#e4c09f") 
-        ventana.resizable(False,False)
-
-        frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Paciente", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
-        frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-
-        campos = ["Nombre", "Apellido", "DNI", "Obra social", "Propietario del Plan", "Sexo", "Teléfono del Paciente","Número de Afiliado"]
-        entradas = {}
-
-        vcmd_letras = ventana_agregar.register(self.solo_letras)
-        vcmd_numeros = ventana_agregar.register(self.solo_numeros)
-
-        for i, campo in enumerate(campos):     #Devuelve índice y valor de cada elemento 
-            etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
-            etiquetas.grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_agregar, width=40, font=("Robot", 10))
-            entry.grid(row=i, column=1, padx=10, pady=5)
-            entradas[campo] = entry
-
-        btn_nuevo_paciente = Button(frame_agregar, text="Agregar", font=("Robot", 10),bg="#e6c885", 
-                                       command=lambda: insertar_paciente_bd
-                                       (entradas, ventana_agregar))
-        btn_nuevo_paciente.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
     def ver_paciente(self):
         seleccion = self.tree.selection()
@@ -181,6 +155,9 @@ class GestionPaciente(Frame):
 
         campos = [ "Nombre", "Apellido", "DNI", "Obra Social", "Propietario del Plan", "Sexo", "Teléfono del Paciente", "Número de Afiliado"]
         id_paciente = paciente[0] #ACA ES
+
+        vcmd_letras = ventana.register(self.solo_letras)
+        vcmd_numeros = ventana.register(self.solo_numeros)
         
         try:
             conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
@@ -198,7 +175,7 @@ class GestionPaciente(Frame):
             
         entradas = {}
 
-        vcqmd_letras = ventana.register(self.solo_letras)
+        vcmd_letras = ventana.register(self.solo_letras)
         vcmd_numeros = ventana.register(self.solo_numeros)
 
         for i, campo in enumerate(campos):
@@ -206,8 +183,15 @@ class GestionPaciente(Frame):
             etiqueta.grid(row=i, column=0, padx=10, pady=5)
             entry = Entry(frame_detalles, width=40)
             entry.grid(row=i, column=1, padx=10, pady=5)
-            entry.insert(0, valores[i])
-            entradas[campo] = entry            
+
+            if campo in ["Nombre", "Apellido", "Obra Social", "Propietario del Plan", "Sexo"]:
+                entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
+            elif campo in ["DNI", "Teléfono del Paciente"]:
+                entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
+
+            if i < len(valores):
+                entry.insert(0, valores[i])
+            entradas[campo] = entry           
 
             if modo == "ver":
                 entry.config(state="readonly")
@@ -311,10 +295,19 @@ class GestionPaciente(Frame):
         campos = ["Nombre", "Apellido", "DNI", "Obra Social",  "Propietario del Plan",  "Sexo", "Teléfono del Paciente",  "Número de Afiliado"]
         entradas = {}
 
+        vcmd_letras = ventana_agregar.register(self.solo_letras)
+        vcmd_numeros = ventana_agregar.register(self.solo_numeros)
+
         for i, campo in enumerate(campos):
             etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
             etiquetas.grid(row=i, column=0, padx=10, pady=5)
             entry = Entry(frame_agregar, width=40, font=("Robot", 10))
+
+            if campo in ["Nombre", "Apellido", "Obra Social", "Propietario del Plan", "Sexo"]:
+                entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
+            elif campo in ["DNI", "Teléfono del Paciente"]:
+                entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
+
             entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
 
