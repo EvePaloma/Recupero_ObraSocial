@@ -25,7 +25,7 @@ class GestionTratamiento(Frame):
         frame_tratamientos.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         #Carga la imagen de fondo
-        img_fondo = Image.open("Logos_MVCP_Web.jpg")
+        img_fondo = Image.open("fondo3.png")
         img_fondo = img_fondo.resize((1250, 200), Image.Resampling.LANCZOS)
         self.img_fondo = ImageTk.PhotoImage(img_fondo)
 
@@ -193,7 +193,7 @@ class GestionTratamiento(Frame):
         frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
         btn_nuevo_tratamiento = Button(frame_btns, text="Agregar", font=("Robot", 13),bg="#e6c885", width=15, 
-                                       command=lambda:self.validar_campos(entradas) and self.guardar_nuevo_tratamiento(entradas))
+                                       command=lambda:self.validar_campos(entradas,ventana_agregar) and self.guardar_nuevo_tratamiento(entradas,ventana_agregar))
         btn_nuevo_tratamiento.grid(row=len(campos), column=0, padx=40, pady=10)
 
         btn_volver = Button(frame_btns, text="Volver", font=("Robot", 13),bg="#e6c885", width=15,
@@ -314,34 +314,42 @@ class GestionTratamiento(Frame):
         self.combo_valores_2.config(state="readonly")
 
     
-    def validar_campos(self, entradas):
-            campos_vacios = []
-            for campo, entrada in entradas.items():
-                valor = entrada.get().strip()
-                if not valor:
-                    campos_vacios.append(campo)
-                elif campo == "Precio":
-                    try:
-                        precio = float(valor)
-                        if precio <= 0:
-                            messagebox.showerror("El precio debe ser mayor que 0.")
-                    except ValueError:
-                        messagebox.showerror("Error", "El campo 'Precio' debe ser un número válido.")
-                        return False
-                elif campo == "Fecha Precio":
-                    if not self.fecha_valida(valor):
-                        messagebox.showerror("Error", "El campo 'Fecha Precio' debe tener el formato 'YYYY-MM-DD'.")
-                        return False
-                    
-                elif campo == "Código":
-                    if not self.validar_repetidos(valor):
-                        messagebox.showerror("Error", "El tratamiento con ese código ya existe.")
-                        return False
-            
-            if campos_vacios:
-                messagebox.showwarning("Advertencia", f"Los siguientes campos están vacíos: {', '.join(campos_vacios)}.\nPor favor complételos.")
-                return False
-            return True
+    def validar_campos(self, entradas,ventana_agregar):
+        campos_vacios = []
+        for campo, entrada in entradas.items():
+            valor = entrada.get().strip()
+            if not valor:
+                campos_vacios.append(campo)
+        if campos_vacios:
+            messagebox.showwarning("Advertencia", f"Los siguientes campos están vacíos: {', '.join(campos_vacios)}.\nPor favor complételos.")
+            ventana_agregar.lift()
+            return False
+
+        for campo, entrada in entradas.items():
+            valor = entrada.get().strip()
+            if campo == "Precio":
+                try:
+                    precio = float(valor)
+                    if precio <= 0:
+                        messagebox.showerror("El precio debe ser mayor que 0.")
+                        ventana_agregar.lift()
+                except ValueError:
+                    messagebox.showerror("Error", "El campo 'Precio' debe ser un número válido.")
+                    ventana_agregar.lift()
+                    return False
+            elif campo == "Fecha Precio":
+                if not self.fecha_valida(valor):
+                    messagebox.showerror("Error", "El campo 'Fecha Precio' debe tener el formato 'YYYY-MM-DD'.")
+                    ventana_agregar.lift()
+                    return False
+                
+            elif campo == "Código":
+                if not self.validar_repetidos(valor):
+                    messagebox.showerror("Error", "El tratamiento con ese código ya existe.")
+                    ventana_agregar.lift()
+                    return False
+        
+        return True
 
     def limpiar_marcador(self, entry):
         if entry.get() == "AAAA-MM-DD":
@@ -439,8 +447,8 @@ class GestionTratamiento(Frame):
                     conexion.close()
 
 
-    def guardar_nuevo_tratamiento(self, entry):
-        if not self.validar_campos(entry):
+    def guardar_nuevo_tratamiento(self, entry,ventana_agregar):
+        if not self.validar_campos(entry,ventana_agregar):
             return
         
         conexion = obtener_conexion()
@@ -463,6 +471,7 @@ class GestionTratamiento(Frame):
                 messagebox.showinfo("Información", "Tratamiento agregado exitosamente")
                 self.tree.insert("", 0, values=(codigo, nombre, precio))
                 self.actualizar_treeview()
+                ventana_agregar.destroy()
             except mysql.connector.Error as error:
                 messagebox.showerror("Error", f"No se pudo agregar el tratamiento: {error}")  
             finally:
@@ -546,7 +555,6 @@ class GestionTratamiento(Frame):
             datetime.strptime(fecha, "%Y-%m-%d")
             return True
         except ValueError:
-            messagebox.showerror("Error", "El campo 'Fecha Precio' debe tener el formato 'YYYY-MM-DD'.")
             return False
 
 
