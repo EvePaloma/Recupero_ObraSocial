@@ -82,7 +82,13 @@ class Gestion_Obra_Social(Frame):
             self.tree.delete(item)
         conexion = obtener_conexion()
         cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM obra_social where activo = 1")
+        seleccion = self.combo_activos.get()
+        if seleccion == "Activos":
+            cursor.execute("SELECT * FROM obra_social where activo = 1")
+        elif seleccion == "Inactivos":
+            cursor.execute("SELECT * FROM obra_social where activo = 0")
+        elif seleccion == "Todos":
+            cursor.execute("SELECT * FROM obra_social")
         lista = cursor.fetchall()
         for os in lista:
             self.tree.insert("", "0", iid=os[0], values= (os[1], os[2], os[7]))
@@ -156,7 +162,7 @@ class Gestion_Obra_Social(Frame):
         frame_busqueda = Frame(contenedor_total, bg="#c9c2b2")
         frame_busqueda.pack(fill= "x", padx = 5)
         #separa el campo de busqueda del botón
-        frame_busqueda.columnconfigure(4, weight=1)
+        frame_busqueda.columnconfigure(5, weight=1)
 
         #Widgets de búsqueda dentro del frame más chico
         Label(frame_busqueda, text="Buscar:", bg="#c9c2b2",font=("Robot",15)).grid(row=1, column=1, padx=5, pady=2, sticky= W)
@@ -170,8 +176,13 @@ class Gestion_Obra_Social(Frame):
         btn_buscar.grid(row=1, column=3, sticky= W)
         btn_buscar.image = img_buscar
 
+        self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 14), state="readonly")
+        self.combo_activos['values'] = ("Activos", "Inactivos", "Todos")
+        self.combo_activos.set("Activos")
+        self.combo_activos.grid(row=1, column=4, padx=20, pady=3)
+
         boton_agregar = Button(frame_busqueda, text="Agregar  +", width=15, bg="#e6c885",font=("Robot",15), command=self.agregar_obra_social)
-        boton_agregar.grid(row=1, column=5, padx=10, pady=3, sticky= E)
+        boton_agregar.grid(row=1, column=6, padx=10, pady=3, sticky= E)
         #Para que siempre esté atrás de los widgets
         fondo_label.lower()
 
