@@ -124,6 +124,7 @@ class Gestion_Obra_Social(Frame):
             cursor.close()
             conexion.close()
             if resultado[0] > 0:
+                print(resultado)
                 return False
             return True
         except mysql.connector.Error as err:
@@ -553,9 +554,9 @@ class Gestion_Obra_Social(Frame):
             for valores in coincidencias:
                 self.tree.insert('', 'end', values=valores)
 
-"""ventana = Tk()
+ventana = Tk()
 ventana.title("Gestion de obra_socials")
 ventana.resizable(False,False)
 ventana.geometry("+0+0")
 root = Gestion_Obra_Social(ventana)
-ventana.mainloop()"""
+ventana.mainloop()
