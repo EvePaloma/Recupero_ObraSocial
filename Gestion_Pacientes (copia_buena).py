@@ -218,7 +218,7 @@ class GestionPaciente(Frame):
         btn_guardar.config(state="normal")  # Activar el botón directamente
 
     def guardar_cambios(self, entradas, ventana, seleccion):
-        nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
+        nuevos_valores = {campo: entradas[campo].get().upper() for campo in entradas}
         id_paciente = self.tree.item(seleccion, 'values')[0]  # Asumiendo que el ID es el primer valor
 
         try:
@@ -316,14 +316,14 @@ class GestionPaciente(Frame):
         btn_nuevo_paciente.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
     def guardar_nuevo_paciente(self, entry, ventana):
-        nombre = entry["Nombre"].get()      #Obtenemos los valores que el usuario ingresó.
-        apellido = entry["Apellido"].get()
+        nombre = entry["Nombre"].get().upper()      #Obtenemos los valores que el usuario ingresó.
+        apellido = entry["Apellido"].get().upper()
         dni = entry["DNI"].get()
-        obrasocial = entry["Obra Social"].get()
-        propietario = entry["Propietario del Plan"].get()
-        sexo = entry["Sexo"].get()
+        obrasocial = entry["Obra Social"].get().upper()
+        propietario = entry["Propietario del Plan"].get().upper()
+        sexo = entry["Sexo"].get().upper()
         telefonopaciente = entry["Teléfono del Paciente"].get()
-        numeroafiliado = entry["Número de Afiliado"].get()
+        numeroafiliado = entry["Número de Afiliado"].get().upper()
         
         # Validar datos y agregar al Treeview
         if nombre and apellido and dni and obrasocial and propietario and telefonopaciente and numeroafiliado:
@@ -349,7 +349,7 @@ class GestionPaciente(Frame):
             messagebox.showwarning("Atención", "Complete todos los campos.")
 
     def buscar_paciente(self):
-        busqueda = self.entrada_buscar.get().strip().lower()
+        busqueda = self.entrada_buscar.get().strip().upper()
         if not busqueda:
             self.tree.delete(*self.tree.get_children())
             self.cargar_paciente()
@@ -371,7 +371,7 @@ class GestionPaciente(Frame):
             
             self.tree.delete(*self.tree.get_children())
             for paciente in pacientes:
-                self.tree.insert("", "end", values=paciente)
+                self.tree.insert("", "end", values=paciente.upper())
             
             if not paciente_encontrado:
                 messagebox.showwarning("Atención", "No se encontró el paciente.")
