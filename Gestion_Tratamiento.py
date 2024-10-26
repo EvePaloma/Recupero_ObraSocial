@@ -10,7 +10,7 @@ from datetime import datetime
 
 class GestionTratamiento(Frame):
     def __init__(self, master=None):
-        Frame.__init__(self, master, bg="#e4c09f", height=780, width=1300)
+        Frame.__init__(self, master, bg="#e4c09f", height=780, width=1366)
         self.master = master
         self.pack_propagate(False)
         self.pack(expand=True)
@@ -26,7 +26,7 @@ class GestionTratamiento(Frame):
 
         #Carga la imagen de fondo
         img_fondo = Image.open("fondo3.png")
-        img_fondo = img_fondo.resize((1250, 200), Image.Resampling.LANCZOS)
+        img_fondo = img_fondo.resize((1310, 200), Image.Resampling.LANCZOS)
         self.img_fondo = ImageTk.PhotoImage(img_fondo)
 
         #Label para la imagen de fondo
@@ -577,6 +577,6 @@ class GestionTratamiento(Frame):
 '''ventana = Tk()
 ventana.title("Gestion de Tratamientos")
 ventana.resizable(False,False)
-ventana.geometry("+30+15")
+ventana.geometry("+2+15")
 root = GestionTratamiento(ventana)
 ventana.mainloop()'''
