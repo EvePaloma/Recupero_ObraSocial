@@ -21,7 +21,7 @@ class MENU(Frame):
         ventana = Tk()
         ventana.wm_title("Gestión de Tratamientos")
         ventana.wm_resizable(0,0)
-        ventana.geometry("+30+15")
+        ventana.geometry("+2+15")
         entradas = GestionTratamiento(ventana)
         entradas.mainloop()
 
