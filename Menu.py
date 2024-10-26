@@ -28,7 +28,7 @@ class MENU(Frame):
     def abrir_obra_social(self):
         self.master.destroy()
         ventana = Tk()
-        ventana.wm_title("Gestion de obra_socials")
+        ventana.wm_title("Gestion de Obras Sociales")
         ventana.wm_resizable(0,0)
         ventana.geometry("+0+0")
         root = Gestion_Obra_Social(ventana)
