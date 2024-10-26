@@ -36,8 +36,13 @@ class GestionTratamiento(Frame):
         #Frame más chico para label y entry de búsqueda
         frame_busqueda = Frame(frame_tratamientos, bg="#e6c885")
         frame_busqueda.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="w")
-
-        self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 14), state="readonly")
+        style = ttk.Style()
+        style.theme_use("default")
+        style.map("Custom.TCombobox",  fieldbackground=[("active", "white")],   # Fondo blanco en modo de solo lectura
+                                        background=[("active", "white")],          # Fondo blanco al desplegar el menú
+                                        selectbackground=[("focus", "white")],     # Fondo blanco cuando una opción está seleccionada
+                                        selectforeground=[("focus", "black")])    # Text
+        self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 14), state="readonly", style="Custom.TCombobox")
         self.combo_activos['values'] = ("Activos", "Inactivos", "Todos")
         self.combo_activos.set("Activos")
         self.combo_activos.grid(row=1, column=4, padx=20, pady=3)
