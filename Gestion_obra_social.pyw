@@ -82,7 +82,13 @@ class Gestion_Obra_Social(Frame):
             self.tree.delete(item)
         conexion = obtener_conexion()
         cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM obra_social where activo = 1")
+        seleccion = self.combo_activos.get()
+        if seleccion == "Activos":
+            cursor.execute("SELECT * FROM obra_social where activo = 1")
+        elif seleccion == "Inactivos":
+            cursor.execute("SELECT * FROM obra_social where activo = 0")
+        elif seleccion == "Todos":
+            cursor.execute("SELECT * FROM obra_social")
         lista = cursor.fetchall()
         for os in lista:
             self.tree.insert("", "0", iid=os[0], values= (os[1], os[2], os[7]))
@@ -156,7 +162,7 @@ class Gestion_Obra_Social(Frame):
         frame_busqueda = Frame(contenedor_total, bg="#c9c2b2")
         frame_busqueda.pack(fill= "x", padx = 5)
         #separa el campo de busqueda del botón
-        frame_busqueda.columnconfigure(4, weight=1)
+        frame_busqueda.columnconfigure(5, weight=1)
 
         #Widgets de búsqueda dentro del frame más chico
         Label(frame_busqueda, text="Buscar:", bg="#c9c2b2",font=("Robot",15)).grid(row=1, column=1, padx=5, pady=2, sticky= W)
@@ -170,8 +176,13 @@ class Gestion_Obra_Social(Frame):
         btn_buscar.grid(row=1, column=3, sticky= W)
         btn_buscar.image = img_buscar
 
+        self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 14), state="readonly")
+        self.combo_activos['values'] = ("Activos", "Inactivos", "Todos")
+        self.combo_activos.set("Activos")
+        self.combo_activos.grid(row=1, column=4, padx=20, pady=3)
+
         boton_agregar = Button(frame_busqueda, text="Agregar  +", width=15, bg="#e6c885",font=("Robot",15), command=self.agregar_obra_social)
-        boton_agregar.grid(row=1, column=5, padx=10, pady=3, sticky= E)
+        boton_agregar.grid(row=1, column=6, padx=10, pady=3, sticky= E)
         #Para que siempre esté atrás de los widgets
         fondo_label.lower()
 
@@ -226,7 +237,7 @@ class Gestion_Obra_Social(Frame):
         ventana_agregar.title("Agregar Obra Social")
         ventana_agregar.config(bg="#e4c09f") 
         ventana_agregar.resizable(False,False)
-        ventana_agregar.geometry("700x400+400+160")
+        ventana_agregar.geometry("700x450+350+120")
 
         validar_letynum = ventana_agregar.register(self.solo_letras_numeros)
         validar_numeros = ventana_agregar.register(self.solo_numeros)
@@ -247,11 +258,14 @@ class Gestion_Obra_Social(Frame):
                 lista = self.conectar_tabla("afip")
                 # Crear un diccionario para buscar el ID por el nombre
                 self.datos_tabla = {dato[1]: dato[0] for dato in lista} 
-                self.combo_valores = ttk.Combobox(frame_agregar, width=49, font=("Robot", 10), state="readonly")
+                self.combo_valores = ttk.Combobox(frame_agregar, width=49, font=("Robot", 11), state="readonly")
                 self.combo_valores['values'] = list(self.datos_tabla.keys())
                 self.combo_valores.grid(row=i, column=1, padx=10, pady=5)
                 self.combo_valores.set(self.combo_valores['values'][0])  # Seleccionar el primer valor por defecto
-                self.combo_valores.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Carácter de AFIP")) 
+                self.combo_valores.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Carácter de AFIP"))
+            elif campo == "Detalle":
+                self.texto = Text(frame_agregar, height=3, width=51, wrap='word', font=("Robot", 10))
+                self.texto.grid(row=i, column=1, padx=10, pady=5) 
             else:
                 entry = Entry(frame_agregar, width=40, font=("Robot", 12))
                 if campo in ["Nombre", "Siglas"]:
@@ -276,7 +290,7 @@ class Gestion_Obra_Social(Frame):
         nombre = entry["Nombre"].get().upper()
         siglas = entry["Siglas"].get().upper()
         telefono = entry["Teléfono"].get()
-        detalle = entry["Detalle"].get().upper()
+        detalle = self.texto.get("1.0", "end-1c").upper() 
         domicilio_central = entry["Domicilio Casa Central"].get().upper()
         domicilio_cp = entry["Domicilio Carlos Paz"].get().upper()
         cuit = entry["CUIT"].get()
@@ -334,16 +348,16 @@ class Gestion_Obra_Social(Frame):
             btn_guardar.config(state="normal")
             self.combo_valores.config(state="readonly")
             self.combo_valores_2.config(state="readonly")  
-            texto.config(state="normal")
+            self.texto.config(state="normal")
 
         ventana = Toplevel(self)
         ventana.title("Detalles de obra social")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
-        ventana.geometry("650x450+400+160")
+        ventana.geometry("700x450+350+120")
         print(obra_social)
 
-        frame_detalles = LabelFrame(ventana, text="Detalles de obra social", font=("Robot", 10), bg="#c9c2b2")
+        frame_detalles = LabelFrame(ventana, text="Detalles de obra social", font=("Robot", 12), bg="#c9c2b2")
         frame_detalles.pack(padx=10, pady=10)
 
         frame_btns = Frame(ventana, bg="#e4c09f")
@@ -357,13 +371,13 @@ class Gestion_Obra_Social(Frame):
         entradas = {}
 
         for i, campo in enumerate(campos):
-            Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
+            Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
             if campo == "Carácter de AFIP":
                 lista = self.conectar_tabla("afip")
                 print(lista) 
                 # Crear un diccionario para buscar el ID por el nombre
                 self.datos_tabla = {dato[1]: dato[0] for dato in lista} 
-                self.combo_valores = ttk.Combobox(frame_detalles, width=39, font=("Robot", 10), state="disabled")
+                self.combo_valores = ttk.Combobox(frame_detalles, width=49, font=("Robot", 10), state="disabled")
                 self.combo_valores['values'] = list(self.datos_tabla.keys())
                 self.combo_valores.grid(row=i, column=1, padx=10, pady=5)
                 #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
@@ -374,7 +388,7 @@ class Gestion_Obra_Social(Frame):
                 lista = self.conectar_tabla("estado")
                 # Crear un diccionario para buscar el ID por el nombre
                 self.datos_tabla_1 = {dato[1]: dato[0] for dato in lista} 
-                self.combo_valores_2 = ttk.Combobox(frame_detalles, width=39, font=("Robot", 10), state="disabled")
+                self.combo_valores_2 = ttk.Combobox(frame_detalles, width=49, font=("Robot", 11), state="disabled")
                 self.combo_valores_2['values'] = list(self.datos_tabla_1.keys())
                 self.combo_valores_2.grid(row=i, column=1, padx=10, pady=5)
                 #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
@@ -382,13 +396,11 @@ class Gestion_Obra_Social(Frame):
                 clave_encontrada = next((clave for clave, valor in self.datos_tabla_1.items() if valor == valor_a_buscar), None)
                 self.combo_valores_2.set(clave_encontrada)
             elif campo == "Detalle":
-                texto = Text(frame_detalles, height=3, width=42, wrap='word', font=("Robot", 10))
-                texto.insert("1.0", valores[i+1])
-                texto.grid(row=i, column=1, padx=10, pady=5)
-                entradas[campo] = texto
-                print(texto.get("1.0", "end-1c"))
+                self.texto = Text(frame_detalles, height=3, width=51, wrap='word', font=("Robot", 10))
+                self.texto.insert("1.0", valores[i+1])
+                self.texto.grid(row=i, column=1, padx=10, pady=5)
             else:
-                entry = Entry(frame_detalles, width=42, font=("Robot", 10))
+                entry = Entry(frame_detalles, width=40, font=("Robot", 12))
                 """if campo in ["Nombre", "Siglas"]:
                     entry.config(validate="key", validatecommand= validar_letynum)
                 if campo in ["Teléfono", "CUIT"]:
@@ -401,7 +413,7 @@ class Gestion_Obra_Social(Frame):
         if modo == "ver":
             for entry in entradas.values():
                 entry.config(state="readonly")
-            texto.config(state="disabled")
+            self.texto.config(state="disabled")
             self.combo_valores.config(state="disabled")
             self.combo_valores_2.config(state="disabled")
 
@@ -432,17 +444,11 @@ class Gestion_Obra_Social(Frame):
         if conexion is None:
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
-
-        for campo in entradas.items():
-            if isinstance(widget, Text):  # Si es un Text widget
-                nuevos_valores[campo] = widget.get("1.0", "end-1c").upper()  # Obtener el texto completo
-            else:  # Si es un Entry widget
-                nuevos_valores[campo] = widget.get().upper()
-
+            
         nuevos_valores = {campo: entradas[campo].get().upper() for campo in entradas}
+        nuevos_valores['Detalle'] = self.texto.get("1.0", "end-1c").upper() 
         nuevos_valores['Carácter de AFIP'] = self.on_seleccion("Carácter de AFIP")
         nuevos_valores['Estado'] = self.on_seleccion("Estado")
-        print("nuevos valores ", nuevos_valores)
         # Asegúrate de que 'seleccion' no sea None y tenga un valor válido
         if seleccion :
             try:
