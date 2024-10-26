@@ -154,8 +154,8 @@ class Gestion_Obra_Social(Frame):
         fondo_label.pack(expand=True, fill="both")
 
         # Crear un Label para el texto y colocarlo encima del Label de la imagen
-        texto_label = Label(contenedor_titulo, text="Obras Sociales", font=("Robot", 25), bg="Black", fg="White")
-        texto_label.place(relx=0.5, rely=0.5, anchor="center")
+        #texto_label = Label(contenedor_titulo, text="Obras Sociales", font=("Robot", 25), bg="Black", fg="White")
+        #texto_label.place(relx=0.5, rely=0.5, anchor="center")
 
         #segundo frame, contiene el buscador y el boton de agregar
         #buscador de os
@@ -258,7 +258,7 @@ class Gestion_Obra_Social(Frame):
                 lista = self.conectar_tabla("afip")
                 # Crear un diccionario para buscar el ID por el nombre
                 self.datos_tabla = {dato[1]: dato[0] for dato in lista} 
-                self.combo_valores = ttk.Combobox(frame_agregar, width=49, font=("Robot", 11), state="readonly")
+                self.combo_valores = ttk.Combobox(frame_agregar, width=43, font=("Robot", 11), state="readonly")
                 self.combo_valores['values'] = list(self.datos_tabla.keys())
                 self.combo_valores.grid(row=i, column=1, padx=10, pady=5)
                 self.combo_valores.set(self.combo_valores['values'][0])  # Seleccionar el primer valor por defecto
@@ -388,7 +388,7 @@ class Gestion_Obra_Social(Frame):
                 lista = self.conectar_tabla("estado")
                 # Crear un diccionario para buscar el ID por el nombre
                 self.datos_tabla_1 = {dato[1]: dato[0] for dato in lista} 
-                self.combo_valores_2 = ttk.Combobox(frame_detalles, width=49, font=("Robot", 11), state="disabled")
+                self.combo_valores_2 = ttk.Combobox(frame_detalles, width=49, font=("Robot", 10), state="disabled")
                 self.combo_valores_2['values'] = list(self.datos_tabla_1.keys())
                 self.combo_valores_2.grid(row=i, column=1, padx=10, pady=5)
                 #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
