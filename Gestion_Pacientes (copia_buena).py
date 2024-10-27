@@ -41,10 +41,10 @@ class GestionPaciente(Frame):
         frame_busqueda.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="w")
 
         #Widgets de búsqueda dentro del frame más chico
-        etiqueta_buscar = Label(frame_busqueda, text="Buscar:", bg="#e6c885",font=("Robot",13))
+        etiqueta_buscar = Label(frame_busqueda, text="Buscar:", bg="#e6c885",font=("Roboto",13))
         etiqueta_buscar.grid(row=1, column=1, padx=5, pady=5)
 
-        self.entrada_buscar = Entry(frame_busqueda,width="50",font=("Robot",11))
+        self.entrada_buscar = Entry(frame_busqueda,width="50",font=("Roboto",11))
         self.entrada_buscar.grid(row=1, column=2, padx=5, pady=5)
 
         img_buscar = Image.open("buscar1.png").resize((30, 30), Image.Resampling.LANCZOS)
@@ -54,7 +54,7 @@ class GestionPaciente(Frame):
         btn_buscar.grid(row=1, column=3)
         btn_buscar.image = img_buscar
 
-        boton_agregar = Button(frame_pacientes, text="Agregar   +", width=15, bg="#e6c885",font=("Robot",13),
+        boton_agregar = Button(frame_pacientes, text="Agregar   +", width=15, bg="#e6c885",font=("Roboto",13),
                                 command=self.agregar_paciente)
         boton_agregar.grid(row=1, column=5, padx=10, pady=10)
 
@@ -66,8 +66,8 @@ class GestionPaciente(Frame):
         frame_tabla.grid(row=2, column=0, columnspan=6, padx=10, pady=10)
         
         stilo = ttk.Style()
-        stilo.configure("Treeview", font=("Robot",11), rowheight=25)  # Cambia la fuente y el alto de las filas
-        stilo.configure("Treeview.Heading", font=("Robot",14))  # Cambia la fuente de las cabeceras
+        stilo.configure("Treeview", font=("Roboto",11), rowheight=25)  # Cambia la fuente y el alto de las filas
+        stilo.configure("Treeview.Heading", font=("Roboto",14))  # Cambia la fuente de las cabeceras
         # Treeview para mostrar la tabla de pacientes dentro del frame_tabla
         self.tree = ttk.Treeview(frame_tabla, columns=("id", "nombre", "apellido", "dni", "obra_social"), show='headings', height=5)
 
@@ -98,15 +98,15 @@ class GestionPaciente(Frame):
         frame_btn.grid(row=4, columnspan=6)
 
         #Botones(ver, modificar, eliminar)
-        btn_ver = Button(frame_btn, text="Ver", width=15, font=("Robot",13),bg="#e6c885", 
+        btn_ver = Button(frame_btn, text="Ver", width=15, font=("Roboto",13),bg="#e6c885", 
                          command=self.ver_paciente)
         btn_ver.grid(row=4, column=1,padx=50)
 
-        btn_editar = Button(frame_btn, text="Modificar", width=15, font=("Robot",13),bg="#e6c885",
+        btn_editar = Button(frame_btn, text="Modificar", width=15, font=("Roboto",13),bg="#e6c885",
                              command=self.modificar_paciente)
         btn_editar.grid(row=4, column=2,padx=50)
         
-        btn_eliminar = Button(frame_btn, text="Eliminar", width=15,font=("Robot",13),bg="#e6c885",
+        btn_eliminar = Button(frame_btn, text="Eliminar", width=15,font=("Roboto",13),bg="#e6c885",
                                command=self.eliminar_paciente)
         btn_eliminar.grid(row=4, column=3, padx=50)
 
@@ -139,10 +139,10 @@ class GestionPaciente(Frame):
         ventana.grid_columnconfigure(0, weight=1)
         ventana.grid_rowconfigure(0, weight=1)
 
-        frame_detalles = LabelFrame(ventana, text="Detalles del Paciente", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
+        frame_detalles = LabelFrame(ventana, text="Detalles del Paciente", font=("Roboto", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre","Apellido","DNI","Obra Social","Propietario del Plan","Sexo","Teléfono del Paciente","Número de Afiliado"]
+        campos = ["Nombre",  "Apellido","DNI","Obra Social","Propietario del Plan","Sexo","Teléfono del Paciente","Número de Afiliado"]
         id_paciente = paciente[0] #ACA ES
 
         vcmd_letras = ventana.register(self.solo_letras)
@@ -168,7 +168,7 @@ class GestionPaciente(Frame):
         vcmd_numeros = ventana.register(self.solo_numeros)
 
         for i, campo in enumerate(campos):
-            etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
+            etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Roboto", 10))
             etiqueta.grid(row=i, column=0, padx=10, pady=5)
             entry = Entry(frame_detalles, width=40)
             entry.grid(row=i, column=1, padx=10, pady=5)
@@ -193,12 +193,12 @@ class GestionPaciente(Frame):
 
         if modo == "ver":
             entry.config(state="readonly")
-            btn_guardar = Button(ventana, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885",
+            btn_guardar = Button(ventana, text="Guardar Cambios", width=15, font=("Roboto", 13), bg="#e6c885",
                                      command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
             btn_guardar.grid(row=len(campos), column=0, pady=10)
             btn_guardar.config(state="disabled")  # Initially disabled
 
-            btn_editar = Button(ventana, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885",
+            btn_editar = Button(ventana, text="Modificar", width=15, font=("Roboto", 13), bg="#e6c885",
                                     command=lambda: self.activar_edicion(entradas, btn_guardar))
             btn_editar.grid(row=len(campos) + 1, column=0, pady=10)
                                 
@@ -287,7 +287,7 @@ class GestionPaciente(Frame):
         ventana_agregar.config(bg="#e4c09f")
         ventana.resizable(False,False)
         
-        frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Paciente", font= ("Robot", 11),padx=10, pady=10, bg="#c9c2b2")
+        frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Paciente", font= ("Roboto", 11),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         campos = ["Nombre","Apellido","DNI","Obra Social","Propietario del Plan","Sexo","Teléfono del Paciente","Número de Afiliado"]
@@ -297,9 +297,9 @@ class GestionPaciente(Frame):
         vcmd_numeros = ventana_agregar.register(self.solo_numeros)
 
         for i, campo in enumerate(campos):
-            etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
+            etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Roboto", 10))
             etiquetas.grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_agregar, width=40, font=("Robot", 10))
+            entry = Entry(frame_agregar, width=40, font=("Roboto", 10))
 
             if campo in ["Nombre", "Apellido", "Obra Social", "Propietario del Plan", "Sexo"]:
                 entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
@@ -309,7 +309,7 @@ class GestionPaciente(Frame):
             entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
 
-        btn_nuevo_paciente = Button(frame_agregar, text="Agregar", font=("Robot", 10),bg="#e6c885", command=lambda: self.guardar_nuevo_paciente(entradas, ventana_agregar))
+        btn_nuevo_paciente = Button(frame_agregar, text="Agregar", font=("Roboto", 10),bg="#e6c885", command=lambda: self.guardar_nuevo_paciente(entradas, ventana_agregar))
         btn_nuevo_paciente.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
         
