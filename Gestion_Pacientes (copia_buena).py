@@ -184,13 +184,13 @@ class GestionPaciente(Frame):
             entradas[campo] = entry     
 
                 # ComboBox for Estado
-        '''
+        
         etiqueta_estado = Label(frame_detalles, text="Estado:", bg="#c9c2b2", font=("Roboto", 10))
         etiqueta_estado.grid(row=len(campos), column=0, padx=10, pady=5)
         combo_estado = ttk.Combobox(frame_detalles, values=["1", "0"], width=37)
         combo_estado.grid(row=len(campos), column=1, padx=10, pady=5)
         combo_estado.set("1" if paciente[-1] == "1" else "0")
-        entradas["Estado"] = combo_estado     '''
+        entradas["Estado"] = combo_estado
 
         if modo == "ver":
             entry.config(state="readonly")
@@ -232,11 +232,11 @@ class GestionPaciente(Frame):
             cursor.execute(query, (
                 nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["DNI"], nuevos_valores["Obra Social"],
                 nuevos_valores["Propietario del Plan"], nuevos_valores["Sexo"], nuevos_valores["Teléfono del Paciente"],
-                nuevos_valores["Número de Afiliado"], id_paciente
+                nuevos_valores["Número de Afiliado"],nuevos_valores["Estado"], id_paciente
             ))
             conexion.commit()
 
-            #,nuevos_valores["Estado"]
+            #
             
             # Actualizar los valores en el Treeview
             self.tree.item(seleccion, values=(id_paciente, *nuevos_valores.values()))
@@ -315,6 +315,8 @@ class GestionPaciente(Frame):
         btn_nuevo_paciente = Button(frame_agregar, text="Agregar", font=("Robot", 10),bg="#e6c885", command=lambda: self.guardar_nuevo_paciente(entradas, ventana_agregar))
         btn_nuevo_paciente.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
+        
+
     def guardar_nuevo_paciente(self, entry, ventana):
         nombre = entry["Nombre"].get().upper()      #Obtenemos los valores que el usuario ingresó.
         apellido = entry["Apellido"].get().upper()
@@ -324,12 +326,19 @@ class GestionPaciente(Frame):
         sexo = entry["Sexo"].get().upper()
         telefonopaciente = entry["Teléfono del Paciente"].get()
         numeroafiliado = entry["Número de Afiliado"].get().upper()
-        
+
         # Validar datos y agregar al Treeview
         if nombre and apellido and dni and obrasocial and propietario and telefonopaciente and numeroafiliado:
             try:
                 conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
                 cursor = conexion.cursor()
+                
+                # Verificar si el DNI ya existe
+                cursor.execute("SELECT COUNT(*) FROM paciente WHERE dni = %s", (dni,))
+                if cursor.fetchone()[0] > 0:
+                    messagebox.showerror("Error", "El DNI ingresado ya existe. Por favor, ingrese un DNI diferente.")
+                    return
+                
                 query = """
                 INSERT INTO paciente (nombre, apellido, dni, obra_social, propietario, sexo, telefono, nro_afiliado)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
