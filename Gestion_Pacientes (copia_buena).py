@@ -49,7 +49,6 @@ class GestionPaciente(Frame):
 
         img_buscar = Image.open("buscar1.png").resize((30, 30), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
-
         btn_buscar = Button(frame_busqueda, image=img_buscar, width=30, height=30,bg="#e6c885", 
                             command=self.buscar_paciente)
         btn_buscar.grid(row=1, column=3)
@@ -143,7 +142,7 @@ class GestionPaciente(Frame):
         frame_detalles = LabelFrame(ventana, text="Detalles del Paciente", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = [ "Nombre", "Apellido", "DNI", "Obra Social", "Propietario del Plan", "Sexo", "Teléfono del Paciente", "Número de Afiliado"]
+        campos = ["Nombre","Apellido","DNI","Obra Social","Propietario del Plan","Sexo","Teléfono del Paciente","Número de Afiliado"]
         id_paciente = paciente[0] #ACA ES
 
         vcmd_letras = ventana.register(self.solo_letras)
@@ -236,8 +235,6 @@ class GestionPaciente(Frame):
             ))
             conexion.commit()
 
-            #
-            
             # Actualizar los valores en el Treeview
             self.tree.item(seleccion, values=(id_paciente, *nuevos_valores.values()))
             
@@ -293,7 +290,7 @@ class GestionPaciente(Frame):
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Paciente", font= ("Robot", 11),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre", "Apellido", "DNI", "Obra Social",  "Propietario del Plan",  "Sexo", "Teléfono del Paciente",  "Número de Afiliado"]
+        campos = ["Nombre","Apellido","DNI","Obra Social","Propietario del Plan","Sexo","Teléfono del Paciente","Número de Afiliado"]
         entradas = {}
 
         vcmd_letras = ventana_agregar.register(self.solo_letras)

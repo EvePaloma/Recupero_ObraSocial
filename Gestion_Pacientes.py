@@ -12,6 +12,7 @@ class GestionPaciente(Frame):
         self.master = master
         self.grid()
         self.createWidgets()
+        self.cargar_paciente()
 
     def solo_letras(self, char):
         return char.isalpha() or char == " "
