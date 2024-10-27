@@ -124,12 +124,11 @@ class GestionFicha(Frame):
         conexion = obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute("SELECT nombre, codigo, precio FROM tratamiento where activo = 1")
+        cursor.execute("SELECT id_tratamiento, nombre, codigo, precio FROM tratamiento where activo = 1")
         tratamientos = cursor.fetchall()
-
         # Insertar los datos en el Treeview
         for tratamiento in tratamientos:
-            self.tree_tratamiento.insert("", "end", values=tratamiento)
+            self.tree_tratamiento.insert("", "end", iid= tratamiento[0] ,values=tratamiento[1:])
         cursor.close()
         conexion.close()
     
@@ -527,6 +526,7 @@ class GestionFicha(Frame):
         # Obtener el elemento seleccionado
         selected_item = self.tree_tratamiento.selection()
         if selected_item:
+            id_tratamiento = selected_item[0]
             item_values = self.tree_tratamiento.item(selected_item, 'values')
             cantidad = self.cantidad_var.get()
             # Verificar si el elemento ya existe en el Treeview de la ficha
@@ -537,7 +537,8 @@ class GestionFicha(Frame):
                     self.ventana_tratamientos.lift()
                     return
             # Agregar el elemento al Treeview de la ficha
-            self.arbol_ficha.insert("", "end", values= (item_values[0], item_values[1], item_values[2], cantidad))
+            print(id_tratamiento, item_values, cantidad)
+            self.arbol_ficha.insert("", "end", iid = id_tratamiento ,values= (item_values[0], item_values[1], item_values[2], cantidad))
             self.actualizar_total_precios()
     def eliminar_tratamiento_a_ficha(self):
         selected_item = self.arbol_ficha.selection()
@@ -656,14 +657,16 @@ class GestionFicha(Frame):
                 val = (id_paciente, obra_social, id_medico, fecha, total)
                 cursor.execute(sql, val)
                 conexion.commit()
-                """ficha_id = cursor.lastrowid
+                #Obtenemos el id de la ficha que acabamos de agregar
+                ficha_id = cursor.lastrowid
                 for child in self.arbol_ficha.get_children():
+                    id_tratamiento = child[0]
                     tratamiento = self.arbol_ficha.item(child, 'values')
-                    sql = "INSERT INTO detalle_ficha (id_ficha, codigo, cantidad) VALUES (%s, %s, %s)"
-                    val = (ficha_id, tratamiento[0], tratamiento[3])
+                    print("valores para agregar", id_tratamiento, tratamiento)
+                    sql = "INSERT INTO detalle_ficha (id_ficha, id_tratamiento, cantidad, precio_unitario) VALUES (%s, %s, %s, %s)"
+                    val = (ficha_id, id_tratamiento, tratamiento[3], tratamiento[2])
                     cursor.execute(sql, val)
-                    conexion.commit()"""
-
+                    conexion.commit()
                 messagebox.showinfo("Información", "Ficha agregada exitosamente")
                 self.tree.insert("", 0, values=(dni, nombre, apellido, obra_social, fecha, total))
                 self.volver_inicio()
