@@ -234,19 +234,19 @@ class Gestion_Obra_Social(Frame):
 
     #Agregar obra social a la base de datos.
     def agregar_obra_social(self):
-        ventana_agregar = Toplevel(self)
-        ventana_agregar.title("Agregar Obra Social")
-        ventana_agregar.config(bg="#e4c09f") 
-        ventana_agregar.resizable(False,False)
-        ventana_agregar.geometry("700x450+350+120")
+        self.ventana_agregar = Toplevel(self)
+        self.ventana_agregar.title("Agregar Obra Social")
+        self.ventana_agregar.config(bg="#e4c09f") 
+        self.ventana_agregar.resizable(False,False)
+        self.ventana_agregar.geometry("700x450+350+120")
 
-        validar_letynum = ventana_agregar.register(self.solo_letras_numeros)
-        validar_numeros = ventana_agregar.register(self.solo_numeros)
+        validar_letynum = self.ventana_agregar.register(self.solo_letras_numeros)
+        validar_numeros = self.ventana_agregar.register(self.solo_numeros)
 
-        frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nueva Obra Social", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
+        frame_agregar = LabelFrame(self.ventana_agregar, text="Agregar Nueva Obra Social", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.pack(padx=10, pady=10, fill="both", expand=True)
 
-        frame_btns = Frame(ventana_agregar, bg="#e4c09f")
+        frame_btns = Frame(self.ventana_agregar, bg="#e4c09f")
         frame_btns.pack(pady=3)
 
         campos = ["Nombre", "Siglas", "Teléfono", "Detalle", "Domicilio Casa Central", "Domicilio Carlos Paz", "CUIT", "Carácter de AFIP"]
@@ -276,13 +276,13 @@ class Gestion_Obra_Social(Frame):
                 entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
 
-        btn_nueva_obra_social = Button(frame_btns, text="Agregar", width=15, font=("Robot", 13),bg="#e6c885", command=lambda: self.guardar_nueva_obra_social(entradas, ventana_agregar))
+        btn_nueva_obra_social = Button(frame_btns, text="Agregar", width=15, font=("Robot", 13),bg="#e6c885", command=lambda: self.guardar_nueva_obra_social(entradas, self.ventana_agregar))
         btn_nueva_obra_social.grid(row=len(campos), column=0, padx=40, pady=10)
         
-        btn_cancelar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=ventana_agregar.destroy)
+        btn_cancelar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=self.ventana_agregar.destroy)
         btn_cancelar.grid(row=len(campos), column=1, padx= 40, pady=10)
 
-        ventana_agregar.mainloop()
+        self.ventana_agregar.mainloop()
     
     def guardar_nueva_obra_social(self, entry, ventana):
         conexion = obtener_conexion()
@@ -317,11 +317,13 @@ class Gestion_Obra_Social(Frame):
                     self.actualizar_treeview()
                 except mysql.connector.Error as error:
                     messagebox.showerror("Error", f"No se pudo agregar la obra social: {error}")
+                    self.ventana_agregar.lift()
                 finally:
                     cursor.close()
                     conexion.close()
             else:
                 messagebox.showwarning("Atención", "Complete todos los campos.")
+                self.ventana_agregar.lift()
 
     #Ver datos de las obras sociales
     def ver_obra_social(self):
@@ -472,6 +474,7 @@ class Gestion_Obra_Social(Frame):
                 obligatorios = ['nombre', 'siglas', 'telefono', 'cuit', 'id_afip']
                 if any(elemento  == "" for elemento in obligatorios):
                     messagebox.showerror("Error", "Hay campos obligatorios vacíos.")
+                    ventana.lift()
                     return
                 cursor.execute(sql, val)
                 conexion.commit()
@@ -480,6 +483,7 @@ class Gestion_Obra_Social(Frame):
                 self.actualizar_treeview()
             except mysql.connector.Error as err:
                 messagebox.showerror("Error", f"Ocurrió un error al actualizar la obra social: {err}")
+                ventana.lift()
             finally:
                 cursor.close()
                 conexion.close()

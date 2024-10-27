@@ -13,6 +13,20 @@ class GestionFicha(Frame):
         self.pack(expand=True)
         self.createWidgets()
 
+    def limpiar_marcador(self, entry):
+        if entry.get() == "DOCUMENTO" or entry.get() == "MATRÍCULA":
+            entry.delete(0, "end")
+            entry.config(fg="black")
+    def restaurar_marcador(self,entry):
+        if not entry.get():
+            if entry == self.buscar_paciente:
+                entry.insert(0, "DOCUMENTO")
+            elif entry == self.buscar_medico:
+                entry.insert(0, "MATRÍCULA")
+            elif entry == self.buscar_tratamiento:
+                entry.insert(0, "CÓDIGO")
+            entry.config(fg="gray")
+
     def conexion_bd_os(self, id):
         conexion = obtener_conexion()
         try:
@@ -25,93 +39,6 @@ class GestionFicha(Frame):
         finally:
             cursor.close()
             conexion.close()
-
-    def buscar_elemento_paciente(self, elemento):
-        conexion = obtener_conexion()  # Llama a la función que establece la conexión
-        if conexion is None:
-            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
-            return
-        try:
-            cursor = conexion.cursor()
-            sentencia = "SELECT COUNT(*) from paciente WHERE documento = %s"
-            cursor.execute(sentencia, (elemento,))
-            resultado = cursor.fetchall()
-            cursor.close()
-            conexion.close()
-            print(resultado)
-            return resultado[0]
-        except mysql.connector.Error as err:
-            messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}")
-            if cursor:
-                cursor.close()
-            if conexion:
-                conexion.close()
-            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
-            return
-
-    def obtener_paciente(self, elemento):
-        conexion = obtener_conexion()
-        print(elemento)
-        try:
-            cursor = conexion.cursor()
-            cursor.execute("SELECT * FROM paciente WHERE documento = %s", (elemento,))
-            paciente = cursor.fetchall()
-            if paciente is None:
-                messagebox.showwarning("Advertencia", "No se encontró ningún paciente con ese DNI.")
-            return paciente
-        except mysql.connector.Error as error:
-            messagebox.showerror("Error", f"No se pudo recuperar el paciente: {error}")
-        finally:
-            cursor.close()
-            conexion.close()
-    
-    def buscar_elemento(self, tabla):
-        if tabla == "paciente":
-            elemento = self.buscar_paciente.get()
-            if not elemento:
-                messagebox.showwarning("Atención", "Ingrese un DNI para buscar.")
-                return
-            if not elemento.isdigit():
-                messagebox.showwarning("Atención", "Ingrese un DNI válido.")
-                return
-            resultado = self.buscar_elemento_paciente(elemento)
-            if resultado[0] == 0:
-                messagebox.showwarning("Atención", "No se encontró ningún paciente con ese DNI.")
-                return
-            elif resultado[0] == 1:
-                paciente = self.obtener_paciente(elemento)
-                campos_arriba = ["Nombre", "Apellido", "DNI"]
-                campos_abajo = ["Obra Social", "Número de Afiliado"]
-                self.datos_ficha = {}
-                valores = list(paciente[0])
-                for i, campos_arriba in enumerate(campos_arriba):
-                    Label(self.frame_datos_pacientes, text=campos_arriba + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=i, padx=10, sticky=W)
-                    entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
-                    entry.grid(row=1, column=i, padx=10)
-                    if campos_arriba == "DNI":
-                        entry.insert(0, valores[5])
-                    elif campos_arriba == "Nombre":
-                        entry.insert(0, valores[1])
-                    elif campos_arriba == "Apellido":
-                        entry.insert(0, valores[2])
-                    entry.config(state="readonly")
-                    self.datos_ficha[campos_arriba] = entry  # Guarda la entrada en un diccionario
-                for j, campos_abajo in enumerate(campos_abajo):
-                    Label(self.frame_datos_pacientes, text=campos_abajo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=2, column=j, padx=10, sticky=W)
-                    entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
-                    entry.grid(row=3, column=j, padx=10)
-                    if campos_abajo == "Obra Social":
-                        nombre = self.conexion_bd_os(valores[6])
-                        entry.insert(0, nombre[0][1])
-                        self.datos_ficha[campos_arriba] = valores[6]  #guarda el id de la obra social
-                    elif campos_abajo == "Número de Afiliado":
-                        entry.insert(0, valores[7])
-                        self.datos_ficha[campos_arriba] = entry      #guarda el número de afiliado
-                    entry.config(state="readonly")
-                self.buscar_paciente.delete(0, END)
-                if paciente is None:
-                    return
-        
 
     def volver_menu_principal(self):
         from Menu import MENU
@@ -230,6 +157,7 @@ class GestionFicha(Frame):
 
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar ficha", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.pack(padx=10, pady=5)
+        self.datos_ficha = {} #Diccionario para guardar los datos de la ficha
 
         #FRAME DE DATOS DEL PACIENTE
         frame_paciente = LabelFrame(frame_agregar, text="Datos del paciente", font=("Robot", 10), padx=10, pady=5, bg="#c9c2b2")
@@ -240,6 +168,10 @@ class GestionFicha(Frame):
         Label(frame_busqueda, text="Buscar:", bg="#c9c2b2",font=("Robot", 13)).grid(row=0, column=1, padx=5, pady=2, sticky= W)
         self.buscar_paciente = Entry(frame_busqueda, width=20,font=("Robot",12))
         self.buscar_paciente.grid(row=0, column=2, padx=5, pady=2, sticky= W)
+        self.buscar_paciente.insert(0, "DOCUMENTO")  #Agrega marcador de posición
+        self.buscar_paciente.config(fg="gray")
+        self.buscar_paciente.bind("<FocusIn>", lambda event, e=self.buscar_paciente: self.limpiar_marcador(e))
+        self.buscar_paciente.bind("<FocusOut>", lambda event, e=self.buscar_paciente: self.restaurar_marcador(e))
         img_buscar = Image.open("buscar1.png").resize((20, 20), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
         btn_buscar = Button(frame_busqueda, image=img_buscar, width=25, height=25,bg="#e6c885", command=lambda: self.buscar_elemento("paciente"))
@@ -252,7 +184,7 @@ class GestionFicha(Frame):
         btn_nuevo_paciente = Button(frame_busqueda, text="Agregar Paciente", font=("Robot", 11, "bold"),bg="#e6c885")
         btn_nuevo_paciente.grid(row = 0, column=6, padx=15)
 
-        #Frame para los datos del paciente
+        #Frame para los datos del PACIENTE
         self.frame_datos_pacientes = Label(frame_paciente, bg="#c9c2b2", font=("Robot", 10))
         self.frame_datos_pacientes.pack(pady=5)
 
@@ -263,16 +195,18 @@ class GestionFicha(Frame):
             Label(self.frame_datos_pacientes, text=campos_arriba + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=i, padx=10, sticky=W)
             entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
             entry.grid(row=1, column=i, padx=10)
+            entry.config(state="readonly")
             entradas_pacientes[campos_arriba] = entry
         for j, campos_abajo in enumerate(campos_abajo):
             Label(self.frame_datos_pacientes, text=campos_abajo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=2, column=j, padx=10, sticky=W)
             entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
             entry.grid(row=3, column=j, padx=10)
+            entry.config(state="readonly")
             entradas_pacientes[campos_abajo] = entry
 
         #Frame para los datos del MEDICO
         frame_medico = LabelFrame(frame_agregar, text="Datos del médico", font=("Robot", 10), bg="#c9c2b2")
-        frame_medico.pack()
+        frame_medico.pack(fill="x")
 
         #buscador de médico
         frame_busqueda_medico = Frame(frame_medico, bg="#c9c2b2")
@@ -280,9 +214,13 @@ class GestionFicha(Frame):
         Label(frame_busqueda_medico, text="Buscar:", bg="#c9c2b2",font=("Robot", 13)).grid(row=0, column=1, padx=5, pady=2, sticky= W)
         self.buscar_medico = Entry(frame_busqueda_medico, width=20,font=("Robot",12))
         self.buscar_medico.grid(row=0, column=2, padx=5, pady=2, sticky= W)
+        self.buscar_medico.insert(0, "MATRÍCULA")  #Agrega marcador de posición
+        self.buscar_medico.config(fg="gray")
+        self.buscar_medico.bind("<FocusIn>", lambda event, e=self.buscar_medico: self.limpiar_marcador(e))
+        self.buscar_medico.bind("<FocusOut>", lambda event, e=self.buscar_medico: self.restaurar_marcador(e))
         img_buscar = Image.open("buscar1.png").resize((20, 20), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
-        btn_buscar = Button(frame_busqueda_medico, image=img_buscar, width=25, height=25,bg="#e6c885")
+        btn_buscar = Button(frame_busqueda_medico, image=img_buscar, width=25, height=25,bg="#e6c885", command=lambda: self.buscar_elemento("medico"))
         btn_buscar.grid(row=0, column=3, sticky= W)
         btn_buscar.image = img_buscar
 
@@ -293,18 +231,19 @@ class GestionFicha(Frame):
         btn_nuevo_medico.grid(row = 0, column=6, padx=15)
 
         #Frame para los datos del medico
-        frame_datos_medico = Label(frame_medico, bg="#c9c2b2", font=("Robot", 10))
-        frame_datos_medico.pack(pady=5)
+        self.frame_datos_medico = Label(frame_medico, bg="#c9c2b2", font=("Robot", 10))
+        self.frame_datos_medico.pack(pady=5, fill="x")
 
-        campos_medico = ["Nombre del médico", "Apellido del médico", "Especialidad", "Tipo de matrícula", "Matrícula"]
+        campos_medico = ["Nombre del médico", "Apellido del médico", "Matrícula"]
         entradas_medico = {}
         for m, campo in enumerate(campos_medico):
-            Label(frame_datos_medico, text=campo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=m, padx=8)
-            entry = Entry(frame_datos_medico, width=25, font=("Robot", 12))
-            entry.grid(row=1, column=m, padx=8)
+            Label(self.frame_datos_medico, text=campo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=m, padx=8, sticky=W)
+            entry = Entry(self.frame_datos_medico, width=28, font=("Robot", 12))
+            entry.grid(row=1, column=m, padx=8, sticky=W)
+            entry.config(state="readonly")
             entradas_medico[campo] = entry
 
-        #Frame para los datos del tratamiento
+        #Frame para los datos del TRATAMIENTOS
         frame_tratamiento = LabelFrame(frame_agregar, text="Tratamiento", font=("Robot", 10), bg="#c9c2b2") 
         frame_tratamiento.pack(fill="x")
 
@@ -358,6 +297,138 @@ class GestionFicha(Frame):
 
         btn_volver = Button(frame_botones, text="Volver", font=("Robot", 15),bg="#e6c885", width=15, command= ventana_agregar.destroy)
         btn_volver.grid(row = 0, column=3, columnspan=2, padx=20)
+
+    def buscar_elemento_tabla(self, elemento, tabla):
+        conexion = obtener_conexion()  # Llama a la función que establece la conexión
+        if conexion is None:
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
+        try:
+            cursor = conexion.cursor()
+            if tabla == "paciente":
+                sentencia = "SELECT COUNT(*) from paciente WHERE documento = %s"
+            elif tabla == "medico":
+                sentencia = "SELECT COUNT(*) from medico WHERE matricula = %s"
+            elif tabla == "tratamiento":
+                sentencia = "SELECT COUNT(*) from tratamiento WHERE codigo = %s"
+            else:
+                messagebox.showerror("Error", "No se pudo realizar la consulta a la base de datos. Error 1")
+            cursor.execute(sentencia, (elemento,))
+            resultado = cursor.fetchall()
+            cursor.close()
+            conexion.close()
+            print(resultado)
+            return resultado[0]
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}. Error 2")
+            if cursor:
+                cursor.close()
+            if conexion:
+                conexion.close()
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
+    def obtener_unico(self, elemento, tabla):
+        conexion = obtener_conexion()
+        print(elemento)
+        try:
+            cursor = conexion.cursor()
+            if tabla == "paciente":
+                cursor.execute("SELECT * FROM paciente WHERE documento = %s", (elemento,))
+            elif tabla == "medico":
+                cursor.execute("SELECT * FROM medico WHERE matricula = %s", (elemento,))
+            elif tabla == "tratamiento":    
+                cursor.execute("SELECT * FROM tratamiento WHERE codigo = %s", (elemento,))
+            else:
+                messagebox.showerror("Error", "No se pudo realizar la consulta a la base de datos. Error 3")
+            resultado = cursor.fetchall()
+            if resultado is None:
+                messagebox.showwarning("Advertencia", f"No se encontró ningún {tabla} con ese dato. Error 4")
+            return resultado
+        except mysql.connector.Error as error:
+            messagebox.showerror("Error", f"No se pudo recuperar el {tabla}: {error}. Error 5")
+        finally:
+            cursor.close()
+            conexion.close()
+    
+    def buscar_elemento(self, tabla):
+        if tabla == "paciente":
+            elemento = self.buscar_paciente.get()
+            if not elemento:
+                messagebox.showwarning("Atención", "Ingrese un DNI para buscar.")
+                ventana.lift()
+                return
+            if not elemento.isdigit():
+                messagebox.showwarning("Atención", "Ingrese un DNI válido.")
+                ventana.lift()
+                return
+            resultado = self.buscar_elemento_tabla(elemento, "paciente")
+            if resultado[0] == 0:
+                messagebox.showwarning("Atención", "No se encontró ningún paciente con ese DNI.")
+                ventana.lift()
+                return
+            elif resultado[0] == 1:
+                paciente = self.obtener_unico(elemento, "paciente")
+                campos_arriba = ["Nombre", "Apellido", "DNI"]
+                campos_abajo = ["Obra Social", "Número de Afiliado"]
+                valores = list(paciente[0])
+                for i, campos_arriba in enumerate(campos_arriba):
+                    Label(self.frame_datos_pacientes, text=campos_arriba + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=i, padx=10, sticky=W)
+                    entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
+                    entry.grid(row=1, column=i, padx=10)
+                    if campos_arriba == "DNI":
+                        entry.insert(0, valores[5])
+                    elif campos_arriba == "Nombre":
+                        entry.insert(0, valores[1])
+                    elif campos_arriba == "Apellido":
+                        entry.insert(0, valores[2])
+                    entry.config(state="readonly")
+                    self.datos_ficha[campos_arriba] = entry  # Guarda la entrada en un diccionario
+                for j, campos_abajo in enumerate(campos_abajo):
+                    Label(self.frame_datos_pacientes, text=campos_abajo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=2, column=j, padx=10, sticky=W)
+                    entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
+                    entry.grid(row=3, column=j, padx=10)
+                    if campos_abajo == "Obra Social":
+                        nombre = self.conexion_bd_os(valores[6])
+                        entry.insert(0, nombre[0][1])
+                        self.datos_ficha[campos_arriba] = valores[6]  #guarda el id de la obra social
+                    elif campos_abajo == "Número de Afiliado":
+                        entry.insert(0, valores[7])
+                        self.datos_ficha[campos_arriba] = entry      #guarda el número de afiliado
+                    entry.config(state="readonly")
+                self.buscar_paciente.delete(0, END)
+                if paciente is None:
+                    return
+        elif tabla == "medico":
+            elemento = self.buscar_medico.get()
+            if not elemento:
+                messagebox.showwarning("Atención", "Ingrese una matrícula para buscar.")
+                ventana.lift()
+                return
+            if not elemento.isdigit():
+                messagebox.showwarning("Atención", "Ingrese una matrícula válida.")
+                ventana.lift()
+                return
+            resultado = self.buscar_elemento_tabla(elemento, "medico")
+            if resultado[0] == 0:
+                messagebox.showwarning("Atención", "No se encontró ningún médico con esa matrícula.")
+                ventana.lift()
+                return
+            elif resultado[0] == 1:
+                medico = self.obtener_unico(elemento, "medico")
+                print(medico)
+                campos_medico = ["Nombre del médico", "Apellido del médico", "Matrícula"]
+                valores = list(medico[0])
+                for m, campo in enumerate(campos_medico):
+                    Label(self.frame_datos_medico, text=campo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=m, padx=8, sticky= W)
+                    entry = Entry(self.frame_datos_medico, width=28, font=("Robot", 12))
+                    entry.grid(row=1, column=m, padx=8, stiky=W)
+                    entry.insert(0, valores[m+1])
+                    entry.config(state="readonly")
+                    self.datos_ficha[campo] = entry # Guarda la entrada en un diccionario
+                self.buscar_medico.delete(0, END)
+                if medico is None:
+                    return
+        
 
 """
     def guardar_nueva_ficha(self, entry, ventana):
