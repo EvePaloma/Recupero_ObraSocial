@@ -4,6 +4,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import mysql.connector
 from ConexionBD import *
+from datetime import datetime
 
 class GestionFicha(Frame):
     def __init__(self, master):
@@ -12,6 +13,7 @@ class GestionFicha(Frame):
         self.pack_propagate(False)
         self.pack(expand=True)
         self.createWidgets()
+        self.actualizar_treeview()
 
     def limpiar_marcador(self, entry):
         if entry.get() == "DOCUMENTO" or entry.get() == "MATRÍCULA":
@@ -49,8 +51,24 @@ class GestionFicha(Frame):
         ventana.geometry("+30+15")
         menu = MENU(ventana)
         menu.mainloop()
-
     def actualizar_treeview(self):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+        conexion = obtener_conexion()
+        cursor = conexion.cursor()
+        seleccion = self.combo_activos.get()
+        if seleccion == "Activos":
+            cursor.execute("SELECT * FROM ficha where activo = 1")
+        elif seleccion == "Inactivos":
+            cursor.execute("SELECT * FROM ficha where activo = 0")
+        elif seleccion == "Todos":
+            cursor.execute("SELECT * FROM ficha")
+        lista = cursor.fetchall()
+        for os in lista:
+            self.tree.insert("", "0", iid=os[0], values= (os[1], os[2], os[7]))
+        cursor.close()
+        conexion.close()
+    def actualizar_treeview_tratamiento(self):
         for item in self.tree_tratamiento.get_children():
             self.tree_tratamiento.delete(item)
         conexion = obtener_conexion()
@@ -311,12 +329,13 @@ class GestionFicha(Frame):
         frame_botones = Frame(self.ventana_agregar, bg="#e4c09f")
         frame_botones.pack()
 
-        btn_nueva_ficha = Button(frame_botones, text="Agregar", font=("Robot", 15),bg="#e6c885", width= 15)
-        btn_nueva_ficha.grid(row = 0, column=0, columnspan=2, padx=20)
+        btn_guardar_ficha = Button(frame_botones, text="Guardar", font=("Robot", 15),bg="#e6c885", width= 15, command= lambda: self.guardar_nueva_ficha(self.datos_ficha, self.ventana_agregar))
+        btn_guardar_ficha.grid(row = 0, column=0, columnspan=2, padx=20)
 
         btn_volver = Button(frame_botones, text="Volver", font=("Robot", 15),bg="#e6c885", width=15, command= self.ventana_agregar.destroy)
         btn_volver.grid(row = 0, column=3, columnspan=2, padx=20)
 
+    #Funciones para buscar un elemento en la base de datos
     def buscar_elemento_tabla(self, elemento, tabla):
         conexion = obtener_conexion()  # Llama a la función que establece la conexión
         if conexion is None:
@@ -328,8 +347,6 @@ class GestionFicha(Frame):
                 sentencia = "SELECT COUNT(*) from paciente WHERE documento = %s"
             elif tabla == "medico":
                 sentencia = "SELECT COUNT(*) from medico WHERE matricula = %s"
-            elif tabla == "tratamiento":
-                sentencia = "SELECT COUNT(*) from tratamiento WHERE codigo = %s"
             else:
                 messagebox.showerror("Error", "No se pudo realizar la consulta a la base de datos. Error 1")
             cursor.execute(sentencia, (elemento,))
@@ -355,8 +372,6 @@ class GestionFicha(Frame):
                 cursor.execute("SELECT * FROM paciente WHERE documento = %s", (elemento,))
             elif tabla == "medico":
                 cursor.execute("SELECT * FROM medico WHERE matricula = %s", (elemento,))
-            elif tabla == "tratamiento":    
-                cursor.execute("SELECT * FROM tratamiento WHERE codigo = %s", (elemento,))
             else:
                 messagebox.showerror("Error", "No se pudo realizar la consulta a la base de datos. Error 3")
             resultado = cursor.fetchall()
@@ -368,7 +383,6 @@ class GestionFicha(Frame):
         finally:
             cursor.close()
             conexion.close()
-    
     def buscar_elemento(self, tabla):
         if tabla == "paciente":
             elemento = self.buscar_paciente.get()
@@ -390,6 +404,7 @@ class GestionFicha(Frame):
                 campos_arriba = ["Nombre", "Apellido", "DNI"]
                 campos_abajo = ["Obra Social", "Número de Afiliado"]
                 valores = list(paciente[0])
+                self.datos_ficha["Id_paciente"] = valores[0]
                 for i, campos_arriba in enumerate(campos_arriba):
                     Label(self.frame_datos_pacientes, text=campos_arriba + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=i, padx=10, sticky=W)
                     entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
@@ -409,10 +424,10 @@ class GestionFicha(Frame):
                     if campos_abajo == "Obra Social":
                         nombre = self.conexion_bd_os(valores[6])
                         entry.insert(0, nombre[0][1])
-                        self.datos_ficha[campos_arriba] = valores[6]  #guarda el id de la obra social
+                        self.datos_ficha[campos_abajo] = valores[6]  #guarda el id de la obra social
                     elif campos_abajo == "Número de Afiliado":
                         entry.insert(0, valores[7])
-                        self.datos_ficha[campos_arriba] = entry      #guarda el número de afiliado
+                        self.datos_ficha[campos_abajo] = entry      #guarda el número de afiliado
                     entry.config(state="readonly")
                 self.buscar_paciente.delete(0, END)
                 if paciente is None:
@@ -434,13 +449,13 @@ class GestionFicha(Frame):
                 return
             elif resultado[0] == 1:
                 medico = self.obtener_unico(elemento, "medico")
-                print(medico)
                 campos_medico = ["Nombre del médico", "Apellido del médico", "Matrícula"]
                 valores = list(medico[0])
+                self.datos_ficha["Id_medico"] = valores[0]
                 for m, campo in enumerate(campos_medico):
                     Label(self.frame_datos_medico, text=campo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=m, padx=8, sticky= W)
                     entry = Entry(self.frame_datos_medico, width=28, font=("Robot", 12))
-                    entry.grid(row=1, column=m, padx=8, stiky=W)
+                    entry.grid(row=1, column=m, padx=8)
                     entry.insert(0, valores[m+1])
                     entry.config(state="readonly")
                     self.datos_ficha[campo] = entry # Guarda la entrada en un diccionario
@@ -486,7 +501,7 @@ class GestionFicha(Frame):
             busqueda = self.entrada_buscar.get().strip().upper()
             if not busqueda:
                 self.tree_tratamiento.delete(*self.tree_tratamiento.get_children())
-                self.actualizar_treeview()
+                self.actualizar_treeview_tratamiento()
                 return
             tratamiento_encontrado = False
 
@@ -504,7 +519,7 @@ class GestionFicha(Frame):
                 messagebox.showwarning("Atención", "No se encontró el tratamiento.")
                 self.tree_tratamiento.delete(*self.tree_tratamiento.get_children())
                 self.ventana_tratamientos.lift()
-                self.actualizar_treeview()
+                self.actualizar_treeview_tratamiento()
 
         self.ventana_tratamientos = Toplevel()
         self.ventana_tratamientos.title("Tratamientos")
@@ -544,7 +559,7 @@ class GestionFicha(Frame):
         self.tree_tratamiento.column("Precio", anchor='center', width=100, stretch=False)
         self.tree_tratamiento.pack(pady=15)
 
-        self.actualizar_treeview()
+        self.actualizar_treeview_tratamiento()
 
         self.cantidad_var = ttk.Combobox(self.ventana_tratamientos, values=[str(i) for i in range(1, 10)], state="readonly", width=8, height=2)
         self.cantidad_var.pack()
@@ -561,52 +576,45 @@ class GestionFicha(Frame):
         # Botón Volver
         btn_volver = Button(frame_botones, text="Volver", font=("Robot", 11, "bold"), bg="#e6c885", height=1, width=10, command=self.ventana_tratamientos.destroy)
         btn_volver.grid(row=0, column=1, padx=10)
-"""
+
+    #Funciones para conectar con la base de datos
+    
+    #Funciones para subir los datos en la base de datos
     def guardar_nueva_ficha(self, entry, ventana):
+        conexion = obtener_conexion()
+        
+        id_paciente = self.datos_ficha["Id_paciente"]
         nombre = entry["Nombre"].get()      #Obtenemos los valores que el usuario ingresó.
         apellido = entry["Apellido"].get()
         dni = entry["DNI"].get()
-        obra_social = entry["Obra social"].get()
-        propietario = entry["Propietario del Plan"].get()
-        telefono = entry["Teléfono"].get()
+        obra_social = self.datos_ficha["Obra Social"]
         nro_afiliado = entry["Número de Afiliado"].get()
+        id_medico = self.datos_ficha["Id_medico"]
         nombre_medico = entry["Nombre del médico"].get()
         apellido_medico = entry["Apellido del médico"].get()
-        especialidad = entry ["Especialidad"].get()
-        tipo_matricula = entry ["Tipo de matrícula"].get()
         matricula = entry ["Matrícula"].get()
-        servicio = entry ["Servicio"].get()
-        fecha = entry["Fecha de prestación médica"].get()
-        codigo =entry["Código"].get()
-        nombre_procedimiento=entry["Nombre del procedimiento"].get()
-        precio=entry["Precio"].get()
-        tipo_tratamiento=entry["Tipo de tratamiento"].get()
-        siglas=entry["Siglas"].get()
+        total = self.total_var.get()
 
         # Validar datos y agregar al Treeview
-        if nombre and apellido and dni and obra_social and propietario and telefono and nro_afiliado and nombre_medico and apellido_medico and especialidad and tipo_matricula and matricula and servicio and fecha and codigo and nombre_procedimiento and precio and tipo_tratamiento and siglas:
+        if nombre and apellido and dni and obra_social and nro_afiliado and nombre_medico and apellido_medico and matricula and total:
             try:
-                conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
                 cursor = conexion.cursor()
-                query = 
-                INSERT INTO ficha (nombre, apellido, dni, obra_social, propietario, telefono, nro_afiliado, nombre_medico, apellido_medico, especialidad, tipo_matricula,
-                matricula, servicio, fecha, codigo, nombre_procedimiento, precio, tipo_tratamiento, siglas)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                
-                cursor.execute(query, (nombre, apellido, dni, obra_social, propietario, telefono, nro_afiliado,nombre_medico, apellido_medico, especialidad, tipo_matricula,
-                matricula, servicio, fecha, codigo, nombre_procedimiento, precio, tipo_tratamiento, siglas))
+                sql = "INSERT INTO ficha (id_paciente, id_medico, fecha, total) VALUES (%s, %s, %s, %s)"
+                val = (id_paciente, id_medico, datetime.now(), total)
+                cursor.execute(sql, val)
                 conexion.commit()
-                messagebox.showinfo("Información", "Paciente agregado correctamente.")
+                cursor.close()
+                messagebox.showinfo("Información", "Ficha agregada exitosamente")
+                self.tree.insert("", 0, values=(dni, nombre, apellido, obra_social, datetime.now().strftime("%d/%m/%Y"), total))
                 ventana.destroy()
+                self.actualizar_treeview()
             except mysql.connector.Error as err:
                 messagebox.showerror("Error", f"Error al agregar la ficha: {err}")
             finally:
-                if conexion.is_connected():
-                    cursor.close()
-                    conexion.close()
+                conexion.close()
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
-"""
+
 """
     def ver_ficha(self):
         seleccion = self.tree.selection()
