@@ -224,7 +224,7 @@ class GestionFicha(Frame):
         btn_editar = Button(frame_btn, text="Modificar", width=15, font=("Robot",15),bg="#e6c885")
         btn_editar.grid(row=0, column=2,padx=50)
         
-        btn_eliminar = Button(frame_btn, text="Eliminar", width=15,font=("Robot",15),bg="#e6c885")
+        btn_eliminar = Button(frame_btn, text="Eliminar", width=15,font=("Robot",15),bg="#e6c885", command= self.eliminar_ficha)
         btn_eliminar.grid(row=0, column=3, padx=50)
 
         btn_volver = Button(frame_btn, text="Volver", width=15 ,font=("Robot",15), bg="#e6c885")
@@ -679,6 +679,35 @@ class GestionFicha(Frame):
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
 
+    #Funciones para eliminar las fichas, y los detalles de la misma
+    def eliminar_ficha(self):
+        seleccion = self.tree.selection()
+        if not seleccion:
+            messagebox.showwarning("Atención", "Por favor, seleccione un paciente para eliminar.")
+            return
+        
+        id_ficha = seleccion[0]  # Asumiendo que el ID es el primer valor
+        print(id_ficha)
+        
+        #Pregunta al usuario si está seguro de eliminar 
+        respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar la ficha seleccionada?")
+        if respuesta:  
+            try:
+                conexion = obtener_conexion()
+                cursor = conexion.cursor()
+                sentencia1 = ("UPDATE ficha SET activo = 0 WHERE id_ficha = %s")
+                cursor.execute(sentencia1, (id_ficha,)) # Elimina la ficha
+                sentencia2 = ("UPDATE detalle_ficha SET activo = 0 WHERE id_ficha = %s")
+                cursor.execute(sentencia2, (id_ficha,)) # Elimina los detalles de la ficha
+                conexion.commit()
+                messagebox.showinfo("Éxito", "Ficha eliminada correctamente.")
+                self.tree.delete(seleccion)
+            except mysql.connector.Error as err:
+                messagebox.showerror("Error", f"Error al eliminar la ficha: {err}")
+            finally:
+                if conexion.is_connected():
+                    cursor.close()
+                    conexion.close()
 """
     def ver_ficha(self):
         seleccion = self.tree.selection()
@@ -811,32 +840,6 @@ class GestionFicha(Frame):
             if conexion.is_connected():
                 cursor.close()
                 conexion.close()
-
-    def eliminar_ficha(self):
-        seleccion = self.tree.selection()
-        if not seleccion:
-            messagebox.showwarning("Atención", "Por favor, seleccione un paciente para eliminar.")
-            return
-        
-        ficha_seleccionada = self.tree.item(seleccion[0], "values")
-        id_ficha = ficha_seleccionada[0]  # Asumiendo que el ID es el primer valor
-        
-        #Pregunta al usuario si está seguro de eliminar 
-        respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar la ficha seleccionada?")
-        if respuesta:  
-            try:
-                conexion= mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
-                cursor = conexion.cursor()
-                cursor.execute("UPDATE paciente SET activo = 0 WHERE id_paciente = %s", (id_ficha,))
-                conexion.commit()
-                messagebox.showinfo("Éxito", "ficha eliminada correctamente.")
-                self.tree.delete(seleccion)
-            except mysql.connector.Error as err:
-                messagebox.showerror("Error", f"Error al eliminar la ficha: {err}")
-            finally:
-                if conexion.is_connected():
-                    cursor.close()
-                    conexion.close()
 
     def buscar_ficha(self):
         busqueda = self.entrada_buscar.get().strip().lower() 
