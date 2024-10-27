@@ -173,17 +173,17 @@ class Login(Frame):
         menu.mainloop()
 
     def create_widgets(self):
-        contenedor_total = Frame(self, bg="#c9c2b2", height=600, width=1000)
+        contenedor_total = Frame(self, bg="#c9c2b2", height=600, width=1000, bd=3, relief="groove")
         contenedor_total.pack_propagate(False)
         contenedor_total.pack(expand=True, pady= 80, ipady= 60)
 
         # Crear un contenedor para el título
         contenedor_titulo = Frame(contenedor_total, bg="#c9c2b2")
-        contenedor_titulo.pack(pady= 50)
+        contenedor_titulo.pack(pady= 30)
 
         # Cargar la imagen de fondo
         img_fondo = Image.open("Logos_MVCP_Web.jpg")
-        img_fondo = img_fondo.resize((700, 150), Image.Resampling.LANCZOS)
+        img_fondo = img_fondo.resize((700, 180), Image.Resampling.LANCZOS)
         self.img_fondo = ImageTk.PhotoImage(img_fondo)
         # Crear un Label para la imagen de fondo
         fondo_label = Label(contenedor_titulo, image=self.img_fondo)
@@ -192,12 +192,12 @@ class Login(Frame):
         #texto_label = Label(contenedor_titulo, text="INICIO DE SESIÓN", font=("Robot", 20), bg="Black", fg="White")
         #texto_label.place(relx=0.5, rely=0.5, anchor="center")
 
-        Label(contenedor_total, text="Ingrese usuario", padx=10, pady=10,font=("Robot",15), bg="#c9c2b2").pack()
-        self.usario = Entry(contenedor_total, font=("Robot",15), width=30)
+        Label(contenedor_total, text="Ingrese usuario", padx=10, pady=10,font=("Robot",13), bg="#c9c2b2").pack()
+        self.usario = Entry(contenedor_total, font=("Robot",13), width=30)
         self.usario.pack()
 
-        Label(contenedor_total, text="Ingrese contraseña", padx=10, pady=10,font=("Robot",15), bg="#c9c2b2").pack()
-        self.contraseña = Entry(contenedor_total, font=("Robot",15), width=30)
+        Label(contenedor_total, text="Ingrese contraseña", padx=10, pady=10,font=("Robot",13), bg="#c9c2b2").pack()
+        self.contraseña = Entry(contenedor_total, font=("Robot",13), width=30, show="*")
         self.contraseña.pack()
 
         login = Button(contenedor_total, text="Ingresar", command=self.check_login, font=("Robot",15), bg="#e4c09f")
