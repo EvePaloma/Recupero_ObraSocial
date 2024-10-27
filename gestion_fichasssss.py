@@ -50,6 +50,21 @@ class GestionFicha(Frame):
         menu = MENU(ventana)
         menu.mainloop()
 
+    def actualizar_treeview(self):
+        for item in self.tree_tratamiento.get_children():
+            self.tree_tratamiento.delete(item)
+        conexion = obtener_conexion()
+        cursor = conexion.cursor()
+
+        cursor.execute("SELECT nombre, codigo, precio FROM tratamiento where activo = 1")
+        tratamientos = cursor.fetchall()
+
+        # Insertar los datos en el Treeview
+        for tratamiento in tratamientos:
+            self.tree_tratamiento.insert("", "end", values=tratamiento)
+        cursor.close()
+        conexion.close()
+
     def createWidgets(self):
         frame_fichas = LabelFrame(self, text="Gestión de Fichas", font=("Robot",15),padx=10, pady=10, bg="#c9c2b2")
         frame_fichas.pack(expand=True)
@@ -100,11 +115,11 @@ class GestionFicha(Frame):
         frame_tabla.pack(expand=True, pady=8)
         
         stilo = ttk.Style()
-        stilo.configure("Treeview", font=("Robot",11), rowheight=22)  # Cambia la fuente y el alto de las filas
-        stilo.configure("Treeview.Heading", font=("Robot",14), padding= [0, 10])  # Cambia la fuente de las cabeceras
+        stilo.configure("Inicio.Treeview", font=("Robot",11), rowheight=22)  # Cambia la fuente y el alto de las filas
+        stilo.configure("Inicio.Treeview.Heading", font=("Robot",14), padding= [0, 10])  # Cambia la fuente de las cabeceras
         
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("DNI", "Nombre" ,"Apellido", "Obra Social", "Fecha prestación", "Total"), show='headings', height=16)
+        self.tree = ttk.Treeview(frame_tabla, columns=("DNI", "Nombre" ,"Apellido", "Obra Social", "Fecha prestación", "Total"), show='headings', height=16, style = "Inicio.Treeview")
         self.tree.pack(expand=True, fill="both")
 
         #Títulos de columnas
@@ -149,13 +164,13 @@ class GestionFicha(Frame):
 
     #AGREGAR NUEVA FICHA 
     def agregar_ficha(self):        
-        ventana_agregar = Toplevel(self)
-        ventana_agregar.title("Agregar ficha")
-        ventana_agregar.config(bg="#e4c09f") 
-        ventana_agregar.resizable(False,False)
-        ventana_agregar.geometry("1370x700+0+0")
+        self.ventana_agregar = Toplevel(self)
+        self.ventana_agregar.title("Agregar ficha")
+        self.ventana_agregar.config(bg="#e4c09f") 
+        self.ventana_agregar.resizable(False,False)
+        self.ventana_agregar.geometry("1370x700+0+0")
 
-        frame_agregar = LabelFrame(ventana_agregar, text="Agregar ficha", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
+        frame_agregar = LabelFrame(self.ventana_agregar, text="Agregar ficha", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.pack(padx=10, pady=5)
         self.datos_ficha = {} #Diccionario para guardar los datos de la ficha
 
@@ -247,55 +262,59 @@ class GestionFicha(Frame):
         frame_tratamiento = LabelFrame(frame_agregar, text="Tratamiento", font=("Robot", 10), bg="#c9c2b2") 
         frame_tratamiento.pack(fill="x")
 
-        buscar_tratamiento = Frame(frame_tratamiento, bg="#c9c2b2")
-        buscar_tratamiento.pack(fill="x", pady=5)
-        Label(buscar_tratamiento, text="Buscar:", bg="#c9c2b2",font=("Robot", 13)).grid(row=0, column=1, padx=5, pady=2, sticky= W)
-        self.buscar_tratamiento = Entry(buscar_tratamiento, width=20,font=("Robot",12))
-        self.buscar_tratamiento.grid(row=0, column=2, padx=5, pady=2, sticky= W)
-        img_buscar = Image.open("buscar1.png").resize((20, 20), Image.Resampling.LANCZOS)
-        img_buscar = ImageTk.PhotoImage(img_buscar)
-        btn_buscar = Button(buscar_tratamiento, image=img_buscar, width=25, height=25,bg="#e6c885")
-        btn_buscar.grid(row=0, column=3, sticky= W)
-        btn_buscar.image = img_buscar
-
-        buscar_tratamiento.columnconfigure(4, weight=2)
-        buscar_tratamiento.columnconfigure(5, weight=2)
-
-        btn_nuevo_tratamiento = Button(buscar_tratamiento, text="Agregar Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885")
-        btn_nuevo_tratamiento.grid(row = 0, column=6, padx=15)
-
         campos_tratamiento = ["Código", "Nombre del procedimiento", "Precio"]
 
         #Tabla para mostar los tratamientos
         frame_tabla_tratamientos = Frame(frame_tratamiento, bg="#c9c2b2", width= 500)  # Frame para contener la tabla y el scrollbar
-        frame_tabla_tratamientos.pack(expand=True)
+        frame_tabla_tratamientos.grid(row= 0, column=0, padx= 20, pady= 5)
+
+        Label(frame_tabla_tratamientos, text="Tratamientos aplicados", font=("Robot", 12), bg="#c9c2b2").pack(pady=5)
         
         estilo = ttk.Style()
-        estilo.configure("Treeview", font=("Robot",11), rowheight=10)  # Cambia la fuente y el alto de las filas
-        estilo.configure("Treeview.Heading", font=("Robot",14), padding= [0, 10])  # Cambia la fuente de las cabeceras
+        estilo.configure("Treeview", font=("Robot",10), rowheight=13)  # Cambia la fuente y el alto de las filas
+        estilo.configure("Treeview.Heading", font=("Robot",12), padding= [0, 10])  # Cambia la fuente de las cabeceras
         
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.arbol_ficha = ttk.Treeview(frame_tabla_tratamientos, columns=("Código", "Nombre", "Precio"), show='headings', height=16)
+        self.arbol_ficha = ttk.Treeview(frame_tabla_tratamientos, columns=("Código", "Nombre", "Precio", "Cantidad"), show='headings', height=16, style = "Treeview")
         self.arbol_ficha.pack(expand=True, fill="both")
 
         #Títulos de columnas
         self.arbol_ficha.heading("Código", text="Código")
         self.arbol_ficha.heading("Nombre", text="Nombre")
         self.arbol_ficha.heading("Precio", text="Precio")
+        self.arbol_ficha.heading("Cantidad", text="Cantidad")
 
         #Ancho de las columnas y datos centrados
-        self.arbol_ficha.column("Código", anchor='center', width=200, stretch=False)
+        self.arbol_ficha.column("Código", anchor='center', width=150, stretch=False)
         self.arbol_ficha.column("Nombre", anchor='center', width=200, stretch=False)
         self.arbol_ficha.column("Precio", anchor='center', width=200, stretch=False)
+        self.arbol_ficha.column("Cantidad", anchor='center', width=100, stretch=False)
+
+        #Frame para los botones de agregar y eliminar tratamientos
+        frame_botones_tratamiento = Frame(frame_tratamiento, bg="#c9c2b2")
+        frame_botones_tratamiento.grid(row=0, column=1, columnspan=2, padx=30)
+
+        btn_nuevo_t = Button(frame_botones_tratamiento, text="Nuevo Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885", height=2, width=20)
+        btn_nuevo_t.pack(pady=8)
+
+        btn_agregar_t = Button(frame_botones_tratamiento, text="Agregar Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885", height=2, width=20, command= self.mostrar_tratamientos)
+        btn_agregar_t.pack(pady=8)
+
+        btn_eliminar_t = Button(frame_botones_tratamiento, text="Eliminar Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885", height=2, width=20, command= self.eliminar_tratamiento_a_ficha)
+        btn_eliminar_t.pack(pady=8)
+
+        self.total_var = StringVar()
+        self.entry_total = Entry(frame_botones_tratamiento, textvariable=self.total_var, font=("Robot", 13), state='readonly')
+        self.entry_total.pack(pady=8)
 
         #Frame botones
-        frame_botones = Frame(ventana_agregar, bg="#e4c09f")
+        frame_botones = Frame(self.ventana_agregar, bg="#e4c09f")
         frame_botones.pack()
 
         btn_nueva_ficha = Button(frame_botones, text="Agregar", font=("Robot", 15),bg="#e6c885", width= 15)
         btn_nueva_ficha.grid(row = 0, column=0, columnspan=2, padx=20)
 
-        btn_volver = Button(frame_botones, text="Volver", font=("Robot", 15),bg="#e6c885", width=15, command= ventana_agregar.destroy)
+        btn_volver = Button(frame_botones, text="Volver", font=("Robot", 15),bg="#e6c885", width=15, command= self.ventana_agregar.destroy)
         btn_volver.grid(row = 0, column=3, columnspan=2, padx=20)
 
     def buscar_elemento_tabla(self, elemento, tabla):
@@ -428,8 +447,120 @@ class GestionFicha(Frame):
                 self.buscar_medico.delete(0, END)
                 if medico is None:
                     return
-        
+    
+    #Funciones para agregar, eliminar y calcular el total de los tratamientos en la ficha
+    def actualizar_total_precios(self):
+            total = 0.0
+            for child in self.arbol_ficha.get_children():
+                precio = float(self.arbol_ficha.item(child, 'values')[2])
+                cantidad = int(self.arbol_ficha.item(child, 'values')[3])
+                total += precio * cantidad
+            self.total_var.set(f"{total:.2f}")
+    def agregar_tratamiento_a_ficha(self):
+        # Obtener el elemento seleccionado
+        selected_item = self.tree_tratamiento.selection()
+        if selected_item:
+            item_values = self.tree_tratamiento.item(selected_item, 'values')
+            cantidad = self.cantidad_var.get()
+            # Verificar si el elemento ya existe en el Treeview de la ficha
+            for child in self.arbol_ficha.get_children():
+                if self.arbol_ficha.item(child, 'values')[0] == item_values[0]:
+                    messagebox.showwarning("Atención", "El tratamiento ya fue agregado.")
+                    self.ventana_agregar.lift()
+                    self.ventana_tratamientos.lift()
+                    return
+            # Agregar el elemento al Treeview de la ficha
+            self.arbol_ficha.insert("", "end", values= (item_values[0], item_values[1], item_values[2], cantidad))
+            self.actualizar_total_precios()
+    def eliminar_tratamiento_a_ficha(self):
+        selected_item = self.arbol_ficha.selection()
+        if selected_item:
+            # Eliminar el elemento del Treeview de la ficha
+            self.arbol_ficha.delete(selected_item)
+            # Actualizar el total de precios
+            self.actualizar_total_precios()
 
+    #Funcion que muestra una lista con los tratamientos activos y permite agregarlos a la ficha, con su cantidad
+    def mostrar_tratamientos(self):
+        def buscar_tratamiento():
+            busqueda = self.entrada_buscar.get().strip().upper()
+            if not busqueda:
+                self.tree_tratamiento.delete(*self.tree_tratamiento.get_children())
+                self.actualizar_treeview()
+                return
+            tratamiento_encontrado = False
+
+            for item in self.tree_tratamiento.get_children():
+                valores = self.tree_tratamiento.item(item, 'values')
+                codigo = valores[0].upper()
+                nombre = valores[1].upper()
+
+                if busqueda in codigo or busqueda in nombre:
+                    tratamiento_encontrado = True
+                else:
+                    self.tree_tratamiento.delete(item)
+
+            if not tratamiento_encontrado:
+                messagebox.showwarning("Atención", "No se encontró el tratamiento.")
+                self.tree_tratamiento.delete(*self.tree_tratamiento.get_children())
+                self.ventana_tratamientos.lift()
+                self.actualizar_treeview()
+
+        self.ventana_tratamientos = Toplevel()
+        self.ventana_tratamientos.title("Tratamientos")
+        self.ventana_tratamientos.geometry("680x450")
+        self.ventana_tratamientos.config(bg="#e4c09f")
+
+        #Buscar tratamiento por nombre, codigo
+        frame_busqueda = Frame(self.ventana_tratamientos, bg="#e6c885")
+        frame_busqueda.pack()
+
+        #Widgets de búsqueda dentro del frame más chico
+        etiqueta_buscar = Label(frame_busqueda, text="Buscar:", bg="#e6c885",font=("Robot",11))
+        etiqueta_buscar.grid(row=1, column=1, padx=5, pady=5)
+
+        self.entrada_buscar = Entry(frame_busqueda,width="40",font=("Robot",10))
+        self.entrada_buscar.grid(row=1, column=2, padx=5, pady=5)
+
+        img_buscar = Image.open("buscar1.png").resize((25, 25), Image.Resampling.LANCZOS)
+        img_buscar = ImageTk.PhotoImage(img_buscar)
+        btn_buscar = Button(frame_busqueda, image=img_buscar, width=25, height=25,bg="#e6c885",command= buscar_tratamiento)
+        
+        btn_buscar.grid(row=1, column=3)
+        btn_buscar.image = img_buscar
+
+        # Crear el Treeview para ver los tratamientos
+        stilo = ttk.Style()
+        stilo.configure("Custom.Treeview", font=("Robot",11), rowheight=22)  # Cambia la fuente y el alto de las filas
+        stilo.configure("Custom.Treeview.Heading", font=("Robot",14), padding= [0, 10])  # Cambia la fuente de las cabeceras
+
+        self.tree_tratamiento = ttk.Treeview(self.ventana_tratamientos, columns=("Nombre", "Código", "Precio"), show='headings', style="Custom.Treeview")
+        self.tree_tratamiento.heading("Nombre", text="Nombre")
+        self.tree_tratamiento.heading("Código", text="Código")
+        self.tree_tratamiento.heading("Precio", text="Precio")
+
+        self.tree_tratamiento.column("Nombre", anchor='center', width=200, stretch=False)
+        self.tree_tratamiento.column("Código", anchor='center', width=100, stretch=False)
+        self.tree_tratamiento.column("Precio", anchor='center', width=100, stretch=False)
+        self.tree_tratamiento.pack(pady=15)
+
+        self.actualizar_treeview()
+
+        self.cantidad_var = ttk.Combobox(self.ventana_tratamientos, values=[str(i) for i in range(1, 10)], state="readonly", width=8, height=2)
+        self.cantidad_var.pack()
+        self.cantidad_var.current(0)
+
+        # Crear el frame para los botones
+        frame_botones = Frame(self.ventana_tratamientos)
+        frame_botones.pack(pady=10)
+
+        # Botón Agregar
+        btn_agregar = Button(frame_botones, text="Agregar", font=("Robot", 11, "bold"), bg="#e6c885", height=1, width=10, command= self.agregar_tratamiento_a_ficha)
+        btn_agregar.grid(row=0, column=0, padx=10)
+
+        # Botón Volver
+        btn_volver = Button(frame_botones, text="Volver", font=("Robot", 11, "bold"), bg="#e6c885", height=1, width=10, command=self.ventana_tratamientos.destroy)
+        btn_volver.grid(row=0, column=1, padx=10)
 """
     def guardar_nueva_ficha(self, entry, ventana):
         nombre = entry["Nombre"].get()      #Obtenemos los valores que el usuario ingresó.
@@ -475,7 +606,8 @@ class GestionFicha(Frame):
                     conexion.close()
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
-
+"""
+"""
     def ver_ficha(self):
         seleccion = self.tree.selection()
         if not seleccion:
