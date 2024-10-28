@@ -75,12 +75,12 @@ class GestionTratamiento(Frame):
         frame_tabla.grid(row=2, column=0, columnspan=6, padx=10, pady=10)
         
         stilo = ttk.Style()
-        stilo.configure("Treeview", font=("Robot",11), rowheight=25)  # Cambia la fuente y el alto de las filas
+        stilo.configure("Treeview", font=("Robot",11), rowheight=26)  # Cambia la fuente y el alto de las filas
         stilo.configure("Treeview.Heading", font=("Robot",14))  # Cambia la fuente de las cabeceras
 
 
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("codigo", "nombre", "precio"), show='headings', height=10)
+        self.tree = ttk.Treeview(frame_tabla, columns=("codigo", "nombre", "precio"), show='headings', height=11)
 
         #Títulos de columnas
         self.tree.heading("codigo", text="Código")
@@ -88,9 +88,9 @@ class GestionTratamiento(Frame):
         self.tree.heading("precio", text="Precio")
 
         #Ancho de las columnas y datos centrados
-        self.tree.column("codigo", anchor='center', width=350)
-        self.tree.column("nombre", anchor='center', width=450)
-        self.tree.column("precio", anchor='center', width=350)
+        self.tree.column("codigo", anchor='center', width=400)
+        self.tree.column("nombre", anchor='center', width=480)
+        self.tree.column("precio", anchor='center', width=400)
 
         #Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -398,7 +398,6 @@ class GestionTratamiento(Frame):
             return
         nuevos_valores = {campo: entradas[campo].get().upper() for campo in entradas}
         nuevos_valores["Estado"] = self.on_seleccion("Estado")
-        print(nuevos_valores)
        
         if seleccion:
             try:
@@ -435,16 +434,13 @@ class GestionTratamiento(Frame):
 
         #tratamiento_seleccionado = self.tree.item(seleccion[0], "values")
         id_tratamiento = seleccion[0]  # Asumiendo que el ID es el primer valor
-        print(f"ID del tratamiento a eliminar: {id_tratamiento}")
         respuesta = messagebox.askyesno("Confirmar", "¿Está seguro de que desea eliminar este tratamiento?")
         if respuesta:
             try:
                 conexion = obtener_conexion()
                 cursor = conexion.cursor()
-                print(f"ID del tratamiento a eliminar: {id_tratamiento}")  # Mensaje de depuración
                 cursor.execute("UPDATE tratamiento SET activo = 0 WHERE id_tratamiento = %s", (id_tratamiento,))
                 conexion.commit()
-                print("Tratamiento marcado como inactivo en la base de datos.")  # Mensaje de depuración
                 messagebox.showinfo("Éxito", "Tratamiento eliminado correctamente.")
                 self.tree.delete(seleccion[0])  # Eliminar de la interfaz
             except mysql.connector.Error as err:
@@ -487,7 +483,6 @@ class GestionTratamiento(Frame):
                 conexion.close()   
         
 
-    
     def actualizar_treeview(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
@@ -582,6 +577,6 @@ class GestionTratamiento(Frame):
 '''ventana = Tk()
 ventana.title("Gestion de Tratamientos")
 ventana.resizable(False,False)
-ventana.geometry("+2+15")
+ventana.geometry("+1+1")
 root = GestionTratamiento(ventana)
 ventana.mainloop()'''

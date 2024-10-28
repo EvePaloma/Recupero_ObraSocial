@@ -19,11 +19,27 @@ class Gestionmedico(Frame):
     def solo_numeros(self, char):
         return char.isdigit()
 
+    """def actualizar_treeview(self):
+        self.tree.delete(*self.tree.get_children())
+        self.cargar_medicos()"""	
+
+    
     def actualizar_treeview(self):
         self.tree.delete(*self.tree.get_children())
-        self.cargar_medicos()
-
-
+        conexion = obtener_conexion()
+        cursor = conexion.cursor()
+        seleccion = self.combo_activos.get()
+        if seleccion == "Activos":
+            cursor.execute("SELECT id_medico, nombre, apellido, documento, telefono, matricula FROM medico WHERE activo = 1")
+        elif seleccion == "Inactivos":
+            cursor.execute("SELECT id_medico, nombre, apellido, documento, telefono, matricula FROM medico WHERE activo = 0")
+        elif seleccion == "Todos":
+            cursor.execute("SELECT id_medico, nombre, apellido, documento, telefono, matricula FROM medico")
+        medicos = cursor.fetchall()
+        for medico in medicos:
+            self.tree.insert("", "end", values=medico)
+        cursor.close()
+        conexion.close()
 
 
     def validar_repetidos(self, documento):
@@ -98,6 +114,13 @@ class Gestionmedico(Frame):
         # Frame más chico para label y entry de búsqueda
         frame_busqueda = Frame(frame_Medicos, bg="#e6c885")
         frame_busqueda.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="w")
+
+        self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 14), state="readonly", style="Custom.TCombobox")
+        self.combo_activos['values'] = ("Activos", "Inactivos", "Todos")
+        self.combo_activos.set("Activos")
+        self.combo_activos.grid(row=1, column=4, padx=20, pady=3)
+        self.combo_activos.bind("<<ComboboxSelected>>", lambda event: self.actualizar_treeview())
+
 
         # Widgets de búsqueda dentro del frame más chico
         etiqueta_buscar = Label(
@@ -450,6 +473,88 @@ class Gestionmedico(Frame):
                     conexion.close()
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
+
+
+
+
+    def abrir_ventana_tratamiento(self, tratamiento,modo, seleccion=None):           
+        ventana = Toplevel(self)
+        ventana.title("Detalles del Tratamiento")
+        ventana.config(bg="#e4c09f")
+        ventana.resizable(False, False)
+        ventana.geometry("510x360+400+160")
+        ventana.protocol("WM_DELETE_WINDOW", lambda: None)
+        
+        ventana.grid_columnconfigure(0, weight=2)
+        ventana.grid_rowconfigure(0, weight=2)
+
+        frame_detalles = LabelFrame(ventana, text="Detalles del Tratamiento", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
+        frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+        campos = ["Código", "Nombre", "Precio", "Fecha Precio", "Siglas", "Descripción", "Estado"]
+        valores = list(tratamiento)
+        entradas = {}
+
+        for i, campo in enumerate(campos):
+            etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
+            etiqueta.grid(row=i, column=0, padx=10, pady=5)
+            if campo == "Estado":
+                lista = self.conectar_tabla("estado")
+                print(lista)
+                # Crear un diccionario para buscar el ID por el nombre
+                self.datos_tabla_1 = {dato[1]: dato[0] for dato in lista} 
+                self.combo_valores_2 = ttk.Combobox(frame_detalles, width=38, font=("Robot", 10), state="disabled")
+                self.combo_valores_2['values'] = list(self.datos_tabla_1.keys())
+                self.combo_valores_2.grid(row=i, column=1, padx=10, pady=5)
+                #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
+                valor_a_buscar = valores[i+1]
+                clave_encontrada = next((clave for clave, valor in self.datos_tabla_1.items() if valor == valor_a_buscar), None)
+                self.combo_valores_2.set(clave_encontrada)
+            else:
+                entry = Entry(frame_detalles, width=40, font=("Robot", 10))
+                entry.grid(row=i, column=1, padx=10, pady=5)
+                if i + 1 < len(valores):
+                    entry.insert(0,str(valores[i + 1]).upper()) 
+            entradas[campo] = entry
+
+        if modo == "ver":
+                for entry in entradas.values():
+                    entry.config(state="readonly")
+
+                self.combo_valores_2.config(state="disabled")
+                
+                frame_btns = Frame(ventana, bg="#e4c09f")
+                frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+
+                btn_editar = Button(frame_btns, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885",
+                                    command=lambda: self.activar_edicion(entradas,btn_guardar))
+                btn_editar.grid(row=len(campos), column=0, padx=10,pady=10)
+
+                btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885", 
+                                    command=lambda: self.guardar_cambios(entradas, ventana, seleccion))
+                btn_guardar.grid(row=len(campos), column=1, padx=10,pady=10)
+                btn_guardar.config(state="disabled")  
+
+                btn_volver = Button(frame_btns, text="Volver", width=15, font=("Robot", 13), bg="#e6c885",
+                                    command=ventana.destroy)
+                btn_volver.grid(row=len(campos), column=2, padx=10,pady=10)
+
+        if modo == "modificar":
+            self.combo_valores_2.config(state="readonly")
+            self.combo_valores_2.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Estado"))
+            frame_btns = Frame(ventana, bg="#e4c09f")
+            frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+
+            btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885",
+                                command=lambda: self.guardar_cambios(entradas, ventana, seleccion))
+            btn_guardar.grid(row=len(campos), column=0,  padx=60, pady=10)
+
+            btn_cancelar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885",
+                                command=ventana.destroy)
+            btn_cancelar.grid(row=len(campos), column=1, pady=10)
+
+
+
 
         self.actualizar_treeview()
         

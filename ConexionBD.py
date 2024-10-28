@@ -5,8 +5,8 @@ def obtener_conexion():
     try:
         conexion = mysql.connector.connect(
                 host="localhost",
-                user="root", #PONER SU PROPIO USUARIO
-                password="123", #PONER SU PROPIA CLAVE
+                user="Gaspar", #PONER SU PROPIO USUARIO
+                password="yarco7mysql", #PONER SU PROPIA CLAVE
                 database="recupero_obra_social")
         print("Conexión exitosa")
         return conexion
@@ -25,7 +25,7 @@ def insertar_medico(nombre, apellido, matricula, telefono, documento):
         val = (nombre, apellido, matricula, telefono, documento)
         cursor.execute(sql, val)
         conexion.commit()
-        messagebox.showinfo("Éxito", "Registro insertado correctamente.")
+        #messagebox.showinfo("Éxito", "Registro insertado correctamente.")
     except mysql.connector.Error as err:
         messagebox.showerror("Error", f"Error al insertar en la base de datos: {err}")
     finally:

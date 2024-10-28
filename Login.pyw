@@ -17,7 +17,7 @@ class Login(Frame):
         ventana = Tk()
         ventana.wm_title("Menú Recupero de Obra Social")
         ventana.wm_resizable(0,0)
-        ventana.geometry("+30+15")
+        ventana.geometry("+0+0")
         menu = MENU(ventana)
         menu.mainloop()
 
