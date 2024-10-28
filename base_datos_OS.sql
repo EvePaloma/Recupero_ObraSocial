@@ -35,6 +35,10 @@ CREATE TABLE `afip` (
   PRIMARY KEY (`id_afip`),
   UNIQUE KEY `nombre_UNIQUE` (`nombre`)
 );
+INSERT INTO afip (nombre) VALUES 
+('Público'), 
+('Privado'), 
+('Estatal');
 DROP TABLE IF EXISTS `pais`;
 CREATE TABLE `pais` (
   `id_pais` int NOT NULL AUTO_INCREMENT,
@@ -149,12 +153,15 @@ CREATE TABLE `usuario` (
   PRIMARY KEY (`id_usuario`),
   FOREIGN KEY (`id_rol`) REFERENCES `rol` (`id_rol`)
 );
+insert into rol(nombre) values ("ADMINISTRADOR"),("USUARIO");
+insert into usuario (nombre, apellido, documento, telefono, clave, id_rol) values ("LUCRECIA", "SALAZAR", "4563255", "3562455", "623", 1);
 
 DROP TABLE IF EXISTS `ficha`;
 CREATE TABLE `ficha` (
   `id_ficha` int NOT NULL AUTO_INCREMENT,
   `id_paciente` int NOT NULL,
   `id_obra_social` int NOT NULL,
+  `nro_afiliado` varchar(45) NOT NULL,
   `id_medico` int NOT NULL,
   `fecha` date NOT NULL,
   `total` float NOT NULL,
@@ -181,10 +188,6 @@ CREATE TABLE `detalle_ficha` (
 
 ---------------------------------------------------------------------------
 ---insertar datos---
-insert into rol(nombre) values ("ADMINISTRADOR"),("USUARIO");
-insert into usuario (nombre, apellido, documento, telefono, clave, id_rol) values ("LUCRECIA", "SALAZAR", "4563255", "3562455", "623", 1);
-
-from * from USUARIO;
 
 use recupero_obra_social;
 INSERT INTO obra_social (nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit, id_afip) VALUES
@@ -207,10 +210,6 @@ INSERT INTO obra_social (nombre, siglas, telefono, detalle, domicilio_central, d
 ('OSPACP', 'OSPACP', '08005556677', 'OBRA SOCIAL DEL PERSONAL DE LA ACTIVIDAD DEL PLASTICO.', 'AV. CALLAO 1234, CABA', '1800', '30678912348', 2);
 
 select * from obra_social;
-INSERT INTO afip (nombre) VALUES 
-('Entidad de la Seguridad Social'), 
-('Entidad con Código de Obra Social'), 
-('Entidad Prestadora de Servicios de Salud');
 
 INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, siglas, descripcion) VALUES 
 ('1001', 'SUTURA SIMPLE', 1800.00, '2024-01-10', 'SS', 'CIERRE DE HERIDAS SUPERFICIALES CON SUTURAS EN URGENCIAS.'),
