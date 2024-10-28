@@ -180,6 +180,7 @@ class GestionPaciente(Frame):
         btn_volver.grid(row=4, column=4, padx=50)
 
     def volver_menu_principal(self):
+        self.master.destroy()
         import os
         os.system('python Menu.py')
 

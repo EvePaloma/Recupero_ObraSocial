@@ -104,7 +104,6 @@ CREATE TABLE `paciente` (
   `id_paciente` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(45) NOT NULL,
   `apellido` varchar(45) NOT NULL,
-  `nacimiento` date NOT NULL,
   `tipo_documento` int NOT NULL,
   `documento` varchar(45) NOT NULL,
   `id_obra_social` int NOT NULL,
