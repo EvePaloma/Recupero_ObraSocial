@@ -689,6 +689,7 @@ class GestionFicha(Frame):
         finally:
             cursor.close()
             conexion.close()
+    
     #Ver obra social seleccionada
     def ver_ficha(self):
         seleccion = self.tree.selection()
@@ -954,45 +955,54 @@ class GestionFicha(Frame):
         id_medico = self.buscar_ids("medico", self.datos_ficha["Matrícula"].get())[0]
         total = self.total_var.get()
 
-        
-        """nuevos_valores = {campo: entradas[campo].get().upper() for campo in entradas}
-        nuevos_valores['Detalle'] = self.texto.get("1.0", "end-1c").upper() 
-        nuevos_valores['Carácter de AFIP'] = self.on_seleccion("Carácter de AFIP")
-        nuevos_valores['Estado'] = self.on_seleccion("Estado")
-        # Asegúrate de que 'seleccion' no sea None y tenga un valor válido
-        if seleccion :
+        if self.datos_ficha["Nombre"].get() and self.datos_ficha["Apellido"].get() and dni and id_obra_social and nro_afiliado and id_medico and total:
             try:
                 cursor = conexion.cursor()
-                sql = "UPDATE obra_social SET nombre = %s, siglas = %s, telefono = %s, detalle = %s, domicilio_central = %s, domicilio_cp = %s, cuit = %s, id_afip = %s, activo = %s WHERE id_obra_social=%s"
-                val = (
-                    nuevos_valores['Nombre'], 
-                    nuevos_valores['Siglas'],
-                    nuevos_valores['Teléfono'],
-                    nuevos_valores['Detalle'], 
-                    nuevos_valores['Domicilio Casa Central'], 
-                    nuevos_valores['Domicilio Carlos Paz'],
-                    nuevos_valores['CUIT'],
-                    nuevos_valores['Carácter de AFIP'],
-                    nuevos_valores['Estado'],
-                    seleccion  # Usa el ID original del obra_social que estás modificando
-                )
-                obligatorios = ['nombre', 'siglas', 'telefono', 'cuit', 'id_afip']
-                if any(elemento  == "" for elemento in obligatorios):
-                    messagebox.showerror("Error", "Hay campos obligatorios vacíos.")
-                    ventana.lift()
-                    return
+                sql1 = "UPDATE ficha SET id_paciente = %s, id_obra_social = %s, nro_afiliado = %s, id_medico = %s, fecha = %s, total = %s WHERE id_ficha = %s"
+                val1 = (id_paciente, id_obra_social, nro_afiliado, id_medico, datetime.now(), total, seleccion)
+                cursor.excecute(sql1, val1)
+
+                ficha_id = cursor.seleccion
+                for child in self.arbol_ficha.get_children():
+                    id_tratamiento = child
+                    tratamiento = self.arbol_ficha.item(child, 'values')
+                    print("valores para agregar", id_tratamiento, tratamiento)
+                    sql = "UPDATE detalle_ficha SET id_tratamiento = %s, cantidad = %s, precio_unitario = %s "
+                    val = (ficha_id, id_tratamiento, tratamiento[3], tratamiento[2])
+                    cursor.execute(sql, val)
+                    conexion.commit()
+                messagebox.showinfo("Información", "Ficha agregada exitosamente")
+                self.tree.insert("", 0, values=(dni, nombre, apellido, obra_social, fecha, total))
+                self.volver_inicio()
+                self.actualizar_treeview()
+                
+
+                cursor = conexion.cursor()
+                sql = "INSERT INTO ficha (id_paciente, id_obra_social, nro_afiliado ,id_medico, fecha, total) VALUES (%s, %s, %s, %s, %s, %s)"
+                val = (id_paciente, obra_social, nro_afiliado, id_medico, fecha, total)
                 cursor.execute(sql, val)
                 conexion.commit()
-                messagebox.showinfo("Información", "Obra social modificada correctamente.")
-                ventana.destroy()
+                #Obtenemos el id de la ficha que acabamos de agregar
+                ficha_id = cursor.lastrowid
+                for child in self.arbol_ficha.get_children():
+                    id_tratamiento = child
+                    tratamiento = self.arbol_ficha.item(child, 'values')
+                    print("valores para agregar", id_tratamiento, tratamiento)
+                    sql = "INSERT INTO detalle_ficha (id_ficha, id_tratamiento, cantidad, precio_unitario) VALUES (%s, %s, %s, %s)"
+                    val = (ficha_id, id_tratamiento, tratamiento[3], tratamiento[2])
+                    cursor.execute(sql, val)
+                    conexion.commit()
+                messagebox.showinfo("Información", "Ficha agregada exitosamente")
+                self.tree.insert("", 0, values=(dni, nombre, apellido, obra_social, fecha, total))
+                self.volver_inicio()
                 self.actualizar_treeview()
             except mysql.connector.Error as err:
-                messagebox.showerror("Error", f"Ocurrió un error al actualizar la obra social: {err}")
-                ventana.lift()
+                messagebox.showerror("Error", f"Error al agregar la ficha: {err}")
             finally:
                 cursor.close()
-                conexion.close()"""
-
+                conexion.close()
+        else:
+            messagebox.showwarning("Atención", "Complete todos los campos.")
 
     #Funciones para eliminar las fichas, y los detalles de la misma
     def eliminar_ficha(self):
