@@ -154,4 +154,3 @@ ventana.title("Inicio de Sesión")
 ventana.wm_geometry("1360x700+0+0")
 root = Login(ventana)
 ventana.mainloop()
-

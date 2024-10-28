@@ -3,8 +3,6 @@ from tkinter import messagebox
 from tkinter import ttk
 from Gestion_Tratamiento import *   
 from Gestion_obra_social import *
-from Gestion_Medico_completa import *
-from conexionmedico import *
 
 class MENU(Frame):
     def __init__(self, master):
@@ -46,12 +44,6 @@ class MENU(Frame):
     def volver_login(self):
         self.master.destroy()
         from Login import Login
-        ventana = Tk()
-        ventana.configure(bg="#e4c09f") 
-        ventana.title("Inicio de Sesión")
-        ventana.geometry("900x600+210+60")
-        root = Login(ventana)
-        ventana.mainloop()
         
     def create_widgets(self):
         frame_btn = Frame(self, bg="#e4c09f")
