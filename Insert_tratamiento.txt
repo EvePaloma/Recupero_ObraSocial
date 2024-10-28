@@ -1,10 +1,10 @@
 use recupero_obra_social;
 INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, siglas, descripcion) 
-            VALUES ("123", "Radiografía torax", "20000", "2024-10-01", "RX TORAX", "Radiografia de torax" ),
-            ("456", "Consulta médica", "6000","2024-09-01", "CONS", "Consulta médica con médico clinico" ),
-             ("789", "Hemograma", "15000", "2024-08-01","CSC", "Laboratorio por fiebre" ),
-             ("321", "Herida brazo", "25000", "2024-07-01", "HR BRAZO", "Herida en brazo izquierdo" ),
-             ("987", "Quemadura", "35000", "2024-06-01", "QUEM Pierna", "Quemadura de pie y tobillo derecho" );
+            VALUES ("123", "RADIOGRAFÍA TORAX", "20000", "2024-10-01", "RX TORAX", "RADIOGRAFÍA DE TORAX" ),
+            ("456", "CONSULTA MÉDICA", "6000","2024-09-01", "CONS", "CONSULTA MÉDICA CON MÉDICO CLÍNICO" ),
+             ("789", "HEMOGRAMA", "15000", "2024-08-01","CSC", "LABORATORIO POR FIEBRE" ),
+             ("321", "HERIDA DE BRAZO", "25000", "2024-07-01", "HR BRAZO", "HERIDA DE BRAZO IZQUIERDO" ),
+             ("987", "QUEMADURA", "35000", "2024-06-01", "QUEM PIERNA", "QUEMADURA DE PIE Y TOBILLO DERECHO" );
 
 select * from tratamiento;
 

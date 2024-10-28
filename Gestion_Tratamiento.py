@@ -10,7 +10,7 @@ from datetime import datetime
 
 class GestionTratamiento(Frame):
     def __init__(self, master=None):
-        Frame.__init__(self, master, bg="#e4c09f", height=780, width=1300)
+        Frame.__init__(self, master, bg="#e4c09f", height=780, width=1366)
         self.master = master
         self.pack_propagate(False)
         self.pack(expand=True)
@@ -26,7 +26,7 @@ class GestionTratamiento(Frame):
 
         #Carga la imagen de fondo
         img_fondo = Image.open("fondo3.png")
-        img_fondo = img_fondo.resize((1250, 200), Image.Resampling.LANCZOS)
+        img_fondo = img_fondo.resize((1310, 200), Image.Resampling.LANCZOS)
         self.img_fondo = ImageTk.PhotoImage(img_fondo)
 
         #Label para la imagen de fondo
@@ -36,6 +36,17 @@ class GestionTratamiento(Frame):
         #Frame más chico para label y entry de búsqueda
         frame_busqueda = Frame(frame_tratamientos, bg="#e6c885")
         frame_busqueda.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="w")
+        style = ttk.Style()
+        style.theme_use("default")
+        style.map("Custom.TCombobox",  fieldbackground=[("active", "white")],   # Fondo blanco en modo de solo lectura
+                                        background=[("active", "white")],          # Fondo blanco al desplegar el menú
+                                        selectbackground=[("focus", "white")],     # Fondo blanco cuando una opción está seleccionada
+                                        selectforeground=[("focus", "black")])    # Text
+        self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 14), state="readonly", style="Custom.TCombobox")
+        self.combo_activos['values'] = ("Activos", "Inactivos", "Todos")
+        self.combo_activos.set("Activos")
+        self.combo_activos.grid(row=1, column=4, padx=20, pady=3)
+        self.combo_activos.bind("<<ComboboxSelected>>", lambda event: self.actualizar_treeview())
 
         #Widgets de búsqueda dentro del frame más chico
         etiqueta_buscar = Label(frame_busqueda, text="Buscar:", bg="#e6c885",font=("Robot",13))
@@ -64,12 +75,12 @@ class GestionTratamiento(Frame):
         frame_tabla.grid(row=2, column=0, columnspan=6, padx=10, pady=10)
         
         stilo = ttk.Style()
-        stilo.configure("Treeview", font=("Robot",11), rowheight=25)  # Cambia la fuente y el alto de las filas
+        stilo.configure("Treeview", font=("Robot",11), rowheight=26)  # Cambia la fuente y el alto de las filas
         stilo.configure("Treeview.Heading", font=("Robot",14))  # Cambia la fuente de las cabeceras
 
 
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("codigo", "nombre", "precio"), show='headings', height=10)
+        self.tree = ttk.Treeview(frame_tabla, columns=("codigo", "nombre", "precio"), show='headings', height=11)
 
         #Títulos de columnas
         self.tree.heading("codigo", text="Código")
@@ -77,9 +88,9 @@ class GestionTratamiento(Frame):
         self.tree.heading("precio", text="Precio")
 
         #Ancho de las columnas y datos centrados
-        self.tree.column("codigo", anchor='center', width=350)
-        self.tree.column("nombre", anchor='center', width=450)
-        self.tree.column("precio", anchor='center', width=350)
+        self.tree.column("codigo", anchor='center', width=400)
+        self.tree.column("nombre", anchor='center', width=480)
+        self.tree.column("precio", anchor='center', width=400)
 
         #Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -109,6 +120,47 @@ class GestionTratamiento(Frame):
                             command=self.volver_menu_principal)
         btn_volver.grid(row=4, column=4, padx=50)
 
+    def solo_numeros(self, num):
+        return num.isdigit()
+
+    def conectar_tabla(self, tabla):
+            conexion = obtener_conexion()  # Llama a la función que establece la conexión
+            if conexion is None:
+                messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+                return
+            try:
+                cursor = conexion.cursor()  # Crea el cursor
+                sentencia = f"SELECT * from {tabla}"
+                cursor.execute(sentencia)  # Ejecuta la consulta
+                datos = cursor.fetchall()  # Obtén todos los resultados
+                cursor.close()  # Cierra el cursor
+                conexion.close()  # Cierra la conexión a la base de datos. Devuelve la clave y el valor
+                return datos  # Devuelve los datos obtenidos
+            except mysql.connector.Error as err:
+                messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}")
+                if cursor:
+                    cursor.close()
+                if conexion:
+                    conexion.close()
+                messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+                return
+    
+    #al seleccionar una opción en la compo, retorna el id
+    def on_seleccion(self, campo):
+        try:            
+            if campo == "Estado":
+                seleccion = self.combo_valores_2.get()
+                if seleccion in self.datos_tabla_1:
+                    self.dato_estado = self.datos_tabla_1[seleccion]
+                    return self.dato_estado
+                else:
+                    raise ValueError(f"Selección '{seleccion}' no encontrada en datos_tabla.")
+            else:
+                raise ValueError(f"Campo '{campo}' no es válido.")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            return None
+        
 
     def agregar_tratamiento(self):
         ventana_agregar = Toplevel(self)
@@ -127,15 +179,27 @@ class GestionTratamiento(Frame):
         for i, campo in enumerate(campos):     #Devuelve índice y valor de cada elemento 
             etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
             etiquetas.grid(row=i, column=0, padx=10, pady=5)
+
             entry = Entry(frame_agregar, width=40, font=("Robot", 10))
             entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
+
+            if campo == "Precio":
+                solo_num = ventana_agregar.register(self.solo_numeros)
+                entry.config(validate="key", validatecommand=(solo_num, "%S"))
+
+            #Configura marcador de posición para el campo "Fecha Precio"
+            if campo == "Fecha Precio":
+                entry.insert(0, "AAAA-MM-DD")  #Agrega marcador de posición
+                entry.config(fg="gray")
+                entry.bind("<FocusIn>", lambda event, e=entry: self.limpiar_marcador(e))
+                entry.bind("<FocusOut>", lambda event, e=entry: self.restaurar_marcador(e))
 
         frame_btns = Frame(ventana_agregar, bg="#e4c09f")
         frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
         btn_nuevo_tratamiento = Button(frame_btns, text="Agregar", font=("Robot", 13),bg="#e6c885", width=15, 
-                                       command=lambda:self.validar_campos(entradas) and  self.guardar_nuevo_tratamiento(entradas, ventana_agregar))
+                                       command=lambda:self.validar_campos(entradas,ventana_agregar) and self.guardar_nuevo_tratamiento(entradas,ventana_agregar))
         btn_nuevo_tratamiento.grid(row=len(campos), column=0, padx=40, pady=10)
 
         btn_volver = Button(frame_btns, text="Volver", font=("Robot", 13),bg="#e6c885", width=15,
@@ -177,7 +241,7 @@ class GestionTratamiento(Frame):
         ventana.title("Detalles del Tratamiento")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
-        ventana.geometry("510x345+400+160")
+        ventana.geometry("510x360+400+160")
         ventana.protocol("WM_DELETE_WINDOW", lambda: None)
         
         ventana.grid_columnconfigure(0, weight=2)
@@ -186,22 +250,37 @@ class GestionTratamiento(Frame):
         frame_detalles = LabelFrame(ventana, text="Detalles del Tratamiento", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Código", "Nombre", "Precio", "Fecha Precio", "Siglas", "Descripción"]
+        campos = ["Código", "Nombre", "Precio", "Fecha Precio", "Siglas", "Descripción", "Estado"]
         valores = list(tratamiento)
         entradas = {}
 
         for i, campo in enumerate(campos):
             etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
             etiqueta.grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_detalles, width=40, font=("Robot", 10))
-            entry.grid(row=i, column=1, padx=10, pady=5)
-            if i + 1 < len(valores):
-                entry.insert(0,str(valores[i + 1])) 
-                entradas[campo] = entry
+            if campo == "Estado":
+                lista = self.conectar_tabla("estado")
+                print(lista)
+                # Crear un diccionario para buscar el ID por el nombre
+                self.datos_tabla_1 = {dato[1]: dato[0] for dato in lista} 
+                self.combo_valores_2 = ttk.Combobox(frame_detalles, width=38, font=("Robot", 10), state="disabled")
+                self.combo_valores_2['values'] = list(self.datos_tabla_1.keys())
+                self.combo_valores_2.grid(row=i, column=1, padx=10, pady=5)
+                #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
+                valor_a_buscar = valores[i+1]
+                clave_encontrada = next((clave for clave, valor in self.datos_tabla_1.items() if valor == valor_a_buscar), None)
+                self.combo_valores_2.set(clave_encontrada)
+            else:
+                entry = Entry(frame_detalles, width=40, font=("Robot", 10))
+                entry.grid(row=i, column=1, padx=10, pady=5)
+                if i + 1 < len(valores):
+                    entry.insert(0,str(valores[i + 1]).upper()) 
+            entradas[campo] = entry
 
         if modo == "ver":
                 for entry in entradas.values():
                     entry.config(state="readonly")
+
+                self.combo_valores_2.config(state="disabled")
                 
                 frame_btns = Frame(ventana, bg="#e4c09f")
                 frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
@@ -220,6 +299,8 @@ class GestionTratamiento(Frame):
                 btn_volver.grid(row=len(campos), column=2, padx=10,pady=10)
 
         if modo == "modificar":
+            self.combo_valores_2.config(state="readonly")
+            self.combo_valores_2.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Estado"))
             frame_btns = Frame(ventana, bg="#e4c09f")
             frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
@@ -236,43 +317,92 @@ class GestionTratamiento(Frame):
         for entry in entradas.values():
             entry.config(state="normal")  
         btn_guardar.config(state="normal") 
+        self.combo_valores_2.config(state="readonly")
 
     
-    def validar_campos(self, entradas):
-            campos_vacios = []
-            for campo, entrada in entradas.items():
-                valor = entrada.get().strip()
-                if not valor:
-                    campos_vacios.append(campo)
-                elif campo == "Precio":
-                    try:
-                        float(valor)
-                    except ValueError:
-                        messagebox.showerror("Error", "El campo 'Precio' debe ser un número válido.")
-                        return False
-                elif campo == "Fecha Precio":
-                    if not self.fecha_valida(valor):
-                        messagebox.showerror("Error", "El campo 'Fecha Precio' debe tener el formato 'YYYY-MM-DD'.")
-                        return False
-            
-            if campos_vacios:
-                messagebox.showwarning("Advertencia", f"Los siguientes campos están vacíos: {', '.join(campos_vacios)}.\nPor favor complételos.")
+    def validar_campos(self, entradas,ventana_agregar):
+        campos_vacios = []
+        for campo, entrada in entradas.items():
+            valor = entrada.get().strip()
+            if not valor:
+                campos_vacios.append(campo)
+        if campos_vacios:
+            messagebox.showwarning("Advertencia", f"Los siguientes campos están vacíos: {', '.join(campos_vacios)}.\nPor favor complételos.")
+            ventana_agregar.lift()
+            return False
+
+        for campo, entrada in entradas.items():
+            valor = entrada.get().strip()
+            if campo == "Precio":
+                try:
+                    precio = float(valor)
+                    if precio <= 0:
+                        messagebox.showerror("El precio debe ser mayor que 0.")
+                        ventana_agregar.lift()
+                except ValueError:
+                    messagebox.showerror("Error", "El campo 'Precio' debe ser un número válido.")
+                    ventana_agregar.lift()
+                    return False
+            elif campo == "Fecha Precio":
+                if not self.fecha_valida(valor):
+                    messagebox.showerror("Error", "El campo 'Fecha Precio' debe tener el formato 'YYYY-MM-DD'.")
+                    ventana_agregar.lift()
+                    return False
+                
+            elif campo == "Código":
+                if not self.validar_repetidos(valor):
+                    messagebox.showerror("Error", "El tratamiento con ese código ya existe.")
+                    ventana_agregar.lift()
+                    return False
+        
+        return True
+
+    def limpiar_marcador(self, entry):
+        if entry.get() == "AAAA-MM-DD":
+            entry.delete(0, "end")
+            entry.config(fg="black")
+
+    def restaurar_marcador(self,entry):
+        if not entry.get():
+            entry.insert(0, "AAAA-MM-DD")
+            entry.config(fg="gray")
+
+    def validar_repetidos(self, codigo):
+        conexion = obtener_conexion()
+        if conexion is None:
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
+        try:
+            cursor = conexion.cursor()
+            sentencia = "SELECT COUNT(*) FROM tratamiento WHERE codigo = %s"
+            cursor.execute(sentencia, (codigo,))
+            resultado = cursor.fetchone()
+            cursor.close()
+            conexion.close()
+            if resultado[0] > 0:
                 return False
-            else:
-                messagebox.showinfo("Éxito","Tratamiento agregado correctamente.")
-                return True
+            return True
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}")
+            if cursor:
+                cursor.close()
+            if conexion:
+                conexion.close()
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
 
     def guardar_cambios(self, entradas, ventana,seleccion):
         conexion = obtener_conexion()
         if conexion is None:
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
-        nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
-        
+        nuevos_valores = {campo: entradas[campo].get().upper() for campo in entradas}
+        nuevos_valores["Estado"] = self.on_seleccion("Estado")
+       
         if seleccion:
             try:
                 cursor = conexion.cursor()
-                sql = "UPDATE tratamiento SET codigo=%s, nombre=%s, precio=%s, fecha_precio=%s, siglas=%s, descripcion=%s WHERE id_tratamiento=%s"
+                sql = "UPDATE tratamiento SET codigo=%s, nombre=%s, precio=%s, fecha_precio=%s, siglas=%s, descripcion=%s, activo=%s WHERE id_tratamiento=%s"
                 val = (
                     nuevos_valores['Código'], 
                     nuevos_valores['Nombre'],
@@ -280,6 +410,7 @@ class GestionTratamiento(Frame):
                     nuevos_valores['Fecha Precio'], 
                     nuevos_valores['Siglas'], 
                     nuevos_valores['Descripción'],
+                    nuevos_valores['Estado'],
                     seleccion  #Usa el ID original del tratamiento que estás modificando
                 )
 
@@ -301,9 +432,8 @@ class GestionTratamiento(Frame):
             messagebox.showwarning("Atención", "Por favor, seleccione un tratamiento.")
             return
 
-        tratamiento_seleccionado = self.tree.item(seleccion[0], "values")
-        id_tratamiento = tratamiento_seleccionado[0]  # Asumiendo que el ID es el primer valor
-
+        #tratamiento_seleccionado = self.tree.item(seleccion[0], "values")
+        id_tratamiento = seleccion[0]  # Asumiendo que el ID es el primer valor
         respuesta = messagebox.askyesno("Confirmar", "¿Está seguro de que desea eliminar este tratamiento?")
         if respuesta:
             try:
@@ -321,19 +451,21 @@ class GestionTratamiento(Frame):
                     conexion.close()
 
 
-    def guardar_nuevo_tratamiento(self, entry):
+    def guardar_nuevo_tratamiento(self, entry,ventana_agregar):
+        if not self.validar_campos(entry,ventana_agregar):
+            return
+        
         conexion = obtener_conexion()
         if conexion is None:
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
-        codigo = entry["Código"].get()      #Obtenemos los valores que el usuario ingresó.
-        nombre = entry["Nombre"].get()
+        codigo = entry["Código"].get().upper()      #Obtenemos los valores que el usuario ingresó.
+        nombre = entry["Nombre"].get().upper()
         precio = entry["Precio"].get()
         fecha_precio = entry["Fecha Precio"].get()
-        siglas = entry["Siglas"].get()
-        descripcion = entry["Descripción"].get()
-        #Validar datos y agregar al Treeview
-        if codigo and nombre and precio and fecha_precio  and siglas and descripcion:
+        siglas = entry["Siglas"].get().upper()
+        descripcion = entry["Descripción"].get().upper()
+        if codigo and nombre and precio and fecha_precio and siglas and descripcion:
             try:
                 cursor = conexion.cursor()
                 sql = "INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, siglas, descripcion) VALUES (%s, %s, %s, %s, %s, %s)"
@@ -343,21 +475,26 @@ class GestionTratamiento(Frame):
                 messagebox.showinfo("Información", "Tratamiento agregado exitosamente")
                 self.tree.insert("", 0, values=(codigo, nombre, precio))
                 self.actualizar_treeview()
+                ventana_agregar.destroy()
             except mysql.connector.Error as error:
-                messagebox.showerror("Error", f"No se pudo agregar el tratamiento: {error}")
+                messagebox.showerror("Error", f"No se pudo agregar el tratamiento: {error}")  
             finally:
                 cursor.close()
                 conexion.close()   
-        else:
-            messagebox.showwarning("Atención", "Complete todos los campos.")
+        
 
-    
     def actualizar_treeview(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
         conexion = obtener_conexion()
         cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM tratamiento")
+        seleccion = self.combo_activos.get()
+        if seleccion == "Activos":
+            cursor.execute("SELECT * FROM tratamiento where activo = 1")
+        elif seleccion == "Inactivos":
+            cursor.execute("SELECT * FROM tratamiento where activo = 0")
+        elif seleccion == "Todos":
+            cursor.execute("SELECT * FROM tratamiento")
         tratamientos = cursor.fetchall()
         for tratamiento in tratamientos:
             self.tree.insert("", "0", iid=tratamiento[0], values=tratamiento[1:])
@@ -393,7 +530,7 @@ class GestionTratamiento(Frame):
 
 
     def buscar_tratamiento(self):
-        busqueda = self.entrada_buscar.get().strip().lower()
+        busqueda = self.entrada_buscar.get().strip().upper()
 
         if not busqueda:
             self.tree.delete(*self.tree.get_children())
@@ -404,8 +541,8 @@ class GestionTratamiento(Frame):
 
         for item in self.tree.get_children():
             valores = self.tree.item(item, 'values')
-            codigo = valores[0].lower()
-            nombre = valores[1].lower()
+            codigo = valores[0].upper()
+            nombre = valores[1].upper()
 
             if busqueda in codigo or busqueda in nombre:
                 tratamiento_encontrado = True
@@ -431,7 +568,7 @@ class GestionTratamiento(Frame):
         ventana = Tk()
         ventana.wm_title("Menú Recupero de Obra Social")
         ventana.wm_resizable(0,0)
-        ventana.geometry("+30+15")
+        ventana.geometry("+0+0")
         menu = MENU(ventana)
         menu.mainloop()
 
@@ -440,6 +577,6 @@ class GestionTratamiento(Frame):
 '''ventana = Tk()
 ventana.title("Gestion de Tratamientos")
 ventana.resizable(False,False)
-ventana.geometry("+30+15")
+ventana.geometry("+1+1")
 root = GestionTratamiento(ventana)
 ventana.mainloop()'''

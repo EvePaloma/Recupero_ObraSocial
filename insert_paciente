@@ -1,0 +1,10 @@
+use recupero_obra_social;
+INSERT INTO paciente (nombre, apellido, dni, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado) 
+            VALUES ("María"," Pérez", "203845629", "Osim", "Osecac", "María Pérez", "12-05-1970", "Femenino", "3541283650", "351875389", "123"),
+             ("Juan"," Pérez", "423456789", "Osecac", "Osim", "Juan Pérez", "10-01-2000", "Masculino", "3541283650", "María Pérez", "203845629"),
+             ("Pedro","Gómez", "403845629", "Ace", "Osecac", "Pedro Gómez", "12-05-1999", "Masculino", "3541283650", "Juan Pérez", "123456789"),
+             ("Ana","López", "323456789", "Panaderos", "Osim", "Ana López", "27-12-1990", "Femenino", "3541283650", "María Pérez", "203845629");
+
+
+select * from paciente;
+

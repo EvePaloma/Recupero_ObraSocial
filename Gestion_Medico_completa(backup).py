@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk
-from conexionmedico import *
+from ConexionBD import *
 
 class Gestionmedico(Frame):
 
@@ -11,12 +11,69 @@ class Gestionmedico(Frame):
         self.master = master
         self.grid()
         self.createWidgets()
+        self.cargar_medicos()
 
     def solo_letras(self, char):
         return char.isalpha() or char == " "
 
     def solo_numeros(self, char):
         return char.isdigit()
+
+    def actualizar_treeview(self):
+        self.tree.delete(*self.tree.get_children())
+        self.cargar_medicos()
+
+
+
+
+    def validar_repetidos(self, documento):
+        conexion = obtener_conexion()
+        if conexion is None:
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
+        try:
+            cursor = conexion.cursor()
+            sentencia = "SELECT COUNT(*) FROM medico WHERE documento = %s"
+            cursor.execute(sentencia, (documento,))
+            resultado = cursor.fetchone()
+            cursor.close()
+            conexion.close()
+            if resultado[0] > 0:
+                return False
+            return True
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}")
+            if cursor:
+                cursor.close()
+            if conexion:
+                conexion.close()
+            messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+            return
+
+    def guardar_nuevo_medico(self, entradas, ventana):
+        nombre = entradas["Nombre"].get()
+        apellido = entradas["Apellido"].get()
+        dni = entradas["DNI"].get()
+        telefono = entradas["Telefono"].get()
+        matricula = entradas["Matricula"].get()
+
+        if not self.validar_repetidos(dni):
+            messagebox.showwarning("Atención", "El documento ya está registrado.")
+            return
+
+        if nombre and apellido and dni and telefono and matricula:
+            try:
+                insertar_medico(nombre, apellido, matricula, telefono, dni)
+                self.tree.insert("", "end", values=(nombre, apellido, dni, telefono, matricula))
+                messagebox.showinfo("Información", "Médico agregado correctamente.")
+                ventana.destroy()
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo agregar el médico: {e}")
+        else:
+            messagebox.showwarning("Atención", "Complete todos los campos.")
+
+        self.actualizar_treeview()
+
 
     def createWidgets(self):
         frame_Medicos = LabelFrame(
@@ -61,7 +118,7 @@ class Gestionmedico(Frame):
             width=30,
             height=30,
             bg="#e6c885",
-            command=self.buscar_medico,
+            command=self.buscar_todo,
         )
         btn_buscar.grid(row=1, column=3)
         btn_buscar.image = img_buscar
@@ -102,19 +159,26 @@ class Gestionmedico(Frame):
         )
 
         # Títulos de columnas
-        self.tree.heading("id_medico", text="ID")
+      
+        
+        self.tree.heading("id_medico", text="")
+
         self.tree.heading("nombre", text="Nombre")
         self.tree.heading("Apellido", text="Apellido")
         self.tree.heading("DNI", text="DNI")
 
         # Ancho de las columnas y datos centrados
-        self.tree.column("id_medico", anchor="center",width=250)
-        self.tree.column("nombre", anchor="center", width=250)
-        self.tree.column("Apellido", anchor="center", width=350)
-        self.tree.column("DNI", anchor="center", width=250)
+        self.tree.column("id_medico", width=0, stretch=False)
 
-        # Ejemplo
-    
+        self.tree.column("nombre", anchor="center", width=250, stretch=False)
+        self.tree.column("Apellido", anchor="center", width=350, stretch=False)
+        self.tree.column("DNI", anchor="center", width=250, stretch=False)
+
+        # Evitar que las columnas se puedan mover o redimensionar
+        self.tree["displaycolumns"] = ("nombre", "Apellido", "DNI")
+        for col in self.tree["displaycolumns"]:
+            self.tree.heading(col, command=lambda: "break")
+            self.tree.column(col, stretch=False)
 
         # Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -162,11 +226,23 @@ class Gestionmedico(Frame):
         )
         btn_eliminar.grid(row=4, column=3, padx=50)
 
+        btn_volver = Button(
+            frame_btn,
+            text="Volver",
+            width=15,
+            font=("Robot", 13),
+            bg="#e6c885",
+            command=self.volver_menu_principal,
+        )
+        btn_volver.grid(row=4, column=4, padx=50)
+
     def agregar_medico(self):
         ventana_agregar = Toplevel(self)
         ventana_agregar.title("Agregar medico")
         ventana_agregar.config(bg="#e4c09f")
         ventana_agregar.resizable(False, False)
+        ventana_agregar.protocol("WM_DELETE_WINDOW", lambda: None)
+
 
         frame_agregar = LabelFrame(
             ventana_agregar,
@@ -206,6 +282,16 @@ class Gestionmedico(Frame):
         )
         btn_nuevo_medico.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
+        btn_volver = Button(
+            frame_agregar,
+            text="Volver",
+            font=("Robot", 10),
+            bg="#e6c885",
+            command=ventana_agregar.destroy,
+        )
+        btn_volver.grid(row=len(campos) + 1, column=4, columnspan=2, padx=10, pady=10)
+        self.actualizar_treeview()
+
     def ver_medico(self):
         seleccion = self.tree.selection()
         if not seleccion:
@@ -216,6 +302,7 @@ class Gestionmedico(Frame):
         # Exclude the ID (first value) from the details
         detalles_medico = medico_seleccionado[1:]
         self.abrir_ventana_medico(detalles_medico, seleccion[0], modo="ver")
+        self.actualizar_treeview()
 
     def modificar_medico(self):
         seleccion = self.tree.selection()
@@ -229,12 +316,14 @@ class Gestionmedico(Frame):
         # Exclude the ID from the details
         detalles_medico = medico_seleccionado[1:]
         self.abrir_ventana_medico(detalles_medico, id_medico, modo="modificar")
+        self.actualizar_treeview()
 
     def abrir_ventana_medico(self, medico, id_seleccionado, modo="ver"):
         ventana = Toplevel(self)
         ventana.title("Detalles del medico")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
+        ventana.protocol("WM_DELETE_WINDOW", lambda: None)
 
         ventana.grid_columnconfigure(0, weight=1)
         ventana.grid_rowconfigure(0, weight=1)
@@ -249,7 +338,7 @@ class Gestionmedico(Frame):
         )
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = [ "Nombre", "Apellido", "DNI", "Telefono", "Matricula"]
+        campos = ["Nombre", "Apellido", "DNI", "Telefono", "Matricula"]
         entradas = {}
 
         vcmd_letras = ventana.register(self.solo_letras)
@@ -270,45 +359,59 @@ class Gestionmedico(Frame):
                 entry.insert(0, medico[i])
             entradas[campo] = entry
 
+        # ComboBox for Estado
+        etiqueta_estado = Label(
+            frame_detalles, text="Estado:", bg="#c9c2b2", font=("Robot", 10)
+        )
+        etiqueta_estado.grid(row=len(campos), column=0, padx=10, pady=5)
+        combo_estado = ttk.Combobox(frame_detalles, values=["1", "0"], width=37)
+        combo_estado.grid(row=len(campos), column=1, padx=10, pady=5)
+        combo_estado.set("1" if medico[-1] == "1" else "0")  # Set the current value of Estado
+        entradas["Estado"] = combo_estado
+
         if modo == "ver":
             for entry in entradas.values():
                 entry.config(state="readonly")
-            btn_editar = Button(
-                ventana,
-                text="Modificar",
-                width=15,
-                font=("Robot", 13),
-                bg="#e6c885",
-                command=lambda: self.activar_edicion(entradas, btn_guardar),
-            )
-            btn_editar.grid(row=len(campos), column=0, pady=10)
 
-            btn_guardar = Button(
-                frame_detalles,
-                text="Guardar Cambios",
-                command=lambda: self.guardar_cambios(
-                    entradas, ventana, id_seleccionado
-                ),
+            
+            btn_volver = Button(
+                ventana,
+                text="Volver",
+                font=("Robot", 10),
+                bg="#e6c885",
+                command=ventana.destroy,
             )
-            btn_guardar.grid(
-                row=len(campos), column=0, columnspan=2, padx=10, pady=10
-            )
-            btn_guardar.config(state="disabled")
+            btn_volver.grid(row=len(campos) + 2, column=2, columnspan=2, padx=10, pady=10)
+            
+            
 
         if modo == "modificar":
             btn_modificar = Button(
                 frame_detalles,
                 text="Guardar Cambios",
+                font=("Robot", 13),
+                bg="#e6c885",
+
                 command=lambda: self.guardar_cambios(
                     entradas, ventana, id_seleccionado
                 ),
             )
             btn_modificar.grid(
-                row=len(campos), column=0, columnspan=2, padx=10, pady=10
+                row=len(campos) + 1, column=0, columnspan=2, padx=10, pady=10
             )
-            btn_modificar.grid(
-                row=len(campos), column=0, columnspan=2, padx=10, pady=10
+
+            btn_volver = Button(
+                frame_detalles,
+                text="Volver",
+                font=("Robot", 10),
+                bg="#e6c885",
+                command=ventana.destroy,
             )
+            btn_volver.grid(
+                row=len(campos) + 2, column=3, columnspan=2, padx=10, pady=10
+            )
+            self.actualizar_treeview()
+
 
     def activar_edicion(self, entradas, btn_guardar):
         for entry in entradas.values():
@@ -321,6 +424,7 @@ class Gestionmedico(Frame):
         dni = entradas["DNI"].get()
         telefono = entradas["Telefono"].get()
         matricula = entradas["Matricula"].get()
+        estado = entradas["Estado"].get()
 
         if nombre and apellido and dni and telefono and matricula:
             try:
@@ -329,10 +433,10 @@ class Gestionmedico(Frame):
                 cursor.execute(
                     """
                     UPDATE medico
-                    SET nombre = %s, apellido = %s, documento = %s, telefono = %s, matricula = %s
+                    SET nombre = %s, apellido = %s, documento = %s, telefono = %s, matricula = %s, activo = %s
                     WHERE id_medico = %s
                     """,
-                    (nombre, apellido, dni, telefono, matricula, id_seleccionado)
+                    (nombre, apellido, dni, telefono, matricula, estado, id_seleccionado)
                 )
                 conexion.commit()
                 messagebox.showinfo("Éxito", "Datos del médico actualizados correctamente.")
@@ -346,6 +450,8 @@ class Gestionmedico(Frame):
                     conexion.close()
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
+
+        self.actualizar_treeview()
         
     def eliminar_medico(self):
         seleccion = self.tree.selection()
@@ -372,26 +478,9 @@ class Gestionmedico(Frame):
                     cursor.close()
                     conexion.close()
 
+        self.actualizar_treeview()
 
-    def guardar_nuevo_medico(self, entradas, ventana):
-        nombre = entradas["Nombre"].get()
-        apellido = entradas["Apellido"].get()
-        dni = entradas["DNI"].get()
-        telefono = entradas["Telefono"].get()
-        matricula = entradas["Matricula"].get()
 
-        
-
-        if nombre and apellido and dni and telefono and matricula  :
-            try:
-                insertar_medico(nombre, apellido, matricula, telefono, dni,)
-                self.tree.insert("", "end", values=(nombre, apellido, dni, telefono, matricula, ))
-                messagebox.showinfo("Información", "Médico agregado correctamente.")
-                ventana.destroy()
-            except Exception as e:
-                messagebox.showerror("Error", f"No se pudo agregar el médico: {e}")
-        else:
-            messagebox.showwarning("Atención", "Complete todos los campos.")
 
     def buscar_medico(self):
         busqueda = self.entrada_buscar.get().strip().lower()
@@ -418,11 +507,45 @@ class Gestionmedico(Frame):
             self.tree.delete(*self.tree.get_children())
             self.cargar_medicos()
 
+
+
+    def buscar_todo(self):
+        busqueda = self.entrada_buscar.get().strip().lower()
+
+        if not busqueda:
+            self.tree.delete(*self.tree.get_children())
+            self.cargar_medicos()
+            return
+
+        try:
+            conexion = obtener_conexion()
+            cursor = conexion.cursor()
+            query = """
+            SELECT id_medico, nombre, apellido, documento, telefono, matricula 
+            FROM medico 
+            WHERE (LOWER(nombre) LIKE %s OR LOWER(apellido) LIKE %s OR documento LIKE %s)
+            AND (activo = 1 OR activo = 0)
+            """
+            like_pattern = f"%{busqueda}%"
+            cursor.execute(query, (like_pattern, like_pattern, like_pattern))
+            medicos = cursor.fetchall()
+            conexion.close()
+
+            self.tree.delete(*self.tree.get_children())
+            if medicos:
+                for medico in medicos:
+                    self.tree.insert("", "end", values=medico)
+            else:
+                self.cargar_medicos()
+                messagebox.showwarning("Atención", "No se encontró el médico. Se han cargado todos los médicos activos.")
+        except mysql.connector.Error as e:
+            messagebox.showerror("Error", f"No se pudo buscar los médicos: {e}")
+
     def cargar_medicos(self):
         try:
             conexion = obtener_conexion()
             cursor = conexion.cursor()
-            cursor.execute("SELECT id_medico, nombre, apellido, documento,  telefono, matricula FROM medico")
+            cursor.execute("SELECT id_medico, nombre, apellido, documento,  telefono, matricula FROM medico WHERE activo = 1")
 
             medicos = cursor.fetchall()
             self.tree.delete(*self.tree.get_children())
@@ -435,8 +558,20 @@ class Gestionmedico(Frame):
                 cursor.close()
                 conexion.close()
 
-ventana = Tk()
+
+
+    def volver_menu_principal(self):
+        from Menu import MENU
+        self.master.destroy()
+        ventana = Tk()
+        ventana.wm_title("Menú Recupero de Obra Social")
+        ventana.wm_resizable(0,0)
+        ventana.geometry("+30+15")
+        menu = MENU(ventana)
+        menu.mainloop()
+
+'''ventana = Tk()
 ventana.title("Gestion de Medicos")
 ventana.resizable(False, False)
 root = Gestionmedico(ventana)
-ventana.mainloop()
+ventana.mainloop()'''
