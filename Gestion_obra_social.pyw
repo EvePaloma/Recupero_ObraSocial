@@ -28,7 +28,8 @@ class Gestion_Obra_Social(Frame):
         menu.mainloop()
 
     def solo_letras_numeros(self, char):
-        #return char.isalnum() or char in [" ", "-", "."]
+        if not char:
+            return True
         return bool(re.match(r'[a-zA-Z0-9 ]', char))
     def solo_numeros(self, char):
         return char.isdigit()
@@ -304,6 +305,7 @@ class Gestion_Obra_Social(Frame):
 
         if not self.validar_repetidos(nombre, siglas):
             messagebox.showerror("Error", "El nombre o las siglas ya existen en la base de datos.")
+            ventana_agregar.destroy()
         else:
             # Validar datos y agregar al Treeview
             if nombre and siglas and telefono and cuit:
@@ -373,7 +375,7 @@ class Gestion_Obra_Social(Frame):
         validar_letynum = ventana.register(self.solo_letras_numeros)
         validar_numeros = ventana.register(self.solo_numeros)
 
-        campos = ["Nombre", "Siglas", "Teléfono", "Detalle", "Domicilio Casa Central", "Domicilio Carlos Paz", "CUIT", "Carácter de AFIP", "Estado"]
+        campos = ["Nombre","Siglas","Teléfono","Detalle","Domicilio Casa Central","Domicilio Carlos Paz","CUIT","Carácter de AFIP","Estado"]
         valores = list(obra_social)
         entradas = {}
 
@@ -413,10 +415,10 @@ class Gestion_Obra_Social(Frame):
                 self.texto.grid(row=i, column=1, padx=10, pady=5)
             else:
                 entry = Entry(frame_detalles, width=40, font=("Robot", 12))
-                """if campo in ["Nombre", "Siglas"]:
-                    entry.config(validate="key", validatecommand= validar_letynum)
+                if campo in ["Nombre", "Siglas"]:
+                    entry.config(validate="key", validatecommand= (validar_letynum, '%S'))
                 if campo in ["Teléfono", "CUIT"]:
-                    entry.config(validate="key", validatecommand=(validar_numeros, '%S'))"""
+                    entry.config(validate="key", validatecommand=(validar_numeros, '%S'))
                 entry.grid(row=i, column=1, padx=10, pady=5)
                 if i + 1 < len(valores):
                     entry.insert(0,str(valores[i + 1]).upper())
