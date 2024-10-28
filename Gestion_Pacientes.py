@@ -15,17 +15,18 @@ class GestionPaciente(Frame):
         self.grid()
         self.createWidgets()
         self.cargar_paciente()
+        self.master.protocol("WM_DELETE_WINDOW", lambda: None)
         #self.actualizar_treeview()
     
 
-    def insertar_paciente_bd(nombre, apellido, dni, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado):
+    def insertar_paciente_bd(nombre, apellido, documento, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado):
         conexion = obtener_conexion()
         if conexion is None:
             return
         try:
             cursor = conexion.cursor()
-            sql = "INSERT INTO paciente (nombre, apellido, dni, obra_social,proietario,sexo,telefono,nro_afiliado,) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-            val = (nombre, apellido, dni, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado)
+            sql = "INSERT INTO paciente (nombre, apellido, documento, obra_social,proietario,sexo,telefono,nro_afiliado,) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+            val = (nombre, apellido, documento, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado)
             cursor.execute(sql, val)
             conexion.commit()
             messagebox.showinfo("Éxito", "Registro insertado correctamente.")
@@ -34,8 +35,8 @@ class GestionPaciente(Frame):
         finally:
             conexion.close()
 
-        #nombre, apellido, dni, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado)
-    def actualizar_paciente(nombre, apellido, dni, obrasocial, propietario, sexo, telefonopaciente,  numeroafiliado):
+        #nombre, apellido, documento, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado)
+    def actualizar_paciente(nombre, apellido, documento, obrasocial, propietario, sexo, telefonopaciente,  numeroafiliado):
         
         conexion = obtener_conexion()
         if conexion is None:
@@ -43,7 +44,7 @@ class GestionPaciente(Frame):
         try:
             cursor = conexion.cursor()
             sql = "UPDATE paciente SET nombre=%s, apellido=%s, telefono=%s, documento=%s WHERE id=%s"
-            val = (nombre, apellido, dni, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado)
+            val = (nombre, apellido, documento, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado)
             cursor.execute(sql, val)
             conexion.commit()
             messagebox.showinfo("Éxito", "Registro actualizado correctamente.")
@@ -68,11 +69,11 @@ class GestionPaciente(Frame):
             cursor = conexion.cursor()
             seleccion = self.combo_activos.get()
             if seleccion == "Activos":
-                cursor.execute("SELECT id_paciente, nombre, apellido, dni, obra_social FROM paciente WHERE activo = 1")
+                cursor.execute("SELECT id_paciente, nombre, apellido, documento, obra_social FROM paciente WHERE activo = 1")
             elif seleccion == "Inactivos":
-                cursor.execute("SELECT id_paciente, nombre, apellido, dni, obra_social FROM paciente WHERE activo = 0")
+                cursor.execute("SELECT id_paciente, nombre, apellido, documento, obra_social FROM paciente WHERE activo = 0")
             elif seleccion == "Todos":
-                cursor.execute("SELECT id_paciente, nombre, apellido, dni, obra_social FROM paciente")
+                cursor.execute("SELECT id_paciente, nombre, apellido, documento, obra_social FROM paciente")
             pacientes = cursor.fetchall()
             for paciente in pacientes:
                 self.tree.insert("", "end", values=paciente)
@@ -135,20 +136,20 @@ class GestionPaciente(Frame):
         stilo.configure("Treeview", font=("Roboto",11), rowheight=25)  # Cambia la fuente y el alto de las filas
         stilo.configure("Treeview.Heading", font=("Roboto",14))  # Cambia la fuente de las cabeceras
         # Treeview para mostrar la tabla de pacientes dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("id", "nombre", "apellido", "dni", "obra_social"), show='headings', height=11)
+        self.tree = ttk.Treeview(frame_tabla, columns=("id", "nombre", "apellido", "documento", "obra_social"), show='headings', height=11)
         
         # Títulos de columnas
         self.tree.heading("id", text="ID")
         self.tree.heading("nombre", text="Nombre")
         self.tree.heading("apellido", text="Apellido")
-        self.tree.heading("dni", text="DNI")
+        self.tree.heading("documento", text="DNI")
         self.tree.heading("obra_social", text="Obra Social")
 
         # Ancho de las columnas y datos centrados
         self.tree.column("id", anchor='center', width=0)
         self.tree.column("nombre", anchor='center', width=300)
         self.tree.column("apellido", anchor='center', width=300)
-        self.tree.column("dni", anchor='center', width=300)
+        self.tree.column("documento", anchor='center', width=300)
         self.tree.column("obra_social", anchor='center', width=300)
         
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -261,9 +262,9 @@ class GestionPaciente(Frame):
         vcmd_numeros = ventana_abrir.register(self.solo_numeros)
 
         try:
-            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            conexion = obtener_conexion()
             cursor = conexion.cursor()
-            cursor.execute("SELECT nombre, apellido, dni, obra_social, propietario, sexo, telefono, nro_afiliado, activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
+            cursor.execute("SELECT nombre, apellido, documento, obra_social, propietario, sexo, telefono, nro_afiliado, activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
             valores = cursor.fetchone()
         except mysql.connector.Error as err:
             messagebox.showerror("Error", f"Error al cargar los datos del paciente: {err}")
@@ -346,11 +347,11 @@ class GestionPaciente(Frame):
         estado = 1 if entradas["Estado"].get() == "Activo" else 0
 
         try:
-            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            conexion = obtener_conexion()
             cursor = conexion.cursor()
             query = """
             UPDATE paciente
-            SET nombre = %s, apellido = %s, dni = %s, obra_social = %s, propietario = %s, sexo = %s, telefono = %s, nro_afiliado = %s, activo = %s
+            SET nombre = %s, apellido = %s, documento = %s, obra_social = %s, propietario = %s, sexo = %s, telefono = %s, nro_afiliado = %s, activo = %s
             WHERE id_paciente = %s
             """
             cursor.execute(query, (
@@ -391,7 +392,7 @@ class GestionPaciente(Frame):
         respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar el paciente seleccionado?")
         if respuesta:  
             try:
-                conexion= mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+                conexion= obtener_conexion()
                 cursor = conexion.cursor()
                 cursor.execute("UPDATE paciente SET activo = 0 WHERE id_paciente = %s", (id_paciente,))
                 conexion.commit()
@@ -446,7 +447,7 @@ class GestionPaciente(Frame):
     def guardar_nuevo_paciente(self, entry, ventana):
         nombre = entry["Nombre"].get().upper()      #Obtenemos los valores que el usuario ingresó.
         apellido = entry["Apellido"].get().upper()
-        dni = entry["DNI"].get()
+        documento = entry["DNI"].get()
         obrasocial = entry["Obra Social"].get().upper()
         propietario = entry["Propietario del Plan"].get().upper()
         sexo = entry["Sexo"].get().upper()
@@ -454,22 +455,22 @@ class GestionPaciente(Frame):
         numeroafiliado = entry["Número de Afiliado"].get().upper()
 
         # Validar datos y agregar al Treeview
-        if nombre and apellido and dni and obrasocial and propietario and telefonopaciente and numeroafiliado:
+        if nombre and apellido and documento and obrasocial and propietario and telefonopaciente and numeroafiliado:
             try:
-                conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+                conexion = obtener_conexion()
                 cursor = conexion.cursor()
                 
                 # Verificar si el DNI ya existe
-                cursor.execute("SELECT COUNT(*) FROM paciente WHERE dni = %s", (dni,))
+                cursor.execute("SELECT COUNT(*) FROM paciente WHERE documento = %s", (documento,))
                 if cursor.fetchone()[0] > 0:
                     messagebox.showerror("Error", "El DNI ingresado ya existe. Por favor, ingrese un DNI diferente.")
                     return
                 
                 query = """
-                INSERT INTO paciente (nombre, apellido, dni, obra_social, propietario, sexo, telefono, nro_afiliado)
+                INSERT INTO paciente (nombre, apellido, documento, obra_social, propietario, sexo, telefono, nro_afiliado)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
-                cursor.execute(query, (nombre, apellido, dni, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado))
+                cursor.execute(query, (nombre, apellido, documento, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado))
                 conexion.commit()
                 messagebox.showinfo("Información", "Paciente agregado correctamente.")
                 ventana.destroy()
@@ -493,12 +494,12 @@ class GestionPaciente(Frame):
         paciente_encontrado = False
 
         try:
-            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            conexion = obtener_conexion()
             cursor = conexion.cursor()
             query = """
-            SELECT id_paciente, nombre, apellido, dni, obra_social 
+            SELECT id_paciente, nombre, apellido, documento, obra_social 
             FROM paciente 
-            WHERE (LOWER(nombre) LIKE %s OR LOWER(apellido) LIKE %s OR dni LIKE %s)
+            WHERE (LOWER(nombre) LIKE %s OR LOWER(apellido) LIKE %s OR documento LIKE %s)
             """
             like_pattern = f"%{busqueda}%"
             cursor.execute(query, (like_pattern, like_pattern, like_pattern))
@@ -520,9 +521,9 @@ class GestionPaciente(Frame):
 
     def cargar_paciente(self):
         try:
-            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            conexion = obtener_conexion()
             cursor = conexion.cursor()
-            cursor.execute("SELECT id_paciente, nombre, apellido, dni, obra_social FROM paciente WHERE activo = 1")
+            cursor.execute("SELECT id_paciente, nombre, apellido, documento, obra_social FROM paciente WHERE activo = 1")
             pacientes = cursor.fetchall()
             self.tree.delete(*self.tree.get_children())  # Limpiar el Treeview antes de cargar los datos
             for paciente in pacientes:

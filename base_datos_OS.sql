@@ -211,7 +211,7 @@ INSERT INTO obra_social (nombre, siglas, telefono, detalle, domicilio_central, d
 
 select * from obra_social;
 
-INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, siglas, descripcion) VALUES 
+INSERT INTO 'tratamiento'('codigo', 'nombre', 'precio', 'fecha_precio', 'siglas, descripcion') VALUES 
 ('1001', 'SUTURA SIMPLE', 1800.00, '2024-01-10', 'SS', 'CIERRE DE HERIDAS SUPERFICIALES CON SUTURAS EN URGENCIAS.'),
 ('1002A', 'SUTURA COMPLEJA', 3400.00, '2024-01-11', 'SC', 'SUTURA PARA HERIDAS PROFUNDAS O CON MÚLTIPLES CAPAS DE TEJIDO.'),
 ('1010', 'ESCAYOLA BRAZO', 2800.00, '2024-01-12', 'EB', 'INMOVILIZACIÓN DE BRAZO CON ESCAYOLA DEBIDO A FRACTURAS.'),
@@ -246,6 +246,9 @@ VALUES
   ('Marta', 'Sánchez', '1993-06-25', 1, '55667788', 2, 'G789012', 1),
   ('José', 'Torres', '1988-10-29', 1, '66778899', 4, 'H890123', 1);
 select * from paciente;
+
+
+
 INSERT INTO `medico` (`nombre`, `apellido`, `matricula`, `telefono`, `documento`, `activo`)
 VALUES 
   ('Laura', 'Pérez', '123456', '1234567890', '30123456', 1),
@@ -260,27 +263,27 @@ VALUES
   ('Carmen', 'López', '123457', '1213141516', '30012345', 1);
 select * from medico;
 
-INSERT INTO medico (nombre, apellido, documento, telefono, matricula, activo) VALUES
-('Sofía', 'Méndez', '31012345', '1234567891', '123458', 1),
-('Diego', 'Rojas', '31123456', '2345678901', '234568', 1),
-('Valeria', 'Ortiz', '31234567', '3456789012', '345679', 1),
-('Fernando', 'Silva', '31345678', '4567890123', '456780', 1),
-('Camila', 'Morales', '31456789', '5678901234', '567891', 1),
-('Ricardo', 'Herrera', '31567890', '6789012345', '678902', 1),
-('Natalia', 'Cruz', '31678901', '7890123456', '789013', 1),
-('Andrés', 'Guzmán', '31789012', '8901234567', '890124', 1),
-('Paula', 'Ramos', '31890123', '9012345678', '901235', 1),
-('Javier', 'Vargas', '31901234', '0123456789', '012346', 1),
-('Lorena', 'Castro', '32012345', '1234567890', '123459', 1),
-('Hugo', 'Molina', '32123456', '2345678901', '234569', 1),
-('Patricia', 'Romero', '32234567', '3456789012', '345670', 1),
-('Gustavo', 'Soto', '32345678', '4567890123', '456781', 1),
-('Elena', 'Medina', '32456789', '5678901234', '567892', 1),
-('Oscar', 'Pérez', '32567890', '6789012345', '678903', 1),
-('Claudia', 'Jiménez', '32678901', '7890123456', '789014', 1),
-('Mario', 'Flores', '32789012', '8901234567', '890125', 1),
-('Silvia', 'Reyes', '32890123', '9012345678', '901236', 1),
-('Luis', 'Aguilar', '32901234', '0123456789', '012347', 1);
+INSERT INTO `medico` (`nombre`, `apellido`, `matricula`, `telefono`, `documento`, `activo`) VALUES
+('SOFÍA', 'MÉNDEZ', '31012345', '1234567891', '123458', 1),
+('DIEGO', 'ROJAS', '31123456', '2345678901', '234568', 1),
+('VALERIA', 'ORTIZ', '31234567', '3456789012', '345679', 1),
+('FERNANDO', 'SILVA', '31345678', '4567890123', '456780', 1),
+('CAMILA', 'MORALES', '31456789', '5678901234', '567891', 1),
+('RICARDO', 'HERRERA', '31567890', '6789012345', '678902', 1),
+('NATALIA', 'CRUZ', '31678901', '7890123456', '789013', 1),
+('ANDRÉS', 'GUZMÁN', '31789012', '8901234567', '890124', 1),
+('PAULA', 'RAMOS', '31890123', '9012345678', '901235', 1),
+('JAVIER', 'VARGAS', '31901234', '0123456789', '012346', 1),
+('LORENA', 'CASTRO', '32012345', '1234567890', '123459', 1),
+('HUGO', 'MOLINA', '32123456', '2345678901', '234569', 1),
+('PATRICIA', 'ROMERO', '32234567', '3456789012', '345670', 1),
+('GUSTAVO', 'SOTO', '32345678', '4567890123', '456781', 1),
+('ELENA', 'MEDINA', '32456789', '5678901234', '567892', 1),
+('OSCAR', 'PÉREZ', '32567890', '6789012345', '678903', 1),
+('CLAUDIA', 'JIMÉNEZ', '32678901', '7890123456', '789014', 1),
+('MARIO', 'FLORES', '32789012', '8901234567', '890125', 1),
+('SILVIA', 'REYES', '32890123', '9012345678', '901236', 1),
+('LUIS', 'AGUILAR', '32901234', '0123456789', '012347', 1);
 
 
 SELECT * from ficha;

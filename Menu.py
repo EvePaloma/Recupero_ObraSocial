@@ -4,6 +4,7 @@ from tkinter import ttk
 from Gestion_Tratamiento import *   
 from Gestion_obra_social import *
 from Gestion_Medico_completa import *
+from Gestion_Pacientes import *
 
 class MENU(Frame):
     def __init__(self, master):
@@ -14,6 +15,15 @@ class MENU(Frame):
         self.grid()
         self.create_widgets()
         self.master.protocol("WM_DELETE_WINDOW", lambda: None)
+
+    def abrir_paciente(self):
+        self.master.destroy()
+        ventana = Tk()
+        ventana.wm_title("Gestión de Pacientes")
+        ventana.wm_resizable(0,0)
+        ventana.geometry("+0+0")
+        entradas = GestionPaciente(ventana)
+        entradas.mainloop()
 
     def abrir_tratamiento(self):
         self.master.destroy()
@@ -63,7 +73,7 @@ class MENU(Frame):
         menu_label = Label(label_menu, text="Menú Principal", font=("Roboto", 20), bg="#c9c2b2", width=67)
         menu_label.grid(row=0, column=0, padx=(0,10), pady=(0, 10))
 
-        btn_paciente = Button(menu, text="Gestión de Paciente", font=("Roboto", 15), bg="#e4c09f", width=96)
+        btn_paciente = Button(menu, text="Gestión de Paciente", font=("Roboto", 15), bg="#e4c09f", width=96,command=self.abrir_paciente)
         btn_paciente.grid(row=2, column=0, pady=(0, 20))
 
         btn_medico = Button(menu, text="Gestión de Médico", font=("Roboto", 15), bg="#e4c09f", width=96,command=self.abrir_medico)
