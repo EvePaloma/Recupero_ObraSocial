@@ -153,6 +153,7 @@ ventana.mainloop()'''
 from tkinter import *
 from PIL import Image, ImageTk
 from tkinter import messagebox
+import mysql.connector
 from ConexionBD import obtener_conexion
 
 class Login(Frame):
