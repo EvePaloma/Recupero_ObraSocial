@@ -142,7 +142,7 @@ class Gestionmedico(Frame):
 
         # Carga la imagen de fondo
         img_fondo = Image.open("fondo3.png")
-        img_fondo = img_fondo.resize((900, 200), Image.Resampling.LANCZOS)
+        img_fondo = img_fondo.resize((1310, 200), Image.Resampling.LANCZOS)
         self.img_fondo = ImageTk.PhotoImage(img_fondo)
 
         # Label para la imagen de fondo
@@ -203,43 +203,40 @@ class Gestionmedico(Frame):
         )  # Frame para contener la tabla y el scrollbar
         frame_tabla.grid(row=2, column=0, columnspan=6, padx=10, pady=10)
 
-        stilo = ttk.Style()
-        stilo.configure(
-            "Treeview", font=("Robot", 11), rowheight=25
-        )  # Cambia la fuente y el alto de las filas
-        stilo.configure(
-            "Treeview.Heading", font=("Robot", 14)
-        )  # Cambia la fuente de las cabeceras
+
 
         # Treeview para mostrar la tabla de Medicos dentro del frame_tabla
         self.tree = ttk.Treeview(
             frame_tabla,
             columns=("id_medico","nombre", "Apellido", "DNI"),
             show="headings",
-            height=11,
-        )
+            height=11,)
+                                
+        self.tree["displaycolumns"] = ("nombre", "Apellido", "DNI")
+        for col in self.tree["displaycolumns"]:
+            self.tree.heading(col, command=lambda: "break")
+            self.tree.column(col, stretch=False)
 
-        # Títulos de columnas
-      
+
+
+        stilo = ttk.Style()
+        stilo.configure("Treeview", font=("Robot",11), rowheight=25)  # Cambia la fuente y el alto de las filas
+        stilo.configure("Treeview.Heading", font=("Robot",14), padding= [0, 10])  # Cambia la fuente de las cabeceras
         
+        # Títulos de columnas
         self.tree.heading("id_medico", text="")
-
         self.tree.heading("nombre", text="Nombre")
         self.tree.heading("Apellido", text="Apellido")
         self.tree.heading("DNI", text="DNI")
 
         # Ancho de las columnas y datos centrados
         self.tree.column("id_medico", width=0, stretch=False)
-
-        self.tree.column("nombre", anchor="center", width=350, stretch=False)
+        self.tree.column("nombre", anchor="center", width=400, stretch=False)
         self.tree.column("Apellido", anchor="center", width=450, stretch=False)
-        self.tree.column("DNI", anchor="center", width=350, stretch=False)
+        self.tree.column("DNI", anchor="center", width=400, stretch=False)
 
         # Evitar que las columnas se puedan mover o redimensionar
-        self.tree["displaycolumns"] = ("nombre", "Apellido", "DNI")
-        for col in self.tree["displaycolumns"]:
-            self.tree.heading(col, command=lambda: "break")
-            self.tree.column(col, stretch=False)
+
 
         # Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -335,22 +332,27 @@ class Gestionmedico(Frame):
             entradas[campo] = entry
 
         btn_nuevo_medico = Button(
-            frame_agregar,
+            ventana_agregar,
             text="Agregar",
-            font=("Robot", 10),
+            width=15,
+            font=("Robot", 13),
+
             bg="#e6c885",
             command=lambda: self.guardar_nuevo_medico(entradas, ventana_agregar),
         )
         btn_nuevo_medico.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
         btn_volver = Button(
-            frame_agregar,
+            ventana_agregar,
+            
             text="Volver",
-            font=("Robot", 10),
+            width=15,
+            font=("Robot", 13),
+        
             bg="#e6c885",
             command=ventana_agregar.destroy,
-        )
-        btn_volver.grid(row=len(campos) + 1, column=4, columnspan=2, padx=10, pady=10)
+        )        
+        btn_volver.grid(row=5, column=3, padx=50)
         self.actualizar_treeview()
 
     def ver_medico(self):
@@ -384,20 +386,25 @@ class Gestionmedico(Frame):
         ventana.title("Detalles del medico")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
+        ventana.geometry("710x360+400+160")  # Aumenta el ancho de la ventana
         ventana.protocol("WM_DELETE_WINDOW", lambda: None)
+
+        # Centrar la ventana en la ventana principal
 
         ventana.grid_columnconfigure(0, weight=1)
         ventana.grid_rowconfigure(0, weight=1)
 
         frame_detalles = LabelFrame(
             ventana,
-            text="Detalles del medico",
+            text="Datos del medico",
             font=("Robot", 10),
             padx=10,
             pady=10,
             bg="#c9c2b2",
         )
-        frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew", columnspan=2)
+        frame_detalles.grid_columnconfigure(0, weight=1)  # Permite que el frame se expanda horizontalmente
+        frame_detalles.grid_columnconfigure(1, weight=1)  # Permite que el frame se expanda horizontalmente
 
         campos = ["Nombre", "Apellido", "DNI", "Telefono", "Matricula"]
         entradas = {}
@@ -440,10 +447,13 @@ class Gestionmedico(Frame):
             btn_volver = Button(
                 ventana,
                 text="Volver",
-                font=("Robot", 10),
+                width=15,
+                font=("Robot", 13),
                 bg="#e6c885",
                 command=ventana.destroy,
             )
+
+
             btn_volver.grid(row=len(campos) + 2, column=2, columnspan=2, padx=10, pady=10)
 
         if modo == "modificar":
@@ -461,9 +471,10 @@ class Gestionmedico(Frame):
             )
 
             btn_volver = Button(
-                frame_detalles,
+                ventana,
                 text="Volver",
-                font=("Robot", 10),
+                width=15,
+                font=("Robot", 13),
                 bg="#e6c885",
                 command=ventana.destroy,
             )
@@ -510,6 +521,8 @@ class Gestionmedico(Frame):
                     conexion.close()
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
+
+        self.actualizar_treeview()
 
 
  

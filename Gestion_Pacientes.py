@@ -96,8 +96,6 @@ class GestionPaciente(Frame):
         fondo_label = Label(frame_pacientes, image=self.img_fondo)
         fondo_label.grid(row=0, column=0, columnspan=7)
 
-
-
         #Frame más chico para label y entry de búsqueda
         frame_busqueda = Frame(frame_pacientes, bg="#e6c885")
         frame_busqueda.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="w")
@@ -138,7 +136,7 @@ class GestionPaciente(Frame):
         stilo.configure("Treeview.Heading", font=("Roboto",14))  # Cambia la fuente de las cabeceras
         # Treeview para mostrar la tabla de pacientes dentro del frame_tabla
         self.tree = ttk.Treeview(frame_tabla, columns=("id", "nombre", "apellido", "dni", "obra_social"), show='headings', height=11)
-        '''
+        
         # Títulos de columnas
         self.tree.heading("id", text="ID")
         self.tree.heading("nombre", text="Nombre")
@@ -147,33 +145,12 @@ class GestionPaciente(Frame):
         self.tree.heading("obra_social", text="Obra Social")
 
         # Ancho de las columnas y datos centrados
-        self.tree.column("id", anchor='center', width=50)
-        self.tree.column("nombre", anchor='center', width=200)
-        self.tree.column("apellido", anchor='center', width=200)
-        self.tree.column("dni", anchor='center', width=150)
-        self.tree.column("obra_social", anchor='center', width=200)
-        '''
+        self.tree.column("id", anchor='center', width=0)
+        self.tree.column("nombre", anchor='center', width=300)
+        self.tree.column("apellido", anchor='center', width=300)
+        self.tree.column("dni", anchor='center', width=300)
+        self.tree.column("obra_social", anchor='center', width=300)
         
-        self.tree.heading("id", text="")
-        self.tree.heading("nombre", text="Nombre")
-        self.tree.heading("apellido", text="Apellido")
-        self.tree.heading("dni", text="DNI")
-        self.tree.heading("obra_social", text="Obra Social")
-
-        # Ancho de las columnas y datos centrados
-        self.tree.column("id", width=0, stretch=False)
-        self.tree.column("nombre", anchor="center", width=250, stretch=False)
-        self.tree.column("apellido", anchor="center", width=350, stretch=False)
-        self.tree.column("dni", anchor="center", width=250, stretch=False)
-        self.tree.column("obra_social", anchor="center", width=300, stretch=False)
-
-        # Evitar que las columnas se puedan mover o redimensionar
-        self.tree["displaycolumns"] = ("nombre", "apellido", "dni", "obra_social")
-        for col in self.tree["displaycolumns"]:
-            self.tree.heading(col, command=lambda: "break")
-            self.tree.column(col, stretch=False)
-
-        #Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
 
         #Scrollbar para la tabla dentro del frame_tabla
@@ -197,9 +174,13 @@ class GestionPaciente(Frame):
                                command=self.eliminar_paciente)
         btn_eliminar.grid(row=4, column=3, padx=50)
 
-        btn_volver = Button(frame_btn, text="Volver", width=15,font=("Robot",13),bg="#e6c885",
+        btn_volver = Button(frame_btn, text="Volver al menú", width=15,font=("Robot",13),bg="#e6c885",
                             command=self.volver_menu_principal)
         btn_volver.grid(row=4, column=4, padx=50)
+
+    def volver_menu_principal(self):
+        import os
+        os.system('python Menu.py')
 
 
     def conectar_tabla(self, tabla):
@@ -260,39 +241,39 @@ class GestionPaciente(Frame):
         self.abrir_ventana_paciente(paciente_seleccionado, seleccion[0],modo="modificar")    
     
     def abrir_ventana_paciente(self, paciente, id_seleccionado, modo="ver"):
-        ventana = Toplevel(self)
-        ventana.title("Detalles del paciente")
-        ventana.config(bg="#e4c09f")
-        ventana.resizable(False,False)
-        ventana.geometry("510x445+400+160")
-        ventana.protocol("WM_DELETE_WINDOW", lambda: None)  # Deshabilitar el botón "Cerrar" de la ventana
-        
-        ventana.grid_columnconfigure(0, weight=1)
-        ventana.grid_rowconfigure(0, weight=1)
+        ventana_abrir = Toplevel(self)
+        ventana_abrir.title("Detalles del paciente")
+        ventana_abrir.config(bg="#e4c09f")
+        ventana_abrir.resizable(False, False)
+        ventana_abrir.geometry("510x445+400+160")
+        ventana_abrir.protocol("WM_DELETE_WINDOW", lambda: None)  # Deshabilitar el botón "Cerrar" de la ventana
 
-        frame_detalles = LabelFrame(ventana, text="Detalles del Paciente", font=("Roboto", 13), padx=10, pady=10, bg="#c9c2b2")
+        ventana_abrir.grid_columnconfigure(0, weight=1)
+        ventana_abrir.grid_rowconfigure(0, weight=1)
+
+        frame_detalles = LabelFrame(ventana_abrir, text="Detalles del Paciente", font=("Roboto", 13), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre","Apellido","DNI","Obra Social","Propietario del Plan","Sexo","Teléfono del Paciente","Número de Afiliado"]
+        campos = ["Nombre", "Apellido", "DNI", "Obra Social", "Propietario del Plan", "Sexo", "Teléfono del Paciente", "Número de Afiliado"]
         id_paciente = paciente[0]  # Asumiendo que el ID es el primer valor
 
-        vcmd_letras = ventana.register(self.solo_letras)
-        vcmd_numeros = ventana.register(self.solo_numeros)
-        
+        vcmd_letras = ventana_abrir.register(self.solo_letras)
+        vcmd_numeros = ventana_abrir.register(self.solo_numeros)
+
         try:
             conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
             cursor = conexion.cursor()
-            cursor.execute("SELECT nombre,apellido,dni,obra_social,propietario,sexo,telefono,nro_afiliado,activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
+            cursor.execute("SELECT nombre, apellido, dni, obra_social, propietario, sexo, telefono, nro_afiliado, activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
             valores = cursor.fetchone()
         except mysql.connector.Error as err:
             messagebox.showerror("Error", f"Error al cargar los datos del paciente: {err}")
-            ventana.destroy()
+            ventana_abrir.destroy()
             return
         finally:
             if conexion.is_connected():
                 cursor.close()
                 conexion.close()
-            
+
         entradas = {}
 
         for i, campo in enumerate(campos):
@@ -308,7 +289,7 @@ class GestionPaciente(Frame):
 
             if i < len(valores):
                 entry.insert(0, valores[i])
-            entradas[campo] = entry     
+            entradas[campo] = entry
 
         # ComboBox para Estado
         etiqueta_estado = Label(frame_detalles, text="Estado:", bg="#c9c2b2", font=("Roboto", 10))
@@ -323,30 +304,30 @@ class GestionPaciente(Frame):
                 entry.config(state="readonly")
             combo_estado.config(state="readonly")
 
-            frame_btns = Frame(ventana, bg="#e4c09f")
+            frame_btns = Frame(ventana_abrir, bg="#e4c09f")
             frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
             btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Roboto", 13), bg="#e6c885",
-                                command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
+                                 command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
             btn_guardar.grid(row=len(campos), column=0, pady=10, padx=10)
             btn_guardar.config(state="disabled")  # Initially disabled
 
             btn_editar = Button(frame_btns, text="Modificar", width=15, font=("Roboto", 13), bg="#e6c885",
                                 command=lambda: self.activar_edicion(entradas, btn_guardar))
-            btn_editar.grid(row=len(campos) , column=1, pady=10, padx=10)
+            btn_editar.grid(row=len(campos), column=1, pady=10, padx=10)
 
-            btn_volver = Button(frame_btns, text="Volver", font=("Robot", 13),bg="#e6c885", width=15,
-                            command=ventana.destroy)
-            btn_volver.grid(row=len(campos) , column=2, pady=10, padx=10)
+            btn_volver = Button(frame_btns, text="Volver", font=("Roboto", 13), bg="#e6c885", width=15,
+                                command=ventana_abrir.destroy)
+            btn_volver.grid(row=len(campos), column=2, pady=10, padx=10)
 
         if modo == "modificar":
-            btn_modificar = Button(frame_detalles, text="Guardar Cambios", bg="#e6c885",width=15, font=("Roboto", 13),
-                                command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
+            btn_modificar = Button(frame_detalles, text="Guardar Cambios", bg="#e6c885", width=15, font=("Roboto", 13),
+                                   command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
             btn_modificar.grid(row=10, column=1, padx=10, pady=0)
 
-            btn_volver = Button(frame_detalles, text="Volver", font=("Robot", 13),bg="#e6c885", width=15,
-                            command=ventana.destroy)
-            btn_volver.grid(row=len(campos)+2, column=0, pady=10, padx=10)
+            btn_volver = Button(frame_detalles, text="Volver", font=("Roboto", 13), bg="#e6c885", width=15,
+                                command=ventana_abrir.destroy)
+            btn_volver.grid(row=len(campos) + 2, column=0, pady=10, padx=10)
 
 
     def activar_edicion(self, entradas, btn_guardar):
@@ -423,11 +404,7 @@ class GestionPaciente(Frame):
                     cursor.close()
                     conexion.close()
 
-            '''        
-            messagebox.showinfo("Atención", "Paciente eliminado correctamente.")
-        else:
-            messagebox.showinfo("Atención", "Eliminación cancelada.")
-            '''
+
     def agregar_paciente(self):
         ventana_agregar = Toplevel(self)
         ventana_agregar.title("Agregar Paciente")
@@ -438,7 +415,6 @@ class GestionPaciente(Frame):
         
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Paciente", font= ("Roboto", 11),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-
 
 
         campos = ["Nombre","Apellido","DNI","Obra Social","Propietario del Plan","Sexo","Teléfono del Paciente","Número de Afiliado"]
@@ -558,18 +534,8 @@ class GestionPaciente(Frame):
                 cursor.close()
                 conexion.close()
     
-    def volver_menu_principal(self):
-        from Menu import MENU
-        self.master.destroy()
-        ventana = Tk()
-        ventana.wm_title("Menú Recupero de Obra Social")
-        ventana.wm_resizable(0,0)
-        ventana.geometry("+0+0")
-        ventana.protocol("WM_DELETE_WINDOW", lambda: None)
-        menu = MENU(ventana)
-        menu.mainloop()
-'''
-ventana = Tk()
+
+'''ventana = Tk()
 ventana.title("Gestion de Paciente")
 ventana.resizable(False,False)
 ventana.geometry("+0+0")
