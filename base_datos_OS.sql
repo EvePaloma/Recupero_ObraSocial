@@ -213,26 +213,26 @@ INSERT INTO afip (nombre) VALUES
 ('Entidad Prestadora de Servicios de Salud');
 
 INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, siglas, descripcion) VALUES 
-('1001', 'Sutura Simple', 1800.00, '2024-01-10', 'SS', 'Cierre de heridas superficiales con suturas en urgencias.'),
-('1002A', 'Sutura Compleja', 3400.00, '2024-01-11', 'SC', 'Sutura para heridas profundas o con múltiples capas de tejido.'),
-('1010', 'Escayola Brazo', 2800.00, '2024-01-12', 'EB', 'Inmovilización de brazo con escayola debido a fracturas.'),
-('102B', 'Escayola Pierna', 3500.00, '2024-01-12', 'EP', 'Inmovilización de pierna en caso de fractura o esguince severo.'),
-('103', 'Vendaje Compresivo', 700.00, '2024-01-13', 'VC', 'Vendaje para control de sangrado o soporte de lesiones.'),
-('104X', 'Lavado de Estómago', 4500.00, '2024-01-14', 'LE', 'Procedimiento para remover sustancias tóxicas ingeridas.'),
-('105', 'Administración Oxígeno', 1500.00, '2024-01-15', 'AO', 'Suministro de oxígeno en casos de insuficiencia respiratoria.'),
-('106N', 'Nebulización', 1000.00, '2024-01-16', 'NB', 'Terapia respiratoria para pacientes con asma o dificultad respiratoria.'),
-('107', 'Inyección Intravenosa', 800.00, '2024-01-17', 'IV', 'Administración intravenosa de medicamentos de urgencia.'),
-('108Y', 'Inyección Intramuscular', 700.00, '2024-01-18', 'IM', 'Aplicación de medicamentos en el músculo para rápida absorción.'),
-('109', 'Curación Simple', 900.00, '2024-01-19', 'CS', 'Limpieza y cuidado de heridas leves.'),
-('110F', 'Curación Compleja', 1800.00, '2024-01-20', 'CC', 'Curación de heridas complejas o infectadas en urgencias.'),
-('111', 'Aspiración de Vías Aéreas', 2500.00, '2024-01-21', 'AVA', 'Retiro de secreciones en vías respiratorias en caso de obstrucción.'),
-('112G', 'Reanimación Cardiopulmonar', 12000.00, '2024-01-22', 'RCP', 'Procedimiento de emergencia para restaurar la respiración y circulación.'),
-('113', 'Extracción de Cuerpo Extraño', 3500.00, '2024-01-23', 'ECE', 'Extracción de cuerpos extraños en nariz, garganta u ojos.'),
-('114Z', 'Tratamiento de Quemaduras', 2200.00, '2024-01-24', 'TQ', 'Aplicación de enfriamiento para quemaduras superficiales.'),
-('115', 'Estabilización de Fractura', 4000.00, '2024-01-25', 'EF', 'Inmovilización y estabilización inicial de fracturas.'),
-('116A', 'Sutura de Cejas', 2300.00, '2024-01-26', 'SCJ', 'Cierre de heridas en la zona de cejas con sutura estética.'),
-('117', 'Administración de Suero', 1300.00, '2024-01-27', 'AS', 'Suministro intravenoso de líquidos y electrolitos.'),
-('118B', 'Analgesia Controlada', 1800.00, '2024-01-28', 'AC', 'Aplicación de analgésicos para control de dolor en urgencias.');
+('1001', 'SUTURA SIMPLE', 1800.00, '2024-01-10', 'SS', 'CIERRE DE HERIDAS SUPERFICIALES CON SUTURAS EN URGENCIAS.'),
+('1002A', 'SUTURA COMPLEJA', 3400.00, '2024-01-11', 'SC', 'SUTURA PARA HERIDAS PROFUNDAS O CON MÚLTIPLES CAPAS DE TEJIDO.'),
+('1010', 'ESCAYOLA BRAZO', 2800.00, '2024-01-12', 'EB', 'INMOVILIZACIÓN DE BRAZO CON ESCAYOLA DEBIDO A FRACTURAS.'),
+('102B', 'ESCAYOLA PIERNA', 3500.00, '2024-01-12', 'EP', 'INMOVILIZACIÓN DE PIERNA EN CASO DE FRACTURA O ESGUINCE SEVERO.'),
+('103', 'VENDAJE COMPRESIVO', 700.00, '2024-01-13', 'VC', 'VENDAJE PARA CONTROL DE SANGRADO O SOPORTE DE LESIONES.'),
+('104X', 'LAVADO DE ESTÓMAGO', 4500.00, '2024-01-14', 'LE', 'PROCEDIMIENTO PARA REMOVER SUSTANCIAS TÓXICAS INGERIDAS.'),
+('105', 'ADMINISTRACIÓN OXÍGENO', 1500.00, '2024-01-15', 'AO', 'SUMINISTRO DE OXÍGENO EN CASOS DE INSUFICIENCIA RESPIRATORIA.'),
+('106N', 'NEBULIZACIÓN', 1000.00, '2024-01-16', 'NB', 'TERAPIA RESPIRATORIA PARA PACIENTES CON ASMA O DIFICULTAD RESPIRATORIA.'),
+('107', 'INYECCIÓN INTRAVENOSA', 800.00, '2024-01-17', 'IV', 'ADMINISTRACIÓN INTRAVENOSA DE MEDICAMENTOS DE URGENCIA.'),
+('108Y', 'INYECCIÓN INTRAMUSCULAR', 700.00, '2024-01-18', 'IM', 'APLICACIÓN DE MEDICAMENTOS EN EL MÚSCULO PARA RÁPIDA ABSORCIÓN.'),
+('109', 'CURACIÓN SIMPLE', 900.00, '2024-01-19', 'CS', 'LIMPIEZA Y CUIDADO DE HERIDAS LEVES.'),
+('110F', 'CURACIÓN COMPLEJA', 1800.00, '2024-01-20', 'CC', 'CURACIÓN DE HERIDAS COMPLEJAS O INFECTADAS EN URGENCIAS.'),
+('111', 'ASPIRACIÓN DE VÍAS AÉREAS', 2500.00, '2024-01-21', 'AVA', 'RETIRO DE SECRECIONES EN VÍAS RESPIRATORIAS EN CASO DE OBSTRUCCIÓN.'),
+('112G', 'REANIMACIÓN CARDIOPULMONAR', 12000.00, '2024-01-22', 'RCP', 'PROCEDIMIENTO DE EMERGENCIA PARA RESTAURAR LA RESPIRACIÓN Y CIRCULACIÓN.'),
+('113', 'EXTRACCIÓN DE CUERPO EXTRAÑO', 3500.00, '2024-01-23', 'ECE', 'EXTRACCIÓN DE CUERPOS EXTRAÑOS EN NARIZ, GARGANTA U OJOS.'),
+('114Z', 'TRATAMIENTO DE QUEMADURAS', 2200.00, '2024-01-24', 'TQ', 'APLICACIÓN DE ENFRIAMIENTO PARA QUEMADURAS SUPERFICIALES.'),
+('115', 'ESTABILIZACIÓN DE FRACTURA', 4000.00, '2024-01-25', 'EF', 'INMOVILIZACIÓN Y ESTABILIZACIÓN INICIAL DE FRACTURAS.'),
+('116A', 'SUTURA DE CEJAS', 2300.00, '2024-01-26', 'SCJ', 'CIERRE DE HERIDAS EN LA ZONA DE CEJAS CON SUTURA ESTÉTICA.'),
+('117', 'ADMINISTRACIÓN DE SUERO', 1300.00, '2024-01-27', 'AS', 'SUMINISTRO INTRAVENOSO DE LÍQUIDOS Y ELECTROLITOS.'),
+('118B', 'ANALGESIA CONTROLADA', 1800.00, '2024-01-28', 'AC', 'APLICACIÓN DE ANALGÉSICOS PARA CONTROL DE DOLOR EN URGENCIAS.');
 
 use recupero_obra_social;
 
