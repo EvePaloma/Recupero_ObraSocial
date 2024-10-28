@@ -173,6 +173,7 @@ CREATE TABLE `detalle_ficha` (
   `cantidad` int NOT NULL DEFAULT 1 ,
   `precio_unitario` float NOT NULL,
   `subtotal` float AS (cantidad * precio_unitario) STORED,
+  `activo` tinyint NOT NULL DEFAULT 1,
   PRIMARY KEY (`id_detalle`),
   FOREIGN KEY (`id_ficha`) REFERENCES `ficha` (`id_ficha`),
   FOREIGN KEY (`id_tratamiento`) REFERENCES `tratamiento` (`id_tratamiento`)
@@ -180,6 +181,11 @@ CREATE TABLE `detalle_ficha` (
 
 ---------------------------------------------------------------------------
 ---insertar datos---
+insert into rol(nombre) values ("ADMINISTRADOR"),("USUARIO");
+insert into usuario (nombre, apellido, documento, telefono, clave, id_rol) values ("LUCRECIA", "SALAZAR", "4563255", "3562455", "623", 1);
+
+from * from USUARIO;
+
 use recupero_obra_social;
 INSERT INTO obra_social (nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit) VALUES
 ('Swiss Medical', 'SMG', '0810-333-8876', 'Obra social privada con cobertura integral.', 'Av. Pueyrredón 715, CABA', '1032', '30-65748512-1'),
