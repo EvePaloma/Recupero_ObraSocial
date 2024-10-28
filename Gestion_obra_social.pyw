@@ -15,7 +15,7 @@ class Gestion_Obra_Social(Frame):
         self.createWidgets()
         self.actualizar_treeview()
         # Sobrescribe el protocolo de cierre de la ventana
-        #self.master.protocol("WM_DELETE_WINDOW", lambda: None)
+        self.master.protocol("WM_DELETE_WINDOW", lambda: None)
 
     def volver_menu_principal(self):
         from Menu import MENU
@@ -28,7 +28,8 @@ class Gestion_Obra_Social(Frame):
         menu.mainloop()
 
     def solo_letras_numeros(self, char):
-        #return char.isalnum() or char in [" ", "-", "."]
+        if not char:
+            return True
         return bool(re.match(r'[a-zA-Z0-9 ]', char))
     def solo_numeros(self, char):
         return char.isdigit()
@@ -136,7 +137,7 @@ class Gestion_Obra_Social(Frame):
             return
 
     def createWidgets(self):
-        contenedor_total = Frame(self, bg="#c9c2b2", height= 800)
+        contenedor_total = LabelFrame(self, text= "Gestión de Obra Social" , bg="#c9c2b2", height= 800)
         self.pack_propagate(False)
         contenedor_total.pack(expand=True, fill= "y")
 
@@ -282,7 +283,7 @@ class Gestion_Obra_Social(Frame):
         btn_nueva_obra_social = Button(frame_btns, text="Agregar", width=15, font=("Robot", 13),bg="#e6c885", command=lambda: self.guardar_nueva_obra_social(entradas, self.ventana_agregar))
         btn_nueva_obra_social.grid(row=len(campos), column=0, padx=40, pady=10)
         
-        btn_cancelar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=self.ventana_agregar.destroy)
+        btn_cancelar = Button(frame_btns, text="Volver", width=15, font=("Robot", 13), bg="#e6c885", command=self.ventana_agregar.destroy)
         btn_cancelar.grid(row=len(campos), column=1, padx= 40, pady=10)
 
         self.ventana_agregar.mainloop()
@@ -304,6 +305,7 @@ class Gestion_Obra_Social(Frame):
 
         if not self.validar_repetidos(nombre, siglas):
             messagebox.showerror("Error", "El nombre o las siglas ya existen en la base de datos.")
+            ventana_agregar.destroy()
         else:
             # Validar datos y agregar al Treeview
             if nombre and siglas and telefono and cuit:
@@ -373,7 +375,7 @@ class Gestion_Obra_Social(Frame):
         validar_letynum = ventana.register(self.solo_letras_numeros)
         validar_numeros = ventana.register(self.solo_numeros)
 
-        campos = ["Nombre", "Siglas", "Teléfono", "Detalle", "Domicilio Casa Central", "Domicilio Carlos Paz", "CUIT", "Carácter de AFIP", "Estado"]
+        campos = ["Nombre","Siglas","Teléfono","Detalle","Domicilio Casa Central","Domicilio Carlos Paz","CUIT","Carácter de AFIP","Estado"]
         valores = list(obra_social)
         entradas = {}
 
@@ -413,10 +415,10 @@ class Gestion_Obra_Social(Frame):
                 self.texto.grid(row=i, column=1, padx=10, pady=5)
             else:
                 entry = Entry(frame_detalles, width=40, font=("Robot", 12))
-                """if campo in ["Nombre", "Siglas"]:
-                    entry.config(validate="key", validatecommand= validar_letynum)
+                if campo in ["Nombre", "Siglas"]:
+                    entry.config(validate="key", validatecommand= (validar_letynum, '%S'))
                 if campo in ["Teléfono", "CUIT"]:
-                    entry.config(validate="key", validatecommand=(validar_numeros, '%S'))"""
+                    entry.config(validate="key", validatecommand=(validar_numeros, '%S'))
                 entry.grid(row=i, column=1, padx=10, pady=5)
                 if i + 1 < len(valores):
                     entry.insert(0,str(valores[i + 1]).upper())
@@ -436,7 +438,7 @@ class Gestion_Obra_Social(Frame):
             btn_guardar.grid(row = 0, column=1, padx=25,pady=10)
             btn_guardar.config(state="disabled")  # Iniciar como deshabilitado
 
-            btn_editar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=ventana.destroy)
+            btn_editar = Button(frame_btns, text="Volver", width=15, font=("Robot", 13), bg="#e6c885", command=ventana.destroy)
             btn_editar.grid(row = 0, column=2, padx=25,pady=10)
 
         if modo == "modificar":
@@ -563,9 +565,9 @@ class Gestion_Obra_Social(Frame):
             self.tree.delete(*self.tree.get_children())
             self.actualizar_treeview()
 
-ventana = Tk()
+"""ventana = Tk()
 ventana.title("Gestion de obra_socials")
 ventana.resizable(False,False)
 ventana.geometry("+0+0")
 root = Gestion_Obra_Social(ventana)
-ventana.mainloop()
+ventana.mainloop()"""

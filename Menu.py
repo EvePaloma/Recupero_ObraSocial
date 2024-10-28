@@ -3,6 +3,7 @@ from tkinter import messagebox
 from tkinter import ttk
 from Gestion_Tratamiento import *   
 from Gestion_obra_social import *
+from Gestion_Medico_completa import *
 
 class MENU(Frame):
     def __init__(self, master):

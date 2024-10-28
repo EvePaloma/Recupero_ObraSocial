@@ -645,7 +645,6 @@ class GestionFicha(Frame):
         apellido = entry["Apellido"].get()
         dni = entry["DNI"].get()
         obra_social = self.datos_ficha["Obra Social"]
-        print(obra_social)
         nro_afiliado = entry["Número de Afiliado"].get()
         id_medico = self.datos_ficha["Id_medico"]
         nombre_medico = entry["Nombre del médico"].get()
@@ -665,7 +664,7 @@ class GestionFicha(Frame):
                 #Obtenemos el id de la ficha que acabamos de agregar
                 ficha_id = cursor.lastrowid
                 for child in self.arbol_ficha.get_children():
-                    id_tratamiento = child[0]
+                    id_tratamiento = child
                     tratamiento = self.arbol_ficha.item(child, 'values')
                     print("valores para agregar", id_tratamiento, tratamiento)
                     sql = "INSERT INTO detalle_ficha (id_ficha, id_tratamiento, cantidad, precio_unitario) VALUES (%s, %s, %s, %s)"
