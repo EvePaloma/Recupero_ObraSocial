@@ -148,6 +148,7 @@ class GestionPaciente(Frame):
             return None
 
 
+
     def ver_paciente(self):
         seleccion = self.tree.selection()
         if not seleccion:
@@ -179,8 +180,8 @@ class GestionPaciente(Frame):
         frame_detalles = LabelFrame(ventana, text="Detalles del Paciente", font=("Roboto", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre",  "Apellido","DNI","Obra Social","Propietario del Plan","Sexo","Teléfono del Paciente","Número de Afiliado","Estado"]
-        id_paciente = paciente[0] #ACA ES
+        campos = ["Nombre", "Apellido", "DNI", "Obra Social", "Propietario del Plan", "Sexo", "Teléfono del Paciente", "Número de Afiliado"]
+        id_paciente = paciente[0]  # Asumiendo que el ID es el primer valor
 
         vcmd_letras = ventana.register(self.solo_letras)
         vcmd_numeros = ventana.register(self.solo_numeros)
@@ -188,7 +189,7 @@ class GestionPaciente(Frame):
         try:
             conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
             cursor = conexion.cursor()
-            cursor.execute("SELECT nombre, apellido, dni, obra_social, propietario, sexo, telefono, nro_afiliado FROM paciente WHERE id_paciente = %s", (id_paciente,))
+            cursor.execute("SELECT nombre, apellido, dni, obra_social, propietario, sexo, telefono, nro_afiliado, activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
             valores = cursor.fetchone()
         except mysql.connector.Error as err:
             messagebox.showerror("Error", f"Error al cargar los datos del paciente: {err}")
@@ -200,9 +201,6 @@ class GestionPaciente(Frame):
                 conexion.close()
             
         entradas = {}
-
-        vcmd_letras = ventana.register(self.solo_letras)
-        vcmd_numeros = ventana.register(self.solo_numeros)
 
         for i, campo in enumerate(campos):
             etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Roboto", 10))
@@ -219,33 +217,31 @@ class GestionPaciente(Frame):
                 entry.insert(0, valores[i])
             entradas[campo] = entry     
 
-                # ComboBox para Estado
+        # ComboBox para Estado
         etiqueta_estado = Label(frame_detalles, text="Estado:", bg="#c9c2b2", font=("Roboto", 10))
         etiqueta_estado.grid(row=len(campos), column=0, padx=10, pady=5)
-        combo_estado = ttk.Combobox(frame_detalles, values=["1", "0"], width=37)
+        combo_estado = ttk.Combobox(frame_detalles, values=["Activo", "Inactivo"], width=37)
         combo_estado.grid(row=len(campos), column=1, padx=10, pady=5)
-        combo_estado.set("1" if paciente[-1] == "" else "0")
+        combo_estado.set("Activo" if valores[-1] == 1 else "Inactivo")
         entradas["Estado"] = combo_estado
 
         if modo == "ver":
             for entry in entradas.values():
                 entry.config(state="readonly")
-
-            self.combo_valores_2.config(state="disabled")  # Deshabilitar el ComboBox
+            combo_estado.config(state="readonly")
 
             btn_guardar = Button(ventana, text="Guardar Cambios", width=15, font=("Roboto", 13), bg="#e6c885",
-                                     command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
+                                command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
             btn_guardar.grid(row=len(campos), column=0, pady=10)
             btn_guardar.config(state="disabled")  # Initially disabled
 
             btn_editar = Button(ventana, text="Modificar", width=15, font=("Roboto", 13), bg="#e6c885",
-                                    command=lambda: self.activar_edicion(entradas, btn_guardar))
+                                command=lambda: self.activar_edicion(entradas, btn_guardar))
             btn_editar.grid(row=len(campos) + 1, column=0, pady=10)
-                                
 
         if modo == "modificar":
             btn_modificar = Button(frame_detalles, text="Guardar Cambios", bg="#e6c885",
-                                   command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
+                                command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
             btn_modificar.grid(row=10, column=1, columnspan=2, padx=10, pady=0)
 
     def activar_edicion(self, entradas, btn_guardar):
@@ -260,6 +256,9 @@ class GestionPaciente(Frame):
         nuevos_valores = {campo: entradas[campo].get().upper() for campo in entradas}
         id_paciente = self.tree.item(seleccion, 'values')[0]  # Asumiendo que el ID es el primer valor
 
+        # Convertir el estado a 1 o 0
+        estado = 1 if entradas["Estado"].get() == "Activo" else 0
+
         try:
             conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
             cursor = conexion.cursor()
@@ -271,12 +270,12 @@ class GestionPaciente(Frame):
             cursor.execute(query, (
                 nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["DNI"], nuevos_valores["Obra Social"],
                 nuevos_valores["Propietario del Plan"], nuevos_valores["Sexo"], nuevos_valores["Teléfono del Paciente"],
-                nuevos_valores["Número de Afiliado"], nuevos_valores["Estado"], id_paciente
+                nuevos_valores["Número de Afiliado"], estado, id_paciente
             ))
             conexion.commit()
 
             # Actualizar los valores en el Treeview
-            self.tree.item(seleccion, values=(id_paciente, *nuevos_valores.values()))
+            self.tree.item(seleccion, values=(id_paciente, *nuevos_valores.values(), "Activo" if estado == 1 else "Inactivo"))
             
             # Mostrar mensaje de confirmación
             messagebox.showinfo("Información", "Cambios guardados correctamente.")
@@ -433,7 +432,6 @@ class GestionPaciente(Frame):
                 conexion.close()
 
     def cargar_paciente(self):
-
         try:
             conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
             cursor = conexion.cursor()
