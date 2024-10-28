@@ -962,40 +962,49 @@ class GestionFicha(Frame):
                 val1 = (id_paciente, id_obra_social, nro_afiliado, id_medico, datetime.now(), total, seleccion)
                 cursor.excecute(sql1, val1)
 
-                ficha_id = cursor.seleccion
-                for child in self.arbol_ficha.get_children():
-                    id_tratamiento = child
-                    tratamiento = self.arbol_ficha.item(child, 'values')
-                    print("valores para agregar", id_tratamiento, tratamiento)
-                    sql = "UPDATE detalle_ficha SET id_tratamiento = %s, cantidad = %s, precio_unitario = %s "
-                    val = (ficha_id, id_tratamiento, tratamiento[3], tratamiento[2])
-                    cursor.execute(sql, val)
-                    conexion.commit()
-                messagebox.showinfo("Información", "Ficha agregada exitosamente")
-                self.tree.insert("", 0, values=(dni, nombre, apellido, obra_social, fecha, total))
-                self.volver_inicio()
-                self.actualizar_treeview()
-                
+                # Obtener los tratamientos actuales de la ficha
+                cursor.execute("SELECT id_tratamiento FROM detalle_ficha WHERE id_ficha = %s", (seleccion,))
+                tratamientos_actuales = {row[0] for row in cursor.fetchall()}
 
-                cursor = conexion.cursor()
-                sql = "INSERT INTO ficha (id_paciente, id_obra_social, nro_afiliado ,id_medico, fecha, total) VALUES (%s, %s, %s, %s, %s, %s)"
-                val = (id_paciente, obra_social, nro_afiliado, id_medico, fecha, total)
-                cursor.execute(sql, val)
-                conexion.commit()
-                #Obtenemos el id de la ficha que acabamos de agregar
-                ficha_id = cursor.lastrowid
+                # Obtener los nuevos tratamientos de la interfaz
+                nuevos_tratamientos = {}
                 for child in self.arbol_ficha.get_children():
-                    id_tratamiento = child
                     tratamiento = self.arbol_ficha.item(child, 'values')
-                    print("valores para agregar", id_tratamiento, tratamiento)
-                    sql = "INSERT INTO detalle_ficha (id_ficha, id_tratamiento, cantidad, precio_unitario) VALUES (%s, %s, %s, %s)"
-                    val = (ficha_id, id_tratamiento, tratamiento[3], tratamiento[2])
-                    cursor.execute(sql, val)
-                    conexion.commit()
+                    id_tratamiento = int(child)
+                    nuevos_tratamientos[id_tratamiento] = tratamiento
+
+                # Actualizar o agregar tratamientos
+                for id_tratamiento, tratamiento in nuevos_tratamientos.items():
+                    if id_tratamiento in tratamientos_actuales:
+                        # Actualizar tratamiento existente
+                        sql = "UPDATE detalle_ficha SET cantidad = %s, precio_unitario = %s WHERE id_ficha = %s AND id_tratamiento = %s"
+                        val = (tratamiento[2], tratamiento[3], seleccion, id_tratamiento)
+                        cursor.execute(sql, val)
+                    else:
+                        # Agregar nuevo tratamiento
+                        sql = "INSERT INTO detalle_ficha (id_ficha, id_tratamiento, cantidad, precio_unitario) VALUES (%s, %s, %s, %s)"
+                        val = (seleccion, id_tratamiento, tratamiento[2], tratamiento[3])
+                        cursor.execute(sql, val)
+
+                # Eliminar tratamientos que ya no están en la interfaz
+                tratamientos_a_eliminar = tratamientos_actuales - nuevos_tratamientos.keys()
+                for id_tratamiento in tratamientos_a_eliminar:
+                    cursor.execute("DELETE FROM detalle_ficha WHERE id_ficha = %s AND id_tratamiento = %s", (seleccion, id_tratamiento))
+
+                conexion.commit()
+                messagebox.showinfo("Información", "Ficha actualizada exitosamente")
+                self.volver_inicio()
+                self.actualizar_treeview()
+            except Exception as e:
+                conexion.rollback()
+                messagebox.showerror("Error", f"Error al actualizar la ficha: {e}")
+
+                conexion.commit()
                 messagebox.showinfo("Información", "Ficha agregada exitosamente")
                 self.tree.insert("", 0, values=(dni, nombre, apellido, obra_social, fecha, total))
                 self.volver_inicio()
                 self.actualizar_treeview()
+
             except mysql.connector.Error as err:
                 messagebox.showerror("Error", f"Error al agregar la ficha: {err}")
             finally:
