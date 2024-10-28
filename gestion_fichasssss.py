@@ -167,10 +167,15 @@ class GestionFicha(Frame):
         btn_buscar.grid(row=1, column=2, sticky= W)
         btn_buscar.image = img_buscar
 
-        self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 14), state="readonly")
+        """self.combo_busqueda = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 12), state="readonly")
+        self.combo_busqueda['values'] = ("Documento", "Nombre/Apellido", "Obra Social")
+        self.combo_busqueda.set("Documento")
+        self.combo_busqueda.grid(row=1, column=3, padx=20, pady=3)"""
+
+        self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 13), state="readonly")
         self.combo_activos['values'] = ("Activos", "Inactivos", "Todos")
         self.combo_activos.set("Activos")
-        self.combo_activos.grid(row=1, column=3, padx=20, pady=3)
+        self.combo_activos.grid(row=1, column=3, padx=10, pady=3)
 
         boton_agregar = Button(frame_busqueda, text="Agregar  +", width=15, bg="#e6c885",font=("Robot",15), command=self.agregar_ficha)
         boton_agregar.grid(row=1, column=5, padx=10, pady=3, sticky= E)
@@ -708,6 +713,97 @@ class GestionFicha(Frame):
                 if conexion.is_connected():
                     cursor.close()
                     conexion.close()
+
+    #Funciones para buscar fichas en la base de datos
+    def buscar_ficha(self):
+        busqueda = self.entrada_buscar.get().strip().lower() 
+        if not busqueda:
+            self.tree.delete(*self.tree.get_children())
+            self.actualizar_treeview()
+            return
+
+        coincidencias = []
+
+        for item in self.tree.get_children():
+            valores = self.tree.item(item, 'values')
+            nombre = valores[1].upper()
+            siglas = valores[2].upper()
+
+            if busqueda in nombre or busqueda in siglas:
+                coincidencias.append(valores)
+
+        if not coincidencias:
+            messagebox.showwarning("Atención", "No se encontró la obra social.")
+            self.tree.delete(*self.tree.get_children())
+            self.actualizar_treeview()
+        else:
+            self.tree.delete(*self.tree.get_children())
+            for valores in coincidencias:
+                self.tree.insert('', 'end', values=valores)
+
+        #evalua los dni que contengan ese número
+        conexion = obtener_conexion()
+        if busqueda.isdigit():
+            for item in self.tree.get_children():
+                valores = self.tree.item(item, 'values')
+                dni = valores[1]
+
+                if busqueda in dni:
+                    coincidencias.append(valores)
+
+                if not coincidencias:
+                    messagebox.showwarning("Atención", "No se encontró ninguna ficha con dni similar.")
+                    self.tree.delete(*self.tree.get_children())
+                    self.actualizar_treeview()
+                else:
+                    self.tree.delete(*self.tree.get_children())
+                    for valores in coincidencias:
+                        self.tree.insert('', 'end', values=valores)
+
+        try:
+            cursor = conexion.cursor()
+            query = (""" SELECT p.dni, p.nombre, p.apellido, f.obra_social, f.fecha, f.total 
+                        FROM ficha f
+                        JOIN paciente p ON f.id_paciente = p.id_paciente
+                        WHERE p.dni = LIKE %s
+                        GROUP BY p.dni, p.nombre, p.apellido, f.obra_social, f.fecha
+                        """)
+            like_pattern = f"%{busqueda}%"
+            cursor.execute(query, (like_pattern))
+            fichas = cursor.fetchall()
+
+            self.tree.delete(*self.tree.get_children())
+            for ficha in fichas:
+                self.tree.insert("", "end", values=fichas)
+            
+            if not fichas:
+                messagebox.showwarning("Atención", "No se encontró la ficha.")
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error", f"Error al buscar la ficha: {err}")
+        finally:
+            if conexion.is_connected():
+                cursor.close()
+                conexion.close()
+
+
+        #Obtenemos búsqueda
+        for item in self.tree.get_children():         #Recorre cada fila usando identificador en la lista devuelta por children
+            valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
+            nombre = valores[1].lower()
+            apellido = valores[2].lower()
+            dni = valores[0].lower()
+            if busqueda in nombre or busqueda in dni or busqueda in apellido:
+                self.tree.selection_set(item)         #Selecciona el tratamiento.
+                self.tree.see(item)                   #Hace visible el tratamiento.
+                ficha_encontrada = True
+            else:
+                self.tree.detach(item)                #Oculta los otros tratamientos.
+       
+            
+        if not ficha_encontrada:
+
+            messagebox.showwarning("Atención", "No se encontró la ficha.")
+
 """
     def ver_ficha(self):
         seleccion = self.tree.selection()
@@ -840,58 +936,6 @@ class GestionFicha(Frame):
             if conexion.is_connected():
                 cursor.close()
                 conexion.close()
-
-    def buscar_ficha(self):
-        busqueda = self.entrada_buscar.get().strip().lower() 
-        if not busqueda:
-            self.tree.delete(*self.tree.get_children())
-            self.cargar_ficha()
-            return
-
-        try:
-            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
-            cursor = conexion.cursor()
-            query =
-            SELECT id_ficha, nombre, apellido, dni, obra_social, propietario, telefono, nro_afiliado, nombre_medico, apellido_medico, especialidad, tipo_matricula,
-            matricula, servicio, fecha, codigo, nombre_procedimiento, precio, tipo_tratamiento, siglas
-            FROM ficha 
-            WHERE LOWER(nombre) LIKE %s OR LOWER(apellido) LIKE %s OR dni LIKE %s
-        
-            like_pattern = f"%{busqueda}%"
-            cursor.execute(query, (like_pattern, like_pattern, like_pattern))
-            fichas = cursor.fetchall()
-            
-            self.tree.delete(*self.tree.get_children())
-            for ficha in fichas:
-                self.tree.insert("", "end", values=fichas)
-            
-            if not fichas:
-                messagebox.showwarning("Atención", "No se encontró la ficha.")
-        except mysql.connector.Error as err:
-            messagebox.showerror("Error", f"Error al buscar la ficha: {err}")
-        finally:
-            if conexion.is_connected():
-                cursor.close()
-                conexion.close()
-
-
-        #Obtenemos búsqueda
-        for item in self.tree.get_children():         #Recorre cada fila usando identificador en la lista devuelta por children
-            valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
-            nombre = valores[1].lower()
-            apellido = valores[2].lower()
-            dni = valores[0].lower()
-            if busqueda in nombre or busqueda in dni or busqueda in apellido:
-                self.tree.selection_set(item)         #Selecciona el tratamiento.
-                self.tree.see(item)                   #Hace visible el tratamiento.
-                ficha_encontrada = True
-            else:
-                self.tree.detach(item)                #Oculta los otros tratamientos.
-       
-            
-        if not ficha_encontrada:
-
-            messagebox.showwarning("Atención", "No se encontró la ficha.")
 
     def cargar_ficha(self):
         try:

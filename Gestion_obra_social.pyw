@@ -124,7 +124,6 @@ class Gestion_Obra_Social(Frame):
             cursor.close()
             conexion.close()
             if resultado[0] > 0:
-                print(resultado)
                 return False
             return True
         except mysql.connector.Error as err:
@@ -360,7 +359,6 @@ class Gestion_Obra_Social(Frame):
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
         ventana.geometry("700x450+350+120")
-        print(obra_social)
 
         frame_detalles = LabelFrame(ventana, text="Detalles de obra social", font=("Robot", 12), bg="#c9c2b2")
         frame_detalles.pack(padx=10, pady=10)
@@ -379,7 +377,6 @@ class Gestion_Obra_Social(Frame):
             Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
             if campo == "Carácter de AFIP":
                 lista = self.conectar_tabla("afip")
-                print(lista) 
                 # Crear un diccionario para buscar el ID por el nombre
                 self.datos_tabla = {dato[1]: dato[0] for dato in lista} 
                 self.combo_valores = ttk.Combobox(frame_detalles, width=49, font=("Robot", 10), state="disabled")
@@ -539,24 +536,22 @@ class Gestion_Obra_Social(Frame):
             self.actualizar_treeview()
             return
 
-        coincidencias = []
+        tratamiento_encontrado = False
 
         for item in self.tree.get_children():
             valores = self.tree.item(item, 'values')
-            nombre = valores[1].upper()
-            siglas = valores[2].upper()
+            nombre = valores[0].upper()
+            siglas = valores[1].upper()
 
             if busqueda in nombre or busqueda in siglas:
-                coincidencias.append(valores)
+                tratamiento_encontrado = True
+            else:
+                self.tree.delete(item)
 
-        if not coincidencias:
-            messagebox.showwarning("Atención", "No se encontró la obra social.")
+        if not tratamiento_encontrado:
+            messagebox.showwarning("Atención", "No se encontró obra social.")
             self.tree.delete(*self.tree.get_children())
             self.actualizar_treeview()
-        else:
-            self.tree.delete(*self.tree.get_children())
-            for valores in coincidencias:
-                self.tree.insert('', 'end', values=valores)
 
 ventana = Tk()
 ventana.title("Gestion de obra_socials")
