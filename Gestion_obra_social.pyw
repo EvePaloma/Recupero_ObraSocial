@@ -306,7 +306,7 @@ class Gestion_Obra_Social(Frame):
 
         if not self.validar_repetidos(nombre, siglas):
             messagebox.showerror("Error", "El nombre o las siglas ya existen en la base de datos.")
-            ventana_agregar.destroy()
+            self.ventana_agregar.destroy()
         else:
             # Validar datos y agregar al Treeview
             if nombre and siglas and telefono and cuit:
@@ -366,7 +366,7 @@ class Gestion_Obra_Social(Frame):
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
         ventana.geometry("700x450+350+120")
-        self.ventana.protocol("WM_DELETE_WINDOW", lambda: None)
+        ventana.protocol("WM_DELETE_WINDOW", lambda: None)
 
         frame_detalles = LabelFrame(ventana, text="Detalles de obra social", font=("Robot", 12), bg="#c9c2b2")
         frame_detalles.pack(padx=10, pady=10)
