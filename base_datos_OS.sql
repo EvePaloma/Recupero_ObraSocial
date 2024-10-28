@@ -187,15 +187,24 @@ insert into usuario (nombre, apellido, documento, telefono, clave, id_rol) value
 from * from USUARIO;
 
 use recupero_obra_social;
-INSERT INTO obra_social (nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit) VALUES
-('Swiss Medical', 'SMG', '0810-333-8876', 'Obra social privada con cobertura integral.', 'Av. Pueyrredón 715, CABA', '1032', '30-65748512-1'),
-('Galeno', 'GALENO', '0800-777-4253', 'Prestadora de servicios de salud privada.', 'Av. Córdoba 1455, CABA', '1055', '30-57694713-2'),
-('OSDE Binario', 'OSDE', '0810-555-6733', 'Obra social privada con múltiples planes de cobertura.', 'Av. Leandro N. Alem 1067, CABA', '', '30-52765890-6'),
-('Medicus', 'MEDICUS', '0800-333-6334', 'Obra social privada con cobertura en todo el país.', 'Av. Córdoba 1402, CABA', '1055', '30-64578932-7'),
-('Omint', 'OMINT', '0810-666-6646', 'Cobertura médica privada con múltiples servicios.', 'Maipú 501, CABA', '', '30-58412378-4'),
-('Sancor Salud', 'SANCOR', '0800-777-2363', 'Obra social privada orientada a brindar cobertura amplia.', 'Av. Rivadavia 1234, CABA', '1034', '30-67485913-8'),
-('Osdepyme', 'OSDEPYME', '0810-122-0533', 'Obra social privada para pequeñas y medianas empresas.', 'Av. Rivadavia 4155, CABA', '', '30-57681234-0'),
-('Avalian', 'AVALIAN', '0800-444-7007', 'Obra social privada con cobertura nacional.', 'Cerrito 550, CABA', '', '30-58971356-1');
+INSERT INTO obra_social (nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit, id_afip) VALUES
+('SWISS MEDICAL', 'SMG', '08103338876', 'OBRA SOCIAL PRIVADA CON COBERTURA INTEGRAL.', 'AV. PUEYRREDÓN 715, CABA', '1032', '30657485121', 1),
+('GALENO', 'GALENO', '08007774253', 'PRESTADORA DE SERVICIOS DE SALUD PRIVADA.', 'AV. CÓRDOBA 1455, CABA', '1055', '30576947132', 2),
+('OSDE BINARIO', 'OSDE', '08105556733', 'OBRA SOCIAL PRIVADA CON MÚLTIPLES PLANES DE COBERTURA.', 'AV. LEANDRO N. ALEM 1067, CABA', '', '30527658906', 3),
+('MEDICUS', 'MEDICUS', '08003336334', 'OBRA SOCIAL PRIVADA CON COBERTURA EN TODO EL PAÍS.', 'AV. CÓRDOBA 1402, CABA', '1055', '30645789327', 1),
+('OMINT', 'OMINT', '08106666646', 'COBERTURA MÉDICA PRIVADA CON MÚLTIPLES SERVICIOS.', 'MAIPÚ 501, CABA', '', '30584123784', 2),
+('SANCOR SALUD', 'SANCOR', '08007772363', 'OBRA SOCIAL PRIVADA ORIENTADA A BRINDAR COBERTURA AMPLIA.', 'AV. RIVADAVIA 1234, CABA', '1034', '30674859138', 3),
+('OSDEPYME', 'OSDEPYME', '08101220533', 'OBRA SOCIAL PRIVADA PARA PEQUEÑAS Y MEDIANAS EMPRESAS.', 'AV. RIVADAVIA 4155, CABA', '', '30576812340', 1),
+('AVALIAN', 'AVALIAN', '08004447007', 'OBRA SOCIAL PRIVADA CON COBERTURA NACIONAL.', 'CERRITO 550, CABA', '', '30589713561', 2),
+('PREMEDIC', 'PREMEDIC', '08001234567', 'OBRA SOCIAL PRIVADA CON COBERTURA REGIONAL.', 'AV. SANTA FE 1234, CABA', '1045', '30678912345', 3),
+('HOSPITAL BRITÁNICO', 'HB', '08005551234', 'OBRA SOCIAL PRIVADA CON SERVICIOS DE ALTA COMPLEJIDAD.', 'AV. INDEPENDENCIA 1234, CABA', '1100', '30567891234', 1),
+('ITALMED', 'ITALMED', '08007778899', 'OBRA SOCIAL PRIVADA CON COBERTURA INTERNACIONAL.', 'AV. ITALIA 1234, CABA', '1200', '30678945612', 2),
+('CEMIC', 'CEMIC', '08006667777', 'OBRA SOCIAL PRIVADA CON SERVICIOS DE ALTA CALIDAD.', 'AV. LAS HERAS 1234, CABA', '1300', '30567894561', 3),
+('OSPAT', 'OSPAT', '08001112233', 'OBRA SOCIAL DEL PERSONAL DE LA ACTIVIDAD DEL TURF.', 'AV. SAN JUAN 1234, CABA', '1400', '30678912346', 1),
+('OSMATA', 'OSMATA', '08002223344', 'OBRA SOCIAL DE MAESTRANZA Y SERVICIOS.', 'AV. BELGRANO 1234, CABA', '1500', '30567891235', 2),
+('OSUTHGRA', 'OSUTHGRA', '08003334455', 'OBRA SOCIAL DE LA UNION DE TRABAJADORES HOTELEROS Y GASTRONOMICOS.', 'AV. CORRIENTES 1234, CABA', '1600', '30678912347', 3),
+('OSPE', 'OSPE', '08004445566', 'OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL CUERO.', 'AV. ENTRE RIOS 1234, CABA', '1700', '30567891236', 1),
+('OSPACP', 'OSPACP', '08005556677', 'OBRA SOCIAL DEL PERSONAL DE LA ACTIVIDAD DEL PLASTICO.', 'AV. CALLAO 1234, CABA', '1800', '30678912348', 2);
 
 select * from obra_social;
 INSERT INTO afip (nombre) VALUES 
@@ -204,26 +213,26 @@ INSERT INTO afip (nombre) VALUES
 ('Entidad Prestadora de Servicios de Salud');
 
 INSERT INTO tratamiento (codigo, nombre, precio, fecha_precio, siglas, descripcion) VALUES 
-('1001', 'Sutura Simple', 1800.00, '2024-01-10', 'SS', 'Cierre de heridas superficiales con suturas en urgencias.'),
-('1002A', 'Sutura Compleja', 3400.00, '2024-01-11', 'SC', 'Sutura para heridas profundas o con múltiples capas de tejido.'),
-('1010', 'Escayola Brazo', 2800.00, '2024-01-12', 'EB', 'Inmovilización de brazo con escayola debido a fracturas.'),
-('102B', 'Escayola Pierna', 3500.00, '2024-01-12', 'EP', 'Inmovilización de pierna en caso de fractura o esguince severo.'),
-('103', 'Vendaje Compresivo', 700.00, '2024-01-13', 'VC', 'Vendaje para control de sangrado o soporte de lesiones.'),
-('104X', 'Lavado de Estómago', 4500.00, '2024-01-14', 'LE', 'Procedimiento para remover sustancias tóxicas ingeridas.'),
-('105', 'Administración Oxígeno', 1500.00, '2024-01-15', 'AO', 'Suministro de oxígeno en casos de insuficiencia respiratoria.'),
-('106N', 'Nebulización', 1000.00, '2024-01-16', 'NB', 'Terapia respiratoria para pacientes con asma o dificultad respiratoria.'),
-('107', 'Inyección Intravenosa', 800.00, '2024-01-17', 'IV', 'Administración intravenosa de medicamentos de urgencia.'),
-('108Y', 'Inyección Intramuscular', 700.00, '2024-01-18', 'IM', 'Aplicación de medicamentos en el músculo para rápida absorción.'),
-('109', 'Curación Simple', 900.00, '2024-01-19', 'CS', 'Limpieza y cuidado de heridas leves.'),
-('110F', 'Curación Compleja', 1800.00, '2024-01-20', 'CC', 'Curación de heridas complejas o infectadas en urgencias.'),
-('111', 'Aspiración de Vías Aéreas', 2500.00, '2024-01-21', 'AVA', 'Retiro de secreciones en vías respiratorias en caso de obstrucción.'),
-('112G', 'Reanimación Cardiopulmonar', 12000.00, '2024-01-22', 'RCP', 'Procedimiento de emergencia para restaurar la respiración y circulación.'),
-('113', 'Extracción de Cuerpo Extraño', 3500.00, '2024-01-23', 'ECE', 'Extracción de cuerpos extraños en nariz, garganta u ojos.'),
-('114Z', 'Tratamiento de Quemaduras', 2200.00, '2024-01-24', 'TQ', 'Aplicación de enfriamiento para quemaduras superficiales.'),
-('115', 'Estabilización de Fractura', 4000.00, '2024-01-25', 'EF', 'Inmovilización y estabilización inicial de fracturas.'),
-('116A', 'Sutura de Cejas', 2300.00, '2024-01-26', 'SCJ', 'Cierre de heridas en la zona de cejas con sutura estética.'),
-('117', 'Administración de Suero', 1300.00, '2024-01-27', 'AS', 'Suministro intravenoso de líquidos y electrolitos.'),
-('118B', 'Analgesia Controlada', 1800.00, '2024-01-28', 'AC', 'Aplicación de analgésicos para control de dolor en urgencias.');
+('1001', 'SUTURA SIMPLE', 1800.00, '2024-01-10', 'SS', 'CIERRE DE HERIDAS SUPERFICIALES CON SUTURAS EN URGENCIAS.'),
+('1002A', 'SUTURA COMPLEJA', 3400.00, '2024-01-11', 'SC', 'SUTURA PARA HERIDAS PROFUNDAS O CON MÚLTIPLES CAPAS DE TEJIDO.'),
+('1010', 'ESCAYOLA BRAZO', 2800.00, '2024-01-12', 'EB', 'INMOVILIZACIÓN DE BRAZO CON ESCAYOLA DEBIDO A FRACTURAS.'),
+('102B', 'ESCAYOLA PIERNA', 3500.00, '2024-01-12', 'EP', 'INMOVILIZACIÓN DE PIERNA EN CASO DE FRACTURA O ESGUINCE SEVERO.'),
+('103', 'VENDAJE COMPRESIVO', 700.00, '2024-01-13', 'VC', 'VENDAJE PARA CONTROL DE SANGRADO O SOPORTE DE LESIONES.'),
+('104X', 'LAVADO DE ESTÓMAGO', 4500.00, '2024-01-14', 'LE', 'PROCEDIMIENTO PARA REMOVER SUSTANCIAS TÓXICAS INGERIDAS.'),
+('105', 'ADMINISTRACIÓN OXÍGENO', 1500.00, '2024-01-15', 'AO', 'SUMINISTRO DE OXÍGENO EN CASOS DE INSUFICIENCIA RESPIRATORIA.'),
+('106N', 'NEBULIZACIÓN', 1000.00, '2024-01-16', 'NB', 'TERAPIA RESPIRATORIA PARA PACIENTES CON ASMA O DIFICULTAD RESPIRATORIA.'),
+('107', 'INYECCIÓN INTRAVENOSA', 800.00, '2024-01-17', 'IV', 'ADMINISTRACIÓN INTRAVENOSA DE MEDICAMENTOS DE URGENCIA.'),
+('108Y', 'INYECCIÓN INTRAMUSCULAR', 700.00, '2024-01-18', 'IM', 'APLICACIÓN DE MEDICAMENTOS EN EL MÚSCULO PARA RÁPIDA ABSORCIÓN.'),
+('109', 'CURACIÓN SIMPLE', 900.00, '2024-01-19', 'CS', 'LIMPIEZA Y CUIDADO DE HERIDAS LEVES.'),
+('110F', 'CURACIÓN COMPLEJA', 1800.00, '2024-01-20', 'CC', 'CURACIÓN DE HERIDAS COMPLEJAS O INFECTADAS EN URGENCIAS.'),
+('111', 'ASPIRACIÓN DE VÍAS AÉREAS', 2500.00, '2024-01-21', 'AVA', 'RETIRO DE SECRECIONES EN VÍAS RESPIRATORIAS EN CASO DE OBSTRUCCIÓN.'),
+('112G', 'REANIMACIÓN CARDIOPULMONAR', 12000.00, '2024-01-22', 'RCP', 'PROCEDIMIENTO DE EMERGENCIA PARA RESTAURAR LA RESPIRACIÓN Y CIRCULACIÓN.'),
+('113', 'EXTRACCIÓN DE CUERPO EXTRAÑO', 3500.00, '2024-01-23', 'ECE', 'EXTRACCIÓN DE CUERPOS EXTRAÑOS EN NARIZ, GARGANTA U OJOS.'),
+('114Z', 'TRATAMIENTO DE QUEMADURAS', 2200.00, '2024-01-24', 'TQ', 'APLICACIÓN DE ENFRIAMIENTO PARA QUEMADURAS SUPERFICIALES.'),
+('115', 'ESTABILIZACIÓN DE FRACTURA', 4000.00, '2024-01-25', 'EF', 'INMOVILIZACIÓN Y ESTABILIZACIÓN INICIAL DE FRACTURAS.'),
+('116A', 'SUTURA DE CEJAS', 2300.00, '2024-01-26', 'SCJ', 'CIERRE DE HERIDAS EN LA ZONA DE CEJAS CON SUTURA ESTÉTICA.'),
+('117', 'ADMINISTRACIÓN DE SUERO', 1300.00, '2024-01-27', 'AS', 'SUMINISTRO INTRAVENOSO DE LÍQUIDOS Y ELECTROLITOS.'),
+('118B', 'ANALGESIA CONTROLADA', 1800.00, '2024-01-28', 'AC', 'APLICACIÓN DE ANALGÉSICOS PARA CONTROL DE DOLOR EN URGENCIAS.');
 
 use recupero_obra_social;
 

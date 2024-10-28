@@ -7,7 +7,7 @@ from Gestion_Medico_completa import *
 
 class MENU(Frame):
     def __init__(self, master):
-        Frame.__init__(self, master, bg="#e4c09f", height=780, width=1366)
+        Frame.__init__(self, master, bg="#e4c09f", height=890, width=1366)
         self.master = master
         self.pack_propagate(False)
         self.pack(expand=True)
@@ -20,7 +20,7 @@ class MENU(Frame):
         ventana = Tk()
         ventana.wm_title("Gestión de Tratamientos")
         ventana.wm_resizable(0,0)
-        ventana.geometry("+2+15")
+        ventana.geometry("+0+0")
         entradas = GestionTratamiento(ventana)
         entradas.mainloop()
 
@@ -53,7 +53,7 @@ class MENU(Frame):
         btn_cerrar_sesion = Button(frame_btn, text="Cerrar Sesión", font=("Roboto", 13), bg="#c9c2b2", command=self.volver_login)
         btn_cerrar_sesion.grid(row=0, column=0, pady=(0, 10))
 
-        menu = LabelFrame(self, text="Menú", padx=20, pady=20, bg="#c9c2b2", height=500, width=1140)
+        menu = LabelFrame(self, text="Menú", padx=20, pady=20, bg="#c9c2b2", height=530, width=1200)
         menu.grid(row=0, column=0, padx=80, pady= 80)
         menu.grid_propagate(False)
 
@@ -83,6 +83,6 @@ if __name__ == "__main__":
     ventana = Tk()
     ventana.wm_title("Menú Recupero de Obra Social")
     ventana.wm_resizable(0,0)
-    ventana.geometry("+30+15")
+    ventana.geometry("+0+0")
     menu = MENU(ventana)
     menu.mainloop()
