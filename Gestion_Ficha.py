@@ -163,14 +163,9 @@ class GestionFicha(Frame):
 
         img_buscar = Image.open("buscar1.png").resize((30, 30), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
-        btn_buscar = Button(frame_busqueda, image=img_buscar, width=40, height=30,bg="#e6c885")
+        btn_buscar = Button(frame_busqueda, image=img_buscar, width=40, height=30,bg="#e6c885", command= self.buscar_ficha)
         btn_buscar.grid(row=1, column=2, sticky= W)
         btn_buscar.image = img_buscar
-
-        """self.combo_busqueda = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 12), state="readonly")
-        self.combo_busqueda['values'] = ("Documento", "Nombre/Apellido", "Obra Social")
-        self.combo_busqueda.set("Documento")
-        self.combo_busqueda.grid(row=1, column=3, padx=20, pady=3)"""
 
         self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 13), state="readonly")
         self.combo_activos['values'] = ("Activos", "Inactivos", "Todos")
@@ -205,11 +200,11 @@ class GestionFicha(Frame):
 
         #Ancho de las columnas y datos centrados
         self.tree.column("DNI", anchor='center', width=120)
-        self.tree.column("Nombre", anchor='center', width=300)
-        self.tree.column("Apellido", anchor='center', width=300)
-        self.tree.column("Obra Social", anchor='center', width=250)
-        self.tree.column("Fecha prestación", anchor='center', width=160)
-        self.tree.column("Total", anchor='center', width=100)
+        self.tree.column("Nombre", anchor='center', width=200)
+        self.tree.column("Apellido", anchor='center', width=200)
+        self.tree.column("Obra Social", anchor='center', width=300)
+        self.tree.column("Fecha prestación", anchor='center', width=200)
+        self.tree.column("Total", anchor='center', width=150)
 
         #Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -223,7 +218,7 @@ class GestionFicha(Frame):
         frame_btn.pack(ipady= 10)
 
         #Botones(ver, modificar, eliminar)
-        btn_ver = Button(frame_btn, text="Ver", width=15, font=("Robot",15),bg="#e6c885")
+        btn_ver = Button(frame_btn, text="Ver", width=15, font=("Robot",15),bg="#e6c885", command= self.ver_ficha)
         btn_ver.grid(row=0, column=1,padx=50)
 
         btn_editar = Button(frame_btn, text="Modificar", width=15, font=("Robot",15),bg="#e6c885")
@@ -683,6 +678,202 @@ class GestionFicha(Frame):
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
 
+    #Funciones para ver/modificar ficha
+    def obtener_ficha_por_id(self, id_ficha):
+        conexion = obtener_conexion()
+        try:
+            sql = "SELECT * FROM ficha WHERE id_ficha = %s"
+            cursor = conexion.cursor()
+            cursor.execute(sql, (id_ficha,))
+            ficha = cursor.fetchone()
+            if ficha is None:
+                messagebox.showwarning("Advertencia", "No se encontró ningúna ficha con ese ID.")
+            return ficha
+        except mysql.connector.Error as error:
+            messagebox.showerror("Error", f"No se pudo recuperar la ficha: {error}")
+        finally:
+            cursor.close()
+            conexion.close()
+    #Ver obra social seleccionada
+    def ver_ficha(self):
+        seleccion = self.tree.selection()
+        if not seleccion:
+            messagebox.showwarning("Atención", "Por favor, seleccione una ficha.")
+            return
+
+        # Usamos el primer elemento seleccionado (ID oculto)
+        id_seleccionado = seleccion[0]
+        
+        # Obtenemos el obra_social usando el ID
+        ficha_seleccionada = self.obtener_ficha_por_id(id_seleccionado)
+
+        if ficha_seleccionada:
+            # Abrimos la ventana sin mostrar el ID
+            ficha_reducida = ficha_seleccionada[0:]  # Aquí excluimos el ID
+            self.abrir_ventana_obra_social(ficha_reducida, modo="ver", seleccion=id_seleccionado)  # Excluimos el ID
+        else:
+            messagebox.showerror("Error", "No se pudo obtener el obra_social.")
+
+    def abrir_ventana_ficha(self, ficha, modo, seleccion=None):
+        def activar_edicion(entradas, btn_guardar):
+            for entry in entradas.values():
+                entry.config(state="normal")
+            btn_guardar.config(state="normal")
+
+        ventana = Toplevel(self)
+        ventana.title("Detalles de ficha")
+        ventana.config(bg="#e4c09f")
+        ventana.resizable(False, False)
+        ventana.geometry("1370x700+0+0")
+
+        frame_detalles = LabelFrame(ventana, text="Detalles de ficha", font=("Robot", 12), bg="#c9c2b2")
+        frame_detalles.pack(padx=10, pady=10)
+
+        frame_btns = Frame(ventana, bg="#e4c09f")
+        frame_btns.pack(pady=8, padx=10)
+
+        validar_letynum = ventana.register(self.solo_letras_numeros)
+        validar_numeros = ventana.register(self.solo_numeros)
+
+       #Frame para los datos del PACIENTE
+        self.frame_datos_pacientes = Label(frame_paciente, bg="#c9c2b2", font=("Robot", 10))
+        self.frame_datos_pacientes.pack(pady=5)
+
+        campos_arriba = ["Nombre", "Apellido", "DNI"]
+        campos_abajo = ["Obra Social", "Número de Afiliado"]
+        entradas_pacientes = {}
+        for i, campos_arriba in enumerate(campos_arriba):
+            Label(self.frame_datos_pacientes, text=campos_arriba + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=i, padx=10, sticky=W)
+            entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
+            entry.grid(row=1, column=i, padx=10)
+            entry.config(state="readonly")
+            entradas_pacientes[campos_arriba] = entry
+        for j, campos_abajo in enumerate(campos_abajo):
+            Label(self.frame_datos_pacientes, text=campos_abajo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=2, column=j, padx=10, sticky=W)
+            entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
+            entry.grid(row=3, column=j, padx=10)
+            entry.config(state="readonly")
+            entradas_pacientes[campos_abajo] = entry
+
+        #Frame para los datos del MEDICO
+        frame_medico = LabelFrame(frame_agregar, text="Datos del médico", font=("Robot", 10), bg="#c9c2b2")
+        frame_medico.pack(fill="x")
+
+        #buscador de médico
+        frame_busqueda_medico = Frame(frame_medico, bg="#c9c2b2")
+        frame_busqueda_medico.pack(fill="x", pady=5)
+        Label(frame_busqueda_medico, text="Buscar:", bg="#c9c2b2",font=("Robot", 13)).grid(row=0, column=1, padx=5, pady=2, sticky= W)
+        self.buscar_medico = Entry(frame_busqueda_medico, width=20,font=("Robot",12))
+        self.buscar_medico.grid(row=0, column=2, padx=5, pady=2, sticky= W)
+        self.buscar_medico.insert(0, "MATRÍCULA")  #Agrega marcador de posición
+        self.buscar_medico.config(fg="gray")
+        self.buscar_medico.bind("<FocusIn>", lambda event, e=self.buscar_medico: self.limpiar_marcador(e))
+        self.buscar_medico.bind("<FocusOut>", lambda event, e=self.buscar_medico: self.restaurar_marcador(e))
+        img_buscar = Image.open("buscar1.png").resize((20, 20), Image.Resampling.LANCZOS)
+        img_buscar = ImageTk.PhotoImage(img_buscar)
+        btn_buscar = Button(frame_busqueda_medico, image=img_buscar, width=25, height=25,bg="#e6c885", command=lambda: self.buscar_elemento("medico"))
+        btn_buscar.grid(row=0, column=3, sticky= W)
+        btn_buscar.image = img_buscar
+
+        frame_busqueda_medico.columnconfigure(4, weight=2)
+        frame_busqueda_medico.columnconfigure(5, weight=2)
+
+        btn_nuevo_medico = Button(frame_busqueda_medico, text="Agregar Médico", font=("Robot", 11, "bold"),bg="#e6c885")
+        btn_nuevo_medico.grid(row = 0, column=6, padx=15)
+
+        #Frame para los datos del medico
+        self.frame_datos_medico = Label(frame_medico, bg="#c9c2b2", font=("Robot", 10))
+        self.frame_datos_medico.pack(pady=5, fill="x")
+
+        campos_medico = ["Nombre del médico", "Apellido del médico", "Matrícula"]
+        entradas_medico = {}
+        for m, campo in enumerate(campos_medico):
+            Label(self.frame_datos_medico, text=campo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=m, padx=8, sticky=W)
+            entry = Entry(self.frame_datos_medico, width=28, font=("Robot", 12))
+            entry.grid(row=1, column=m, padx=8, sticky=W)
+            entry.config(state="readonly")
+            entradas_medico[campo] = entry
+
+        #Frame para los datos del TRATAMIENTOS
+        frame_tratamiento = LabelFrame(frame_agregar, text="Tratamiento", font=("Robot", 10), bg="#c9c2b2") 
+        frame_tratamiento.pack(fill="x")
+
+        campos_tratamiento = ["Código", "Nombre del procedimiento", "Precio"]
+
+        #Tabla para mostar los tratamientos
+        frame_tabla_tratamientos = Frame(frame_tratamiento, bg="#c9c2b2", width= 500)  # Frame para contener la tabla y el scrollbar
+        frame_tabla_tratamientos.grid(row= 0, column=0, padx= 20, pady= 5)
+
+        Label(frame_tabla_tratamientos, text="Tratamientos aplicados", font=("Robot", 12), bg="#c9c2b2").pack(pady=5)
+        
+        estilo = ttk.Style()
+        estilo.configure("Treeview", font=("Robot",10), rowheight=13)  # Cambia la fuente y el alto de las filas
+        estilo.configure("Treeview.Heading", font=("Robot",12), padding= [0, 10])  # Cambia la fuente de las cabeceras
+        
+        #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
+        self.arbol_ficha = ttk.Treeview(frame_tabla_tratamientos, columns=("Código", "Nombre", "Precio", "Cantidad"), show='headings', height=16, style = "Treeview")
+        self.arbol_ficha.pack(expand=True, fill="both")
+
+        #Títulos de columnas
+        self.arbol_ficha.heading("Código", text="Código")
+        self.arbol_ficha.heading("Nombre", text="Nombre")
+        self.arbol_ficha.heading("Precio", text="Precio")
+        self.arbol_ficha.heading("Cantidad", text="Cantidad")
+
+        #Ancho de las columnas y datos centrados
+        self.arbol_ficha.column("Código", anchor='center', width=150, stretch=False)
+        self.arbol_ficha.column("Nombre", anchor='center', width=200, stretch=False)
+        self.arbol_ficha.column("Precio", anchor='center', width=200, stretch=False)
+        self.arbol_ficha.column("Cantidad", anchor='center', width=100, stretch=False)
+
+        #Frame para los botones de agregar y eliminar tratamientos
+        frame_botones_tratamiento = Frame(frame_tratamiento, bg="#c9c2b2")
+        frame_botones_tratamiento.grid(row=0, column=1, columnspan=2, padx=30)
+
+        btn_nuevo_t = Button(frame_botones_tratamiento, text="Nuevo Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885", height=2, width=20)
+        btn_nuevo_t.pack(pady=8)
+
+        btn_agregar_t = Button(frame_botones_tratamiento, text="Agregar Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885", height=2, width=20, command= self.mostrar_tratamientos)
+        btn_agregar_t.pack(pady=8)
+
+        btn_eliminar_t = Button(frame_botones_tratamiento, text="Eliminar Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885", height=2, width=20, command= self.eliminar_tratamiento_a_ficha)
+        btn_eliminar_t.pack(pady=8)
+
+        self.total_var = StringVar()
+        self.entry_total = Entry(frame_botones_tratamiento, textvariable=self.total_var, font=("Robot", 13), state='readonly')
+        self.entry_total.pack(pady=8)
+
+
+        if modo == "ver":
+            for entry in entradas.values():
+                entry.config(state="readonly")
+            self.texto.config(state="disabled")
+            self.combo_valores.config(state="disabled")
+            self.combo_valores_2.config(state="disabled")
+
+            btn_editar = Button(frame_btns, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885", command=lambda: activar_edicion(entradas,btn_guardar))
+            btn_editar.grid(row = 0, column=0, padx=25,pady=10)
+
+            btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885", command=lambda: self.guardar_cambios(entradas, ventana, seleccion))
+            btn_guardar.grid(row = 0, column=1, padx=25,pady=10)
+            btn_guardar.config(state="disabled")  # Iniciar como deshabilitado
+
+            btn_editar = Button(frame_btns, text="Volver", width=15, font=("Robot", 13), bg="#e6c885", command=ventana.destroy)
+            btn_editar.grid(row = 0, column=2, padx=25,pady=10)
+
+        if modo == "modificar":
+            self.combo_valores.config(state="readonly")
+            self.combo_valores_2.config(state="readonly")
+            self.combo_valores.bind("<<ComboboxSelected>>", self.on_seleccion("Carácter de AFIP"))
+            self.combo_valores_2.bind("<<ComboboxSelected>>", lambda event: self.on_seleccion("Estado"))
+
+            btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885", command=lambda: self.guardar_cambios(entradas, ventana, seleccion))
+            btn_guardar.grid(row=len(campos), column=0,  padx=40, pady=10)
+
+            btn_cancelar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=ventana.destroy)
+            btn_cancelar.grid(row=len(campos), column=1, padx= 40, pady=10)
+    
+
     #Funciones para eliminar las fichas, y los detalles de la misma
     def eliminar_ficha(self):
         seleccion = self.tree.selection()
@@ -715,93 +906,46 @@ class GestionFicha(Frame):
 
     #Funciones para buscar fichas en la base de datos
     def buscar_ficha(self):
-        busqueda = self.entrada_buscar.get().strip().lower() 
+        busqueda = self.entrada_buscar.get().strip().upper() 
         if not busqueda:
             self.tree.delete(*self.tree.get_children())
             self.actualizar_treeview()
             return
 
-        coincidencias = []
-
-        for item in self.tree.get_children():
-            valores = self.tree.item(item, 'values')
-            nombre = valores[1].upper()
-            siglas = valores[2].upper()
-
-            if busqueda in nombre or busqueda in siglas:
-                coincidencias.append(valores)
-
-        if not coincidencias:
-            messagebox.showwarning("Atención", "No se encontró la obra social.")
-            self.tree.delete(*self.tree.get_children())
-            self.actualizar_treeview()
-        else:
-            self.tree.delete(*self.tree.get_children())
-            for valores in coincidencias:
-                self.tree.insert('', 'end', values=valores)
-
         #evalua los dni que contengan ese número
-        conexion = obtener_conexion()
         if busqueda.isdigit():
+            tratamiento_encontrado = False
             for item in self.tree.get_children():
                 valores = self.tree.item(item, 'values')
-                dni = valores[1]
+                dni = valores[0]
 
                 if busqueda in dni:
-                    coincidencias.append(valores)
-
-                if not coincidencias:
-                    messagebox.showwarning("Atención", "No se encontró ninguna ficha con dni similar.")
-                    self.tree.delete(*self.tree.get_children())
-                    self.actualizar_treeview()
+                    tratamiento_encontrado = True
                 else:
-                    self.tree.delete(*self.tree.get_children())
-                    for valores in coincidencias:
-                        self.tree.insert('', 'end', values=valores)
-
-        try:
-            cursor = conexion.cursor()
-            query = (""" SELECT p.dni, p.nombre, p.apellido, f.obra_social, f.fecha, f.total 
-                        FROM ficha f
-                        JOIN paciente p ON f.id_paciente = p.id_paciente
-                        WHERE p.dni = LIKE %s
-                        GROUP BY p.dni, p.nombre, p.apellido, f.obra_social, f.fecha
-                        """)
-            like_pattern = f"%{busqueda}%"
-            cursor.execute(query, (like_pattern))
-            fichas = cursor.fetchall()
-
-            self.tree.delete(*self.tree.get_children())
-            for ficha in fichas:
-                self.tree.insert("", "end", values=fichas)
-            
-            if not fichas:
+                    self.tree.delete(item)
+                
+            if not tratamiento_encontrado:
                 messagebox.showwarning("Atención", "No se encontró la ficha.")
-        except mysql.connector.Error as err:
-            messagebox.showerror("Error", f"Error al buscar la ficha: {err}")
-        finally:
-            if conexion.is_connected():
-                cursor.close()
-                conexion.close()
+                self.tree.delete(*self.tree.get_children())
+                self.actualizar_treeview()
+        else:
+            tratamiento_encontrado = False
+            for item in self.tree.get_children():
+                valores = self.tree.item(item, 'values')
+                nombre = valores[1].upper()
+                apellido = valores[2].upper()
+                obra_social = valores[3].upper()
 
+                if busqueda in nombre or busqueda in apellido:
+                    tratamiento_encontrado = True
+                else:
+                    self.tree.delete(item)
 
-        #Obtenemos búsqueda
-        for item in self.tree.get_children():         #Recorre cada fila usando identificador en la lista devuelta por children
-            valores = self.tree.item(item, 'values')  #Obtiene los valores de las columnas de la fila correspondiente al identificador item.
-            nombre = valores[1].lower()
-            apellido = valores[2].lower()
-            dni = valores[0].lower()
-            if busqueda in nombre or busqueda in dni or busqueda in apellido:
-                self.tree.selection_set(item)         #Selecciona el tratamiento.
-                self.tree.see(item)                   #Hace visible el tratamiento.
-                ficha_encontrada = True
-            else:
-                self.tree.detach(item)                #Oculta los otros tratamientos.
-       
-            
-        if not ficha_encontrada:
+            if not tratamiento_encontrado:
+                messagebox.showwarning("Atención", "No se encontró la ficha.")
+                self.tree.delete(*self.tree.get_children())
+                self.actualizar_treeview()
 
-            messagebox.showwarning("Atención", "No se encontró la ficha.")
 
 """
     def ver_ficha(self):
@@ -813,84 +957,8 @@ class GestionFicha(Frame):
         ficha_seleccionada = self.tree.item(seleccion[0], 'values')   #Item= valor del elemento
         self.abrir_ventana_ficha(ficha_seleccionada,seleccion[0],modo="ver")
 
-    def modificar_ficha(self):
-        seleccion = self.tree.selection()
-        if not seleccion:
-            messagebox.showwarning("Atención", "Por favor, seleccione una ficha.")
-            return
-        
-        ficha_seleccionada = self.tree.item(seleccion[0], 'values')
-        self.abrir_ventana_ficha(ficha_seleccionada, seleccion[0],modo="modificar")    
-    
-    def abrir_ventana_ficha(self, ficha, id_seleccionado, modo="ver"):
-        ventana = Toplevel(self)
-        ventana.title("Detalles de la Ficha")
-        ventana.config(bg="#e4c09f")
-        ventana.resizable(False,False)
-        ventana.geometry("+400+160")
-        ventana.wm_geometry("+500+0")
-        
-        ventana.grid_columnconfigure(0, weight=1)
-        ventana.grid_rowconfigure(0, weight=1)
-
-        frame_detalles = LabelFrame(ventana, text="Detalles la ficha", font=("Robot", 10), padx=10, pady=10, bg="#c9c2b2")
-        frame_detalles.grid(row=0, column=0, padx=10, pady=1, sticky="nsew")
-
-        campos = ["Nombre" ,"Apellido", "DNI", "Obra social", "Propietario del Plan", "Teléfono",
-         "Número de Afiliado", "Nombre del médico", "Apellido del médico","Especialidad","Tipo de matrícula", "Matrícula",
-        "Servicio", "Fecha de prestación médica", "Código", "Nombre del procedimiento", "Precio", "Tipo de tratamiento", "Siglas"] #ejemplo
-        id_fichas = ficha[0]
-        #entradas ={}
-
-        try:
-            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
-            cursor = conexion.cursor()
-            cursor.execute("SELECT nombre, apellido, dni, obra_social, propietario, telefono, nro_afiliado, nombre_medico, apellido_medico, especialidad, tipo_matricula, matricula, servicio, fecha, codigo, nombre_procedimiento, precio, tipo_tratamiento, siglas  FROM paciente WHERE id_fichas = %s", (id_fichas,))
-            valores = cursor.fetchone()
-        except mysql.connector.Error as err:
-            messagebox.showerror("Error", f"Error al cargar los datos del paciente: {err}")
-            ventana.destroy()
-            return
-        finally:
-            if conexion.is_connected():
-                cursor.close()
-                conexion.close()
-            
-        entradas = {}
-
-        vcqmd_letras = ventana.register(self.solo_letras)
-        vcmd_numeros = ventana.register(self.solo_numeros)
-
-
-        for i, campo in enumerate(campos):
-            etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Robot", 10))
-            etiqueta.grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_detalles, width=40)
-            entry.grid(row=i, column=1, padx=10, pady=5)
-            entry.insert(0, campos[i])
-            entradas[campo] = entry
-            
-
-            if modo == "ver":
-                entry.config(state="readonly")
-                btn_editar = Button(ventana, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885",
-                                    command=lambda: self.activar_edicion(entradas, btn_guardar))
-                btn_editar.grid(row=len(campos), column=0, pady=10)
-
-    
-                btn_guardar = Button(frame_detalles, text="Guardar Cambios", 
-                                     command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
-                btn_guardar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
-                btn_guardar.config(state="disabled")  # Iniciar como deshabilitado
-                                
-
-        if modo == "modificar":
-            btn_modificar = Button(frame_detalles, text="Guardar Cambios", 
-                                   command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado), bg="#e6c885")
-            btn_modificar.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
-
     def activar_edicion(self, entradas, btn_guardar):
-    # Habilitar la edición en las entradas
+        # Habilitar la edición en las entradas
         for entry in entradas.values():
             entry.config(state="normal")  # Permitir edición en todos los Entry
         

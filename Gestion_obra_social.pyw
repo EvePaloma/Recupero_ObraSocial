@@ -104,10 +104,10 @@ class Gestion_Obra_Social(Frame):
             cursor.execute(sql, (id_obra_social,))
             obra_social = cursor.fetchone()
             if obra_social is None:
-                messagebox.showwarning("Advertencia", "No se encontró ningún obra_social con ese ID.")
+                messagebox.showwarning("Advertencia", "No se encontró ningúna obra social con ese ID.")
             return obra_social
         except mysql.connector.Error as error:
-            messagebox.showerror("Error", f"No se pudo recuperar el obra_social: {error}")
+            messagebox.showerror("Error", f"No se pudo recuperar la obra social: {error}")
         finally:
             cursor.close()
             conexion.close()
