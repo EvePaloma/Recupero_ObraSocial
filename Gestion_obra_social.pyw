@@ -15,7 +15,7 @@ class Gestion_Obra_Social(Frame):
         self.createWidgets()
         self.actualizar_treeview()
         # Sobrescribe el protocolo de cierre de la ventana
-        #self.master.protocol("WM_DELETE_WINDOW", lambda: None)
+        self.master.protocol("WM_DELETE_WINDOW", lambda: None)
 
     def volver_menu_principal(self):
         from Menu import MENU
@@ -137,7 +137,7 @@ class Gestion_Obra_Social(Frame):
             return
 
     def createWidgets(self):
-        contenedor_total = Frame(self, bg="#c9c2b2", height= 800)
+        contenedor_total = LabelFrame(self, text= "Gestión de Obra Social" , bg="#c9c2b2", height= 800)
         self.pack_propagate(False)
         contenedor_total.pack(expand=True, fill= "y")
 
@@ -283,7 +283,7 @@ class Gestion_Obra_Social(Frame):
         btn_nueva_obra_social = Button(frame_btns, text="Agregar", width=15, font=("Robot", 13),bg="#e6c885", command=lambda: self.guardar_nueva_obra_social(entradas, self.ventana_agregar))
         btn_nueva_obra_social.grid(row=len(campos), column=0, padx=40, pady=10)
         
-        btn_cancelar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=self.ventana_agregar.destroy)
+        btn_cancelar = Button(frame_btns, text="Volver", width=15, font=("Robot", 13), bg="#e6c885", command=self.ventana_agregar.destroy)
         btn_cancelar.grid(row=len(campos), column=1, padx= 40, pady=10)
 
         self.ventana_agregar.mainloop()
@@ -438,7 +438,7 @@ class Gestion_Obra_Social(Frame):
             btn_guardar.grid(row = 0, column=1, padx=25,pady=10)
             btn_guardar.config(state="disabled")  # Iniciar como deshabilitado
 
-            btn_editar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=ventana.destroy)
+            btn_editar = Button(frame_btns, text="Volver", width=15, font=("Robot", 13), bg="#e6c885", command=ventana.destroy)
             btn_editar.grid(row = 0, column=2, padx=25,pady=10)
 
         if modo == "modificar":

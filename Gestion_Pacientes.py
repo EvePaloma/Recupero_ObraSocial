@@ -3,7 +3,9 @@ from tkinter import messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk
 import mysql.connector
-from ConexionBDpaciente import *
+from ConexionBD import *
+import mysql
+#import mysql.connector as mysql_connector
 
 
 class GestionPaciente(Frame):
@@ -14,6 +16,41 @@ class GestionPaciente(Frame):
         self.createWidgets()
         self.cargar_paciente()
         #self.actualizar_treeview()
+    
+
+    def insertar_paciente_bd(nombre, apellido, dni, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado):
+        conexion = obtener_conexion()
+        if conexion is None:
+            return
+        try:
+            cursor = conexion.cursor()
+            sql = "INSERT INTO paciente (nombre, apellido, dni, obra_social,proietario,sexo,telefono,nro_afiliado,) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+            val = (nombre, apellido, dni, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado)
+            cursor.execute(sql, val)
+            conexion.commit()
+            messagebox.showinfo("Éxito", "Registro insertado correctamente.")
+        except mysql_connector.Error as err:
+            messagebox.showerror("Error", f"Error al insertar en la base de datos: {err}")
+        finally:
+            conexion.close()
+
+        #nombre, apellido, dni, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado)
+    def actualizar_paciente(nombre, apellido, dni, obrasocial, propietario, sexo, telefonopaciente,  numeroafiliado):
+        
+        conexion = obtener_conexion()
+        if conexion is None:
+            return
+        try:
+            cursor = conexion.cursor()
+            sql = "UPDATE paciente SET nombre=%s, apellido=%s, telefono=%s, documento=%s WHERE id=%s"
+            val = (nombre, apellido, dni, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado)
+            cursor.execute(sql, val)
+            conexion.commit()
+            messagebox.showinfo("Éxito", "Registro actualizado correctamente.")
+        except mysql_connector.Error as err:
+            messagebox.showerror("Error", f"Error al actualizar en la base de datos: {err}")
+        finally:
+            conexion.close()
     
 
     def solo_letras(self, char):
@@ -29,7 +66,7 @@ class GestionPaciente(Frame):
 
         #Carga la imagen de fondo
         img_fondo = Image.open("fondo3.png")
-        img_fondo = img_fondo.resize((900, 200), Image.Resampling.LANCZOS)
+        img_fondo = img_fondo.resize((1310, 200), Image.Resampling.LANCZOS)
         self.img_fondo = ImageTk.PhotoImage(img_fondo)
 
         #Label para la imagen de fondo
@@ -69,8 +106,8 @@ class GestionPaciente(Frame):
         stilo.configure("Treeview", font=("Roboto",11), rowheight=25)  # Cambia la fuente y el alto de las filas
         stilo.configure("Treeview.Heading", font=("Roboto",14))  # Cambia la fuente de las cabeceras
         # Treeview para mostrar la tabla de pacientes dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("id", "nombre", "apellido", "dni", "obra_social"), show='headings', height=5)
-
+        self.tree = ttk.Treeview(frame_tabla, columns=("id", "nombre", "apellido", "dni", "obra_social"), show='headings', height=11)
+        '''
         # Títulos de columnas
         self.tree.heading("id", text="ID")
         self.tree.heading("nombre", text="Nombre")
@@ -84,8 +121,27 @@ class GestionPaciente(Frame):
         self.tree.column("apellido", anchor='center', width=200)
         self.tree.column("dni", anchor='center', width=150)
         self.tree.column("obra_social", anchor='center', width=200)
-
+        '''
         
+        self.tree.heading("id", text="")
+        self.tree.heading("nombre", text="Nombre")
+        self.tree.heading("apellido", text="Apellido")
+        self.tree.heading("dni", text="DNI")
+        self.tree.heading("obra_social", text="Obra Social")
+
+        # Ancho de las columnas y datos centrados
+        self.tree.column("id", width=0, stretch=False)
+        self.tree.column("nombre", anchor="center", width=250, stretch=False)
+        self.tree.column("apellido", anchor="center", width=350, stretch=False)
+        self.tree.column("dni", anchor="center", width=250, stretch=False)
+        self.tree.column("obra_social", anchor="center", width=300, stretch=False)
+
+        # Evitar que las columnas se puedan mover o redimensionar
+        self.tree["displaycolumns"] = ("nombre", "apellido", "dni", "obra_social")
+        for col in self.tree["displaycolumns"]:
+            self.tree.heading(col, command=lambda: "break")
+            self.tree.column(col, stretch=False)
+
         #Grid del frame_tabla
         self.tree.grid(row=0, column=0, sticky="nsew")
 
@@ -109,6 +165,11 @@ class GestionPaciente(Frame):
         btn_eliminar = Button(frame_btn, text="Eliminar", width=15,font=("Roboto",13),bg="#e6c885",
                                command=self.eliminar_paciente)
         btn_eliminar.grid(row=4, column=3, padx=50)
+
+        btn_volver = Button(frame_btn, text="Volver", width=15,font=("Robot",13),bg="#e6c885",
+                            command=self.volver_menu_principal)
+        btn_volver.grid(row=4, column=4, padx=50)
+
 
     def conectar_tabla(self, tabla):
             conexion = obtener_conexion()  # Llama a la función que establece la conexión
@@ -180,7 +241,7 @@ class GestionPaciente(Frame):
         frame_detalles = LabelFrame(ventana, text="Detalles del Paciente", font=("Roboto", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre", "Apellido", "DNI", "Obra Social", "Propietario del Plan", "Sexo", "Teléfono del Paciente", "Número de Afiliado"]
+        campos = ["Nombre","Apellido","DNI","Obra Social","Propietario del Plan","Sexo","Teléfono del Paciente","Número de Afiliado"]
         id_paciente = paciente[0]  # Asumiendo que el ID es el primer valor
 
         vcmd_letras = ventana.register(self.solo_letras)
@@ -446,10 +507,20 @@ class GestionPaciente(Frame):
             if conexion.is_connected():
                 cursor.close()
                 conexion.close()
+    
+    def volver_menu_principal(self):
+        from Menu import MENU
+        self.master.destroy()
+        ventana = Tk()
+        ventana.wm_title("Menú Recupero de Obra Social")
+        ventana.wm_resizable(0,0)
+        ventana.geometry("+30+15")
+        menu = MENU(ventana)
+        menu.mainloop()
 
 ventana = Tk()
 ventana.title("Gestion de Paciente")
 ventana.resizable(False,False)
-ventana.geometry("+200+80")
+ventana.geometry("+0+0")
 root = GestionPaciente(ventana)
 ventana.mainloop()
