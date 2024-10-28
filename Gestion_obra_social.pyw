@@ -15,7 +15,7 @@ class Gestion_Obra_Social(Frame):
         self.createWidgets()
         self.actualizar_treeview()
         # Sobrescribe el protocolo de cierre de la ventana
-        #self.master.protocol("WM_DELETE_WINDOW", lambda: None)
+        self.master.protocol("WM_DELETE_WINDOW", lambda: None)
 
     def volver_menu_principal(self):
         from Menu import MENU
@@ -137,7 +137,7 @@ class Gestion_Obra_Social(Frame):
             return
 
     def createWidgets(self):
-        contenedor_total = Frame(self, bg="#c9c2b2", height= 800)
+        contenedor_total = LabelFrame(self, text= "Gestión de Obra Social" , bg="#c9c2b2", height= 800)
         self.pack_propagate(False)
         contenedor_total.pack(expand=True, fill= "y")
 
