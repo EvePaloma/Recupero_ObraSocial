@@ -142,13 +142,7 @@ class Gestionmedico(Frame):
         )  # Frame para contener la tabla y el scrollbar
         frame_tabla.grid(row=2, column=0, columnspan=6, padx=10, pady=10)
 
-        stilo = ttk.Style()
-        stilo.configure(
-            "Treeview", font=("Robot", 11), rowheight=25
-        )  # Cambia la fuente y el alto de las filas
-        stilo.configure(
-            "Treeview.Heading", font=("Robot", 14)
-        )  # Cambia la fuente de las cabeceras
+# Cambia la fuente de las cabeceras
 
         # Treeview para mostrar la tabla de Medicos dentro del frame_tabla
         self.tree = ttk.Treeview(
@@ -160,6 +154,9 @@ class Gestionmedico(Frame):
 
         # Títulos de columnas
       
+        stilo = ttk.Style()
+        stilo.configure("Treeview", font=("Robot",11), rowheight=22)  # Cambia la fuente y el alto de las filas
+        stilo.configure("Treeview.Heading", font=("Robot",14), padding= [0, 10])  # Cambia la fuente de las cabeceras
         
         self.tree.heading("id_medico", text="")
 
@@ -373,14 +370,17 @@ class Gestionmedico(Frame):
             for entry in entradas.values():
                 entry.config(state="readonly")
 
-            
+
             btn_volver = Button(
                 ventana,
                 text="Volver",
-                font=("Robot", 10),
+                width=15,
+                font=("Robot", 13),
                 bg="#e6c885",
-                command=ventana.destroy,
+                command=self.destroy,
             )
+
+
             btn_volver.grid(row=len(campos) + 2, column=2, columnspan=2, padx=10, pady=10)
             
             
