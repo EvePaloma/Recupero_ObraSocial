@@ -261,7 +261,7 @@ class GestionPaciente(Frame):
         vcmd_numeros = ventana_abrir.register(self.solo_numeros)
 
         try:
-            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            conexion = obtener_conexion()
             cursor = conexion.cursor()
             cursor.execute("SELECT nombre, apellido, dni, obra_social, propietario, sexo, telefono, nro_afiliado, activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
             valores = cursor.fetchone()
@@ -346,7 +346,7 @@ class GestionPaciente(Frame):
         estado = 1 if entradas["Estado"].get() == "Activo" else 0
 
         try:
-            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            conexion = obtener_conexion()
             cursor = conexion.cursor()
             query = """
             UPDATE paciente
@@ -391,7 +391,7 @@ class GestionPaciente(Frame):
         respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar el paciente seleccionado?")
         if respuesta:  
             try:
-                conexion= mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+                conexion= obtener_conexion()
                 cursor = conexion.cursor()
                 cursor.execute("UPDATE paciente SET activo = 0 WHERE id_paciente = %s", (id_paciente,))
                 conexion.commit()
@@ -456,7 +456,7 @@ class GestionPaciente(Frame):
         # Validar datos y agregar al Treeview
         if nombre and apellido and dni and obrasocial and propietario and telefonopaciente and numeroafiliado:
             try:
-                conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+                conexion = obtener_conexion()
                 cursor = conexion.cursor()
                 
                 # Verificar si el DNI ya existe
@@ -493,7 +493,7 @@ class GestionPaciente(Frame):
         paciente_encontrado = False
 
         try:
-            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            conexion = obtener_conexion()
             cursor = conexion.cursor()
             query = """
             SELECT id_paciente, nombre, apellido, dni, obra_social 
@@ -520,7 +520,7 @@ class GestionPaciente(Frame):
 
     def cargar_paciente(self):
         try:
-            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
+            conexion = obtener_conexion()
             cursor = conexion.cursor()
             cursor.execute("SELECT id_paciente, nombre, apellido, dni, obra_social FROM paciente WHERE activo = 1")
             pacientes = cursor.fetchall()
