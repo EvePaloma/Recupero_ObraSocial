@@ -6,7 +6,7 @@ def obtener_conexion():
         conexion = mysql.connector.connect(
                 host="localhost",
                 user="root", #PONER SU PROPIO USUARIO
-                password="12345", #PONER SU PROPIA CLAVE
+                password="123", #PONER SU PROPIA CLAVE
                 database="recupero_obra_social")
         print("Conexión exitosa")
         return conexion

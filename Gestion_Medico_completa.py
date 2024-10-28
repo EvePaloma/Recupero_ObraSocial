@@ -142,7 +142,7 @@ class Gestionmedico(Frame):
 
         # Carga la imagen de fondo
         img_fondo = Image.open("fondo3.png")
-        img_fondo = img_fondo.resize((900, 200), Image.Resampling.LANCZOS)
+        img_fondo = img_fondo.resize((1310, 200), Image.Resampling.LANCZOS)
         self.img_fondo = ImageTk.PhotoImage(img_fondo)
 
         # Label para la imagen de fondo
@@ -220,7 +220,7 @@ class Gestionmedico(Frame):
 
 
         stilo = ttk.Style()
-        stilo.configure("Treeview", font=("Robot",11), rowheight=22)  # Cambia la fuente y el alto de las filas
+        stilo.configure("Treeview", font=("Robot",11), rowheight=25)  # Cambia la fuente y el alto de las filas
         stilo.configure("Treeview.Heading", font=("Robot",14), padding= [0, 10])  # Cambia la fuente de las cabeceras
         
         # Títulos de columnas
@@ -231,9 +231,9 @@ class Gestionmedico(Frame):
 
         # Ancho de las columnas y datos centrados
         self.tree.column("id_medico", width=0, stretch=False)
-        self.tree.column("nombre", anchor="center", width=350, stretch=False)
+        self.tree.column("nombre", anchor="center", width=400, stretch=False)
         self.tree.column("Apellido", anchor="center", width=450, stretch=False)
-        self.tree.column("DNI", anchor="center", width=350, stretch=False)
+        self.tree.column("DNI", anchor="center", width=400, stretch=False)
 
         # Evitar que las columnas se puedan mover o redimensionar
 
