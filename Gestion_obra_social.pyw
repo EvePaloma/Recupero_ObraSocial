@@ -565,9 +565,9 @@ class Gestion_Obra_Social(Frame):
             self.tree.delete(*self.tree.get_children())
             self.actualizar_treeview()
 
-ventana = Tk()
+"""ventana = Tk()
 ventana.title("Gestion de obra_socials")
 ventana.resizable(False,False)
 ventana.geometry("+0+0")
 root = Gestion_Obra_Social(ventana)
-ventana.mainloop()
+ventana.mainloop()"""
