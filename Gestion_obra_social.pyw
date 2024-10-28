@@ -29,9 +29,9 @@ class Gestion_Obra_Social(Frame):
 
     def solo_letras_numeros(self, char):
         #return char.isalnum() or char in [" ", "-", "."]
-        return bool(re.match(r'^[a-zA-Z0-9.\- ]*$', char))
+        return bool(re.match(r'[a-zA-Z0-9 ]', char))
     def solo_numeros(self, char):
-        return char.isdigit() or char == "-"
+        return char.isdigit()
     def conectar_tabla(self, tabla):
             conexion = obtener_conexion()  # Llama a la función que establece la conexión
             if conexion is None:
@@ -153,10 +153,6 @@ class Gestion_Obra_Social(Frame):
         fondo_label = Label(contenedor_titulo, image=self.img_fondo)
         fondo_label.pack(expand=True, fill="both")
 
-        # Crear un Label para el texto y colocarlo encima del Label de la imagen
-        #texto_label = Label(contenedor_titulo, text="Obras Sociales", font=("Robot", 25), bg="Black", fg="White")
-        #texto_label.place(relx=0.5, rely=0.5, anchor="center")
-
         #segundo frame, contiene el buscador y el boton de agregar
         #buscador de os
         frame_busqueda = Frame(contenedor_total, bg="#c9c2b2")
@@ -176,10 +172,18 @@ class Gestion_Obra_Social(Frame):
         btn_buscar.grid(row=1, column=3, sticky= W)
         btn_buscar.image = img_buscar
 
-        self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 14), state="readonly")
+        style = ttk.Style()
+        style.theme_use("default")
+        style.map("Custom.TCombobox",  fieldbackground=[("active", "white")],   # Fondo blanco en modo de solo lectura
+                                        background=[("active", "white")],          # Fondo blanco al desplegar el menú
+                                        selectbackground=[("focus", "white")],     # Fondo blanco cuando una opción está seleccionada
+                                        selectforeground=[("focus", "black")])    # Text
+
+        self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 14), state="readonly", style="Custom.TCombobox")
         self.combo_activos['values'] = ("Activos", "Inactivos", "Todos")
         self.combo_activos.set("Activos")
         self.combo_activos.grid(row=1, column=4, padx=20, pady=3)
+        self.combo_activos.bind("<<ComboboxSelected>>", lambda event: self.actualizar_treeview())
 
         boton_agregar = Button(frame_busqueda, text="Agregar  +", width=15, bg="#e6c885",font=("Robot",15), command=self.agregar_obra_social)
         boton_agregar.grid(row=1, column=6, padx=10, pady=3, sticky= E)
@@ -378,14 +382,17 @@ class Gestion_Obra_Social(Frame):
             if campo == "Carácter de AFIP":
                 lista = self.conectar_tabla("afip")
                 # Crear un diccionario para buscar el ID por el nombre
-                self.datos_tabla = {dato[1]: dato[0] for dato in lista} 
+                self.datos_tabla = {dato[1]: dato[0] for dato in lista}
                 self.combo_valores = ttk.Combobox(frame_detalles, width=49, font=("Robot", 10), state="disabled")
                 self.combo_valores['values'] = list(self.datos_tabla.keys())
                 self.combo_valores.grid(row=i, column=1, padx=10, pady=5)
                 #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
                 valor_a_buscar = valores[i+1]
                 clave_encontrada = next((clave for clave, valor in self.datos_tabla.items() if valor == valor_a_buscar), None)
-                self.combo_valores.set(clave_encontrada)
+                if clave_encontrada is not None:
+                    self.combo_valores.set(clave_encontrada)
+                else:
+                    self.combo_valores.set("no definido")
             elif campo == "Estado":
                 lista = self.conectar_tabla("estado")
                 # Crear un diccionario para buscar el ID por el nombre
@@ -396,7 +403,10 @@ class Gestion_Obra_Social(Frame):
                 #se ingresa en la combo como valor inicial el nombre del caracter de afip o de estado
                 valor_a_buscar = valores[i+1]
                 clave_encontrada = next((clave for clave, valor in self.datos_tabla_1.items() if valor == valor_a_buscar), None)
-                self.combo_valores_2.set(clave_encontrada)
+                if clave_encontrada is not None:
+                    self.combo_valores_2.set(clave_encontrada)
+                else:
+                    self.combo_valores_2.set("no definido")
             elif campo == "Detalle":
                 self.texto = Text(frame_detalles, height=3, width=51, wrap='word', font=("Robot", 10))
                 self.texto.insert("1.0", valores[i+1])
