@@ -224,7 +224,7 @@ class GestionPaciente(Frame):
         etiqueta_estado.grid(row=len(campos), column=0, padx=10, pady=5)
         combo_estado = ttk.Combobox(frame_detalles, values=["1", "0"], width=37)
         combo_estado.grid(row=len(campos), column=1, padx=10, pady=5)
-        combo_estado.set("1" if paciente[-1] == "1" else "0")
+        combo_estado.set("1" if paciente[-1] == "" else "0")
         entradas["Estado"] = combo_estado
 
         if modo == "ver":
@@ -271,7 +271,7 @@ class GestionPaciente(Frame):
             cursor.execute(query, (
                 nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["DNI"], nuevos_valores["Obra Social"],
                 nuevos_valores["Propietario del Plan"], nuevos_valores["Sexo"], nuevos_valores["Teléfono del Paciente"],
-                nuevos_valores["Número de Afiliado"],nuevos_valores["Estado"], id_paciente
+                nuevos_valores["Número de Afiliado"], nuevos_valores["Estado"], id_paciente
             ))
             conexion.commit()
 
@@ -283,6 +283,9 @@ class GestionPaciente(Frame):
             
             # Cerrar la ventana después de guardar
             ventana.destroy()
+
+            # Recargar la lista de pacientes para reflejar los cambios en el estado
+            self.cargar_paciente()
         except mysql.connector.Error as err:
             messagebox.showerror("Error", f"Error al guardar los cambios: {err}")
         finally:
@@ -409,7 +412,7 @@ class GestionPaciente(Frame):
             query = """
             SELECT id_paciente, nombre, apellido, dni, obra_social 
             FROM paciente 
-            WHERE LOWER(nombre) LIKE %s OR LOWER(apellido) LIKE %s OR dni LIKE %s
+            WHERE (LOWER(nombre) LIKE %s OR LOWER(apellido) LIKE %s OR dni LIKE %s)
             """
             like_pattern = f"%{busqueda}%"
             cursor.execute(query, (like_pattern, like_pattern, like_pattern))
@@ -417,7 +420,8 @@ class GestionPaciente(Frame):
             
             self.tree.delete(*self.tree.get_children())
             for paciente in pacientes:
-                self.tree.insert("", "end", values=paciente.upper())
+                self.tree.insert("", "end", values=paciente)
+                paciente_encontrado = True
             
             if not paciente_encontrado:
                 messagebox.showwarning("Atención", "No se encontró el paciente.")
@@ -429,11 +433,13 @@ class GestionPaciente(Frame):
                 conexion.close()
 
     def cargar_paciente(self):
+
         try:
             conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
             cursor = conexion.cursor()
-            cursor.execute("SELECT id_paciente, nombre, apellido, dni, obra_social FROM paciente")
+            cursor.execute("SELECT id_paciente, nombre, apellido, dni, obra_social FROM paciente WHERE activo = 1")
             pacientes = cursor.fetchall()
+            self.tree.delete(*self.tree.get_children())  # Limpiar el Treeview antes de cargar los datos
             for paciente in pacientes:
                 self.tree.insert("", "end", values=paciente)
         except mysql.connector.Error as err:
