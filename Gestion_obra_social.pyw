@@ -243,6 +243,7 @@ class Gestion_Obra_Social(Frame):
         self.ventana_agregar.config(bg="#e4c09f") 
         self.ventana_agregar.resizable(False,False)
         self.ventana_agregar.geometry("700x450+350+120")
+        self.ventana_agregar.protocol("WM_DELETE_WINDOW", lambda: None)
 
         validar_letynum = self.ventana_agregar.register(self.solo_letras_numeros)
         validar_numeros = self.ventana_agregar.register(self.solo_numeros)
@@ -365,6 +366,7 @@ class Gestion_Obra_Social(Frame):
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
         ventana.geometry("700x450+350+120")
+        self.ventana.protocol("WM_DELETE_WINDOW", lambda: None)
 
         frame_detalles = LabelFrame(ventana, text="Detalles de obra social", font=("Robot", 12), bg="#c9c2b2")
         frame_detalles.pack(padx=10, pady=10)
