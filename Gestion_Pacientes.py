@@ -269,11 +269,17 @@ class GestionPaciente(Frame):
         try:
             conexion = obtener_conexion()
             cursor = conexion.cursor()
+
+            # Obtener los datos del paciente
             cursor.execute("SELECT nombre, apellido, tipo_documento, documento, id_obra_social, nro_afiliado, activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
             valores = cursor.fetchone()
+
+            # Obtener el nombre de la obra social
+            cursor.execute("SELECT nombre FROM obra_social WHERE id_obra_social = %s", (valores[4],))
+            obra_social_nombre = cursor.fetchone()[0]
+
         except mysql.connector.Error as err:
-            messagebox.showerror("Error", f"Error al cargar los datos del paciente: {err}")
-            ventana_abrir.destroy()
+            messagebox.showerror("Error", f"Error al obtener los datos del paciente: {err}")
             return
         finally:
             if conexion.is_connected():
@@ -283,26 +289,26 @@ class GestionPaciente(Frame):
         entradas = {}
 
         for i, campo in enumerate(campos):
-            etiqueta = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Roboto", 10))
-            etiqueta.grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_detalles, width=40)
+            etiquetas = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Roboto", 10))
+            etiquetas.grid(row=i, column=0, padx=10, pady=5)
+            entry = Entry(frame_detalles, width=40, font=("Roboto", 10))
             entry.grid(row=i, column=1, padx=10, pady=5)
-
-            if campo in ["Nombre", "Apellido", "Obra Social"]:
-                entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
-            elif campo in ["Tipo de Documento","DNI"]:
-                entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
-
-            if i < len(valores):
-                entry.insert(0, valores[i])
             entradas[campo] = entry
+
+        # Establecer los valores en los campos
+        entradas["Nombre"].insert(0, valores[0])
+        entradas["Apellido"].insert(0, valores[1])
+        entradas["Tipo de Documento"].insert(0, valores[2])
+        entradas["DNI"].insert(0, valores[3])
+        entradas["Obra Social"].insert(0, obra_social_nombre)
+        entradas["Número de Afiliado"].insert(0, valores[5])
 
         # ComboBox para Estado
         etiqueta_estado = Label(frame_detalles, text="Estado:", bg="#c9c2b2", font=("Roboto", 10))
         etiqueta_estado.grid(row=len(campos), column=0, padx=10, pady=5)
         combo_estado = ttk.Combobox(frame_detalles, values=["Activo", "Inactivo"], width=37)
         combo_estado.grid(row=len(campos), column=1, padx=10, pady=5)
-        combo_estado.set("Activo" if valores[-1] == 1 else "Inactivo")
+        combo_estado.set("Activo" if valores[6] == 1 else "Inactivo")
         entradas["Estado"] = combo_estado
 
         if modo == "ver":
@@ -310,31 +316,10 @@ class GestionPaciente(Frame):
                 entry.config(state="readonly")
             combo_estado.config(state="readonly")
 
-            frame_btns = Frame(ventana_abrir, bg="#e4c09f")
-            frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
-
-            btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Roboto", 13), bg="#e6c885",
-                                command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
-            btn_guardar.grid(row=len(campos), column=0, pady=10, padx=10)
-            btn_guardar.config(state="disabled")  # Initially disabled
-
-            btn_editar = Button(frame_btns, text="Modificar", width=15, font=("Roboto", 13), bg="#e6c885",
-                                command=lambda: self.activar_edicion(entradas, btn_guardar))
-            btn_editar.grid(row=len(campos), column=1, pady=10, padx=10)
-
-            btn_volver = Button(frame_btns, text="Volver", font=("Roboto", 13), bg="#e6c885", width=15,
-                                command=ventana_abrir.destroy)
-            btn_volver.grid(row=len(campos), column=2, pady=10, padx=10)
-
         if modo == "modificar":
-            btn_modificar = Button(frame_detalles, text="Guardar Cambios", bg="#e6c885", width=15, font=("Roboto", 13),
+            btn_guardar = Button(frame_detalles, text="Guardar Cambios", font=("Roboto", 13), bg="#e6c885", width=15,
                                 command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
-            btn_modificar.grid(row=10, column=1, padx=10, pady=0)
-
-            btn_volver = Button(frame_detalles, text="Volver", font=("Roboto", 13), bg="#e6c885", width=15,
-                                command=ventana_abrir.destroy)
-            btn_volver.grid(row=len(campos) + 2, column=0, pady=10, padx=10)
-
+            btn_guardar.grid(row=len(campos) + 1, column=1, padx=10, pady=10)
 
     def activar_edicion(self, entradas, btn_guardar):
     # Habilitar la edición en las entradas
@@ -354,13 +339,22 @@ class GestionPaciente(Frame):
         try:
             conexion = obtener_conexion()
             cursor = conexion.cursor()
+
+            # Obtener el ID de la obra social
+            cursor.execute("SELECT id_obra_social FROM obra_social WHERE nombre = %s", (nuevos_valores["Obra Social"],))
+            result = cursor.fetchone()
+            if result is None:
+                messagebox.showerror("Error", "La obra social ingresada no existe. Por favor, ingrese una obra social válida.")
+                return
+            id_obra_social = result[0]
+
             query = """
             UPDATE paciente
             SET nombre = %s, apellido = %s, tipo_documento= %s, documento = %s, id_obra_social = %s, nro_afiliado = %s, activo = %s
             WHERE id_paciente = %s
             """
             cursor.execute(query, (
-                nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["Tipo de Documento"], nuevos_valores["DNI"], nuevos_valores["Obra Social"],
+                nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["Tipo de Documento"], nuevos_valores["DNI"], id_obra_social,
                 nuevos_valores["Número de Afiliado"], estado, id_paciente
             ))
             conexion.commit()

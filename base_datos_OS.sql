@@ -234,16 +234,22 @@ INSERT INTO 'tratamiento'('codigo', 'nombre', 'precio', 'fecha_precio', 'siglas,
 
 use recupero_obra_social;
 
-INSERT INTO paciente (`nombre`, `apellido`, `nacimiento`, `tipo_documento`, `documento`, `id_obra_social`, `nro_afiliado`, `activo`)
-VALUES 
-  ('Juan', 'Pérez', '1985-03-15', 1, '12345678', 1, 'A123456', 1),
-  ('María', 'Gómez', '1990-07-22', 2, '87654321', 2, 'B234567', 1),
-  ('Carlos', 'Martínez', '1982-01-30', 1, '11223344', 3, 'C345678', 1),
-  ('Ana', 'López', '1995-09-12', 2, '22334455', 4, 'D456789', 1),
-  ('Pedro', 'Fernández', '1978-11-05', 1, '33445566', 5, 'E567890', 1),
-  ('Lucía', 'Ramírez', '2001-04-18', 2, '44556677', 1, 'F678901', 1),
-  ('Marta', 'Sánchez', '1993-06-25', 1, '55667788', 2, 'G789012', 1),
-  ('José', 'Torres', '1988-10-29', 1, '66778899', 4, 'H890123', 1);
+INSERT INTO `paciente` (nombre, apellido, tipo_documento, documento, id_obra_social, nro_afiliado) VALUES
+('JUAN', 'PEREZ', '1', '23456789', 'PAMI', '1112345678'),
+('MARIA', 'GOMEZ', '2', '34567890', 'OSDE', '2223456789'),
+('CARLOS', 'RODRIGUEZ', '1', '45678901', 'SWISS MEDICAL', '3334567890'),
+('ANA', 'FERNANDEZ', '2', '56789012', 'GALENO', '4445678901'),
+('PEDRO', 'LOPEZ', '1', '67890123', 'PAMI', '5556789012'),
+('LUIS', 'MARTINEZ', '2', '78901234', 'OSDE', '6667890123'),
+('MARTA', 'SANCHEZ', '1', '89012345', 'SWISS MEDICAL', '7778901234'),
+('JORGE', 'RAMIREZ', '2', '90123456', 'GALENO', '8889012345'),
+('LAURA', 'TORRES', '1', '12345678', 'PAMI', '9990123456'),
+('SILVIA', 'RAMOS', '2', '23456789', 'OSDE', '1011234567'),
+('DIEGO', 'CRUZ', '1', '34567890', 'SWISS MEDICAL', '2022345678'),
+('ROSA', 'REYES', '2', '45678901', 'GALENO', '3033456789'),
+('GUSTAVO', 'MORALES', '1', '56789012', 'PAMI', '4044567890'),
+('CAROLINA', 'NUÑEZ', '2', '67890123', 'OSDE', '5055678901'),
+('PABLO', 'CASTRO', '1', '78901234', 'SWISS MEDICAL', '6066789012');
 select * from paciente;
 
 
