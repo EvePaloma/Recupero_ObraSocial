@@ -7,7 +7,6 @@ from ConexionBD import *
 import mysql
 #import mysql.connector as mysql_connector
 
-
 class GestionPaciente(Frame):
     def __init__(self, master):
         Frame.__init__(self, master, bg="#e4c09f")
@@ -19,14 +18,14 @@ class GestionPaciente(Frame):
         #self.actualizar_treeview()
     
 
-    def insertar_paciente_bd(nombre, apellido, documento, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado):
+    def insertar_paciente_bd(nombre, apellido, tipo_documento, documento, id_obra_social, numeroafiliado):
         conexion = obtener_conexion()
         if conexion is None:
             return
         try:
             cursor = conexion.cursor()
-            sql = "INSERT INTO paciente (nombre, apellido, documento, obra_social,proietario,sexo,telefono,nro_afiliado,) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-            val = (nombre, apellido, documento, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado)
+            sql = "INSERT INTO paciente (nombre, apellido, tipo_documento, documento, id_obra_social, nro_afiliado,) VALUES (%s, %s, %s, %s, %s, %s)"
+            val = (nombre, apellido, tipo_documento, documento, id_obra_social, numeroafiliado)
             cursor.execute(sql, val)
             conexion.commit()
             messagebox.showinfo("Éxito", "Registro insertado correctamente.")
@@ -35,16 +34,16 @@ class GestionPaciente(Frame):
         finally:
             conexion.close()
 
-        #nombre, apellido, documento, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado)
-    def actualizar_paciente(nombre, apellido, documento, obrasocial, propietario, sexo, telefonopaciente,  numeroafiliado):
+        #nombre, apellido, documento, id_obra_social, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado)
+    def actualizar_paciente(nombre, apellido,  tipo_documento, documento, id_obra_social, numeroafiliado):
         
         conexion = obtener_conexion()
         if conexion is None:
             return
         try:
             cursor = conexion.cursor()
-            sql = "UPDATE paciente SET nombre=%s, apellido=%s, telefono=%s, documento=%s WHERE id=%s"
-            val = (nombre, apellido, documento, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado)
+            sql = "UPDATE paciente SET nombre=%s, apellido=%s, tipo_documento=%s, documento=%s, id_obra_social = %s, nro_afiliado = %s WHERE id=%s"
+            val = (nombre, apellido, tipo_documento, documento, id_obra_social, numeroafiliado)
             cursor.execute(sql, val)
             conexion.commit()
             messagebox.showinfo("Éxito", "Registro actualizado correctamente.")
@@ -53,7 +52,6 @@ class GestionPaciente(Frame):
         finally:
             conexion.close()
     
-
     def solo_letras(self, char):
         return char.isalpha() or char == " "
 
@@ -69,11 +67,11 @@ class GestionPaciente(Frame):
             cursor = conexion.cursor()
             seleccion = self.combo_activos.get()
             if seleccion == "Activos":
-                cursor.execute("SELECT id_paciente, nombre, apellido, documento, obra_social FROM paciente WHERE activo = 1")
+                cursor.execute("SELECT id_paciente, nombre, apellido, documento, id_obra_social FROM paciente WHERE activo = 1")
             elif seleccion == "Inactivos":
-                cursor.execute("SELECT id_paciente, nombre, apellido, documento, obra_social FROM paciente WHERE activo = 0")
+                cursor.execute("SELECT id_paciente, nombre, apellido, documento, id_obra_social FROM paciente WHERE activo = 0")
             elif seleccion == "Todos":
-                cursor.execute("SELECT id_paciente, nombre, apellido, documento, obra_social FROM paciente")
+                cursor.execute("SELECT id_paciente, nombre, apellido, documento, id_obra_social FROM paciente")
             pacientes = cursor.fetchall()
             for paciente in pacientes:
                 self.tree.insert("", "end", values=paciente)
@@ -136,21 +134,21 @@ class GestionPaciente(Frame):
         stilo.configure("Treeview", font=("Roboto",11), rowheight=25)  # Cambia la fuente y el alto de las filas
         stilo.configure("Treeview.Heading", font=("Roboto",14))  # Cambia la fuente de las cabeceras
         # Treeview para mostrar la tabla de pacientes dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("id", "nombre", "apellido", "documento", "obra_social"), show='headings', height=11)
+        self.tree = ttk.Treeview(frame_tabla, columns=("id", "nombre", "apellido", "documento", "id_obra_social"), show='headings', height=11)
         
         # Títulos de columnas
         self.tree.heading("id", text="ID")
         self.tree.heading("nombre", text="Nombre")
         self.tree.heading("apellido", text="Apellido")
         self.tree.heading("documento", text="DNI")
-        self.tree.heading("obra_social", text="Obra Social")
+        self.tree.heading("id_obra_social", text="Obra Social")
 
         # Ancho de las columnas y datos centrados
         self.tree.column("id", anchor='center', width=0)
         self.tree.column("nombre", anchor='center', width=300)
         self.tree.column("apellido", anchor='center', width=300)
         self.tree.column("documento", anchor='center', width=300)
-        self.tree.column("obra_social", anchor='center', width=300)
+        self.tree.column("id_obra_social", anchor='center', width=300)
         
         self.tree.grid(row=0, column=0, sticky="nsew")
 
@@ -207,9 +205,17 @@ class GestionPaciente(Frame):
                 messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
                 return
 
+    #al seleccionar una opción en la compo, retorna el id
     def on_seleccion(self, campo):
-        try:            
-            if campo == "Estado":
+        try:
+            if campo == "Obra Social":
+                seleccion = self.combo_valores.get()
+                if seleccion in self.datos_tabla:
+                    self.dato_obra = self.datos_tabla[seleccion]
+                    return self.dato_obra
+                else:
+                    raise ValueError(f"Selección '{seleccion}' no encontrada en datos_tabla.")
+            elif campo == "Estado":
                 seleccion = self.combo_valores_2.get()
                 if seleccion in self.datos_tabla_1:
                     self.dato_estado = self.datos_tabla_1[seleccion]
@@ -221,8 +227,6 @@ class GestionPaciente(Frame):
         except Exception as e:
             messagebox.showerror("Error", str(e))
             return None
-
-
 
     def ver_paciente(self):
         seleccion = self.tree.selection()
@@ -241,7 +245,7 @@ class GestionPaciente(Frame):
         
         paciente_seleccionado = self.tree.item(seleccion[0], 'values')
         self.abrir_ventana_paciente(paciente_seleccionado, seleccion[0],modo="modificar")    
-    
+        
     def abrir_ventana_paciente(self, paciente, id_seleccionado, modo="ver"):
         ventana_abrir = Toplevel(self)
         ventana_abrir.title("Detalles del paciente")
@@ -256,7 +260,7 @@ class GestionPaciente(Frame):
         frame_detalles = LabelFrame(ventana_abrir, text="Detalles del Paciente", font=("Roboto", 13), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre", "Apellido", "DNI", "Obra Social", "Propietario del Plan", "Sexo", "Teléfono del Paciente", "Número de Afiliado"]
+        campos = ["Nombre", "Apellido", "Tipo de Documento", "DNI", "Obra Social", "Número de Afiliado"]
         id_paciente = paciente[0]  # Asumiendo que el ID es el primer valor
 
         vcmd_letras = ventana_abrir.register(self.solo_letras)
@@ -265,7 +269,7 @@ class GestionPaciente(Frame):
         try:
             conexion = obtener_conexion()
             cursor = conexion.cursor()
-            cursor.execute("SELECT nombre, apellido, documento, obra_social, propietario, sexo, telefono, nro_afiliado, activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
+            cursor.execute("SELECT nombre, apellido, tipo_documento, documento, id_obra_social, nro_afiliado, activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
             valores = cursor.fetchone()
         except mysql.connector.Error as err:
             messagebox.showerror("Error", f"Error al cargar los datos del paciente: {err}")
@@ -284,9 +288,9 @@ class GestionPaciente(Frame):
             entry = Entry(frame_detalles, width=40)
             entry.grid(row=i, column=1, padx=10, pady=5)
 
-            if campo in ["Nombre", "Apellido", "Obra Social", "Propietario del Plan", "Sexo"]:
+            if campo in ["Nombre", "Apellido", "Obra Social"]:
                 entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
-            elif campo in ["DNI", "Teléfono del Paciente"]:
+            elif campo in ["Tipo de Documento","DNI"]:
                 entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
 
             if i < len(valores):
@@ -310,7 +314,7 @@ class GestionPaciente(Frame):
             frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
             btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Roboto", 13), bg="#e6c885",
-                                 command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
+                                command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
             btn_guardar.grid(row=len(campos), column=0, pady=10, padx=10)
             btn_guardar.config(state="disabled")  # Initially disabled
 
@@ -324,7 +328,7 @@ class GestionPaciente(Frame):
 
         if modo == "modificar":
             btn_modificar = Button(frame_detalles, text="Guardar Cambios", bg="#e6c885", width=15, font=("Roboto", 13),
-                                   command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
+                                command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
             btn_modificar.grid(row=10, column=1, padx=10, pady=0)
 
             btn_volver = Button(frame_detalles, text="Volver", font=("Roboto", 13), bg="#e6c885", width=15,
@@ -352,12 +356,11 @@ class GestionPaciente(Frame):
             cursor = conexion.cursor()
             query = """
             UPDATE paciente
-            SET nombre = %s, apellido = %s, documento = %s, obra_social = %s, propietario = %s, sexo = %s, telefono = %s, nro_afiliado = %s, activo = %s
+            SET nombre = %s, apellido = %s, tipo_documento= %s, documento = %s, id_obra_social = %s, nro_afiliado = %s, activo = %s
             WHERE id_paciente = %s
             """
             cursor.execute(query, (
-                nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["DNI"], nuevos_valores["Obra Social"],
-                nuevos_valores["Propietario del Plan"], nuevos_valores["Sexo"], nuevos_valores["Teléfono del Paciente"],
+                nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["Tipo de Documento"], nuevos_valores["DNI"], nuevos_valores["Obra Social"],
                 nuevos_valores["Número de Afiliado"], estado, id_paciente
             ))
             conexion.commit()
@@ -406,20 +409,17 @@ class GestionPaciente(Frame):
                     cursor.close()
                     conexion.close()
 
-
     def agregar_paciente(self):
         ventana_agregar = Toplevel(self)
         ventana_agregar.title("Agregar Paciente")
         ventana_agregar.config(bg="#e4c09f")
-        ventana.resizable(False,False)
-        ventana_agregar.protocol("WM_DELETE_WINDOW", lambda: None)  # Deshabilitar el botón "Cerrar" de la ventana
-        
+        ventana_agregar.resizable(False,False)
+        ventana_agregar.protocol("WM_DELETE_WINDOW", lambda: None)  # Deshabilitar el botón "Cerrar" de la ventana  
         
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Paciente", font= ("Roboto", 11),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-
-        campos = ["Nombre","Apellido","DNI","Obra Social","Propietario del Plan","Sexo","Teléfono del Paciente","Número de Afiliado"]
+        campos = ["Nombre","Apellido","Tipo de Documento","DNI","Obra Social","Número de Afiliado"]
         entradas = {}
 
         vcmd_letras = ventana_agregar.register(self.solo_letras)
@@ -430,9 +430,9 @@ class GestionPaciente(Frame):
             etiquetas.grid(row=i, column=0, padx=10, pady=5)
             entry = Entry(frame_agregar, width=40, font=("Roboto", 10))
 
-            if campo in ["Nombre", "Apellido", "Obra Social", "Propietario del Plan", "Sexo"]:
+            if campo in ["Nombre","Apellido","Obra Social"]:
                 entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
-            elif campo in ["DNI", "Teléfono del Paciente"]:
+            elif campo in ["Tipo de Documento","DNI"]:
                 entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
 
             entry.grid(row=i, column=1, padx=10, pady=5)
@@ -446,17 +446,15 @@ class GestionPaciente(Frame):
         btn_volver.grid(row=len(campos), column=0, pady=10, padx=10)
 
     def guardar_nuevo_paciente(self, entry, ventana):
-        nombre = entry["Nombre"].get().upper()      #Obtenemos los valores que el usuario ingresó.
+        nombre = entry["Nombre"].get().upper()      # Obtenemos los valores que el usuario ingresó.
         apellido = entry["Apellido"].get().upper()
+        tipo_documento = entry["Tipo de Documento"].get().upper()
         documento = entry["DNI"].get()
-        obrasocial = entry["Obra Social"].get().upper()
-        propietario = entry["Propietario del Plan"].get().upper()
-        sexo = entry["Sexo"].get().upper()
-        telefonopaciente = entry["Teléfono del Paciente"].get()
+        obra_social_nombre = entry["Obra Social"].get().upper()
         numeroafiliado = entry["Número de Afiliado"].get().upper()
 
         # Validar datos y agregar al Treeview
-        if nombre and apellido and documento and obrasocial and propietario and telefonopaciente and numeroafiliado:
+        if nombre and apellido and tipo_documento and documento and obra_social_nombre and numeroafiliado:
             try:
                 conexion = obtener_conexion()
                 cursor = conexion.cursor()
@@ -467,11 +465,19 @@ class GestionPaciente(Frame):
                     messagebox.showerror("Error", "El DNI ingresado ya existe. Por favor, ingrese un DNI diferente.")
                     return
                 
+                # Obtener el ID de la obra social
+                cursor.execute("SELECT id_obra_social FROM obra_social WHERE nombre = %s", (obra_social_nombre,))
+                result = cursor.fetchone()
+                if result is None:
+                    messagebox.showerror("Error", "La obra social ingresada no existe. Por favor, ingrese una obra social válida.")
+                    return
+                id_obra_social = result[0]
+                
                 query = """
-                INSERT INTO paciente (nombre, apellido, documento, obra_social, propietario, sexo, telefono, nro_afiliado)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO paciente (nombre, apellido, tipo_documento, documento, id_obra_social, nro_afiliado)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """
-                cursor.execute(query, (nombre, apellido, documento, obrasocial, propietario, sexo, telefonopaciente, numeroafiliado))
+                cursor.execute(query, (nombre, apellido, tipo_documento, documento, id_obra_social, numeroafiliado))
                 conexion.commit()
                 messagebox.showinfo("Información", "Paciente agregado correctamente.")
                 ventana.destroy()
@@ -490,15 +496,14 @@ class GestionPaciente(Frame):
         if not busqueda:
             self.tree.delete(*self.tree.get_children())
             self.cargar_paciente()
-            return
-        
+            return 
         paciente_encontrado = False
 
         try:
             conexion = obtener_conexion()
             cursor = conexion.cursor()
             query = """
-            SELECT id_paciente, nombre, apellido, documento, obra_social 
+            SELECT id_paciente, nombre, apellido, documento, id_obra_social 
             FROM paciente 
             WHERE (LOWER(nombre) LIKE %s OR LOWER(apellido) LIKE %s OR documento LIKE %s)
             """
@@ -524,7 +529,7 @@ class GestionPaciente(Frame):
         try:
             conexion = obtener_conexion()
             cursor = conexion.cursor()
-            cursor.execute("SELECT id_paciente, nombre, apellido, documento, obra_social FROM paciente WHERE activo = 1")
+            cursor.execute("SELECT id_paciente, nombre, apellido, documento, id_obra_social FROM paciente WHERE activo = 1")
             pacientes = cursor.fetchall()
             self.tree.delete(*self.tree.get_children())  # Limpiar el Treeview antes de cargar los datos
             for paciente in pacientes:
@@ -535,7 +540,6 @@ class GestionPaciente(Frame):
             if conexion.is_connected():
                 cursor.close()
                 conexion.close()
-    
 
 '''ventana = Tk()
 ventana.title("Gestion de Paciente")
