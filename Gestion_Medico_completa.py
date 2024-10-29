@@ -342,17 +342,18 @@ class Gestionmedico(Frame):
         )
         btn_nuevo_medico.grid(row=len(campos), column=0, columnspan=2, padx=10, pady=10)
 
-        btn_volver = Button(
-            ventana_agregar,
-            
-            text="Volver",
-            width=15,
-            font=("Robot", 13),
-        
-            bg="#e6c885",
-            command=ventana_agregar.destroy,
-        )        
-        btn_volver.grid(row=5, column=3, padx=50)
+        frame_btns = Frame(ventana_agregar, bg="#e4c09f")
+        frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+
+        btn_nuevo_tratamiento = Button(frame_btns, text="Agregar", font=("Robot", 13),bg="#e6c885", width=15, 
+                                       command=lambda:self.guardar_nuevo_medico(entradas,ventana_agregar))
+        btn_nuevo_tratamiento.grid(row=len(campos), column=0, padx=40, pady=10)
+
+        btn_volver = Button(frame_btns, text="Volver", font=("Robot", 13),bg="#e6c885", width=15,
+                            command=ventana_agregar.destroy)
+        btn_volver.grid(row=len(campos), column=1, pady=10)
+
+
         self.actualizar_treeview()
 
     def ver_medico(self):
@@ -381,12 +382,12 @@ class Gestionmedico(Frame):
         self.abrir_ventana_medico(detalles_medico, id_medico, modo="modificar")
         self.actualizar_treeview()
 
-    def abrir_ventana_medico(self, medico, id_seleccionado, modo="ver"):
+    def abrir_ventana_medico(self, medico, id_seleccionado, modo="ver", seleccion=None):
         ventana = Toplevel(self)
         ventana.title("Detalles del medico")
         ventana.config(bg="#e4c09f")
         ventana.resizable(False, False)
-        ventana.geometry("710x360+400+160")  # Aumenta el ancho de la ventana
+        ventana.geometry("510x360+400+160")  # Aumenta el ancho de la ventana
         ventana.protocol("WM_DELETE_WINDOW", lambda: None)
 
         # Centrar la ventana en la ventana principal
@@ -402,7 +403,7 @@ class Gestionmedico(Frame):
             pady=10,
             bg="#c9c2b2",
         )
-        frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew", columnspan=2)
+        frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
         frame_detalles.grid_columnconfigure(0, weight=1)  # Permite que el frame se expanda horizontalmente
         frame_detalles.grid_columnconfigure(1, weight=1)  # Permite que el frame se expanda horizontalmente
 
@@ -444,21 +445,27 @@ class Gestionmedico(Frame):
             for entry in entradas.values():
                 entry.config(state="readonly")
 
-            btn_volver = Button(
-                ventana,
-                text="Volver",
-                width=15,
-                font=("Robot", 13),
-                bg="#e6c885",
-                command=ventana.destroy,
-            )
+            frame_btns = Frame(ventana, bg="#e4c09f")
+            frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
+            btn_editar = Button(frame_btns, text="Modificar", width=15, font=("Robot", 13), bg="#e6c885",
+                                command=lambda: self.activar_edicion(entradas,btn_guardar))
+            btn_editar.grid(row=len(campos), column=0, padx=10,pady=10)
 
-            btn_volver.grid(row=len(campos) + 2, column=2, columnspan=2, padx=10, pady=10)
+            btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885", 
+                                command=lambda: self.guardar_cambios(entradas, ventana, id_seleccionado))
+            btn_guardar.grid(row=len(campos), column=1, padx=10,pady=10)
+            btn_guardar.config(state="disabled")  
+
+            btn_volver = Button(frame_btns, text="Volver", width=15, font=("Robot", 13), bg="#e6c885",
+                                command=ventana.destroy)
+            btn_volver.grid(row=len(campos), column=2, padx=10,pady=10)
 
         if modo == "modificar":
+            frame_btns = Frame(ventana, bg="#e4c09f")
+            frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
             btn_modificar = Button(
-                frame_detalles,
+                frame_btns,
                 text="Guardar Cambios",
                 font=("Robot", 13),
                 bg="#e6c885",
@@ -467,19 +474,19 @@ class Gestionmedico(Frame):
                 ),
             )
             btn_modificar.grid(
-                row=len(campos) + 1, column=0, columnspan=2, padx=10, pady=10
+                row=len(campos), column=0, padx=60, pady=10
             )
 
             btn_volver = Button(
-                ventana,
-                text="Volver",
+                frame_btns,
+                text="Cancelar",
                 width=15,
                 font=("Robot", 13),
                 bg="#e6c885",
                 command=ventana.destroy,
             )
             btn_volver.grid(
-                row=len(campos) + 2, column=3, columnspan=2, padx=10, pady=10
+                row=len(campos), column=1, pady=10
             )
             self.actualizar_treeview()
 
