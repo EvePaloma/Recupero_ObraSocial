@@ -137,40 +137,41 @@ class Gestion_Obra_Social(Frame):
             return
 
     def createWidgets(self):
-        contenedor_total = LabelFrame(self, text= "Gestión de Obra Social" , bg="#c9c2b2", height= 800)
-        self.pack_propagate(False)
-        contenedor_total.pack(expand=True, fill= "y")
+        contenedor_total = LabelFrame(self, text= "Gestión de Obra Social" , bg="#c9c2b2", height= 800, width= 1250)
+        contenedor_total.pack_propagate(False)
+        contenedor_total.pack(expand=True)
 
         #primer frame, contiene la imagen y el titulo de la ventana
         contenedor_titulo = Frame(contenedor_total, bg="#c9c2b2")
-        contenedor_titulo.pack(pady= 10)
+        contenedor_titulo.pack(pady= 8, padx= 20)
 
         # Cargar la imagen de fondo
         img_fondo = Image.open("fondo3.png")
-        img_fondo = img_fondo.resize((1000, 130), Image.Resampling.LANCZOS)
+        img_fondo = img_fondo.resize((1120, 180), Image.Resampling.LANCZOS)
         self.img_fondo = ImageTk.PhotoImage(img_fondo)
 
         # Crear un Label para la imagen de fondo
         fondo_label = Label(contenedor_titulo, image=self.img_fondo)
-        fondo_label.pack(expand=True, fill="both")
+        fondo_label.pack(expand=True)
 
         #segundo frame, contiene el buscador y el boton de agregar
         #buscador de os
-        frame_busqueda = Frame(contenedor_total, bg="#c9c2b2")
-        frame_busqueda.pack(fill= "x", padx = 5)
+        
+        frame_busqueda = Frame(contenedor_total, bg="#c9c2b2", width= 1100)
+        frame_busqueda.pack(fill="x", padx= 30)
         #separa el campo de busqueda del botón
-        frame_busqueda.columnconfigure(5, weight=1)
+        frame_busqueda.columnconfigure(4, weight=1)
 
         #Widgets de búsqueda dentro del frame más chico
-        Label(frame_busqueda, text="Buscar:", bg="#c9c2b2",font=("Robot",15)).grid(row=1, column=1, padx=5, pady=2, sticky= W)
+        Label(frame_busqueda, text="Buscar:", bg="#c9c2b2",font=("Robot",15)).grid(row=1, column=0, padx=5, pady=2, sticky= W)
 
-        self.entrada_buscar = Entry(frame_busqueda,width="50",font=("Robot",13))
-        self.entrada_buscar.grid(row=1, column=2, padx=5, pady=2, sticky= W)
+        self.entrada_buscar = Entry(frame_busqueda,width="40",font=("Robot",13))
+        self.entrada_buscar.grid(row=1, column=1, padx=5, pady=2, sticky= W)
 
         img_buscar = Image.open("buscar1.png").resize((30, 30), Image.Resampling.LANCZOS)
         img_buscar = ImageTk.PhotoImage(img_buscar)
         btn_buscar = Button(frame_busqueda, image=img_buscar, width=40, height=30,bg="#e6c885", command=self.buscar_obra_social)
-        btn_buscar.grid(row=1, column=3, sticky= W)
+        btn_buscar.grid(row=1, column=2, sticky= W)
         btn_buscar.image = img_buscar
 
         style = ttk.Style()
@@ -183,25 +184,25 @@ class Gestion_Obra_Social(Frame):
         self.combo_activos = ttk.Combobox(frame_busqueda, width=10, font=("Robot", 14), state="readonly", style="Custom.TCombobox")
         self.combo_activos['values'] = ("Activos", "Inactivos", "Todos")
         self.combo_activos.set("Activos")
-        self.combo_activos.grid(row=1, column=4, padx=20, pady=3)
+        self.combo_activos.grid(row=1, column=3, padx=20, pady=3)
         self.combo_activos.bind("<<ComboboxSelected>>", lambda event: self.actualizar_treeview())
 
         boton_agregar = Button(frame_busqueda, text="Agregar  +", width=15, bg="#e6c885",font=("Robot",15), command=self.agregar_obra_social)
-        boton_agregar.grid(row=1, column=6, padx=10, pady=3, sticky= E)
+        boton_agregar.grid(row=1, column=5, padx=10, pady=3, sticky= E)
         #Para que siempre esté atrás de los widgets
         fondo_label.lower()
 
         #Tercer frame, contiene la tabla de OS
         #Frame para el Treeview y el scrollbar
         frame_tabla = Frame(contenedor_total, bg="#c9c2b2", width= 1000)  # Frame para contener la tabla y el scrollbar
-        frame_tabla.pack(expand=True)
+        frame_tabla.pack(expand=True, fill= "x", padx=25)
         
         stilo = ttk.Style()
-        stilo.configure("Treeview", font=("Robot",11), rowheight=22)  # Cambia la fuente y el alto de las filas
-        stilo.configure("Treeview.Heading", font=("Robot",14), padding= [0, 10])  # Cambia la fuente de las cabeceras
+        stilo.configure("Treeview", font=("Robot",11), rowheight=21)  # Cambia la fuente y el alto de las filas
+        stilo.configure("Treeview.Heading", font=("Robot",12), padding= [0, 5])  # Cambia la fuente de las cabeceras
         
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("nombre", "siglas", "cuit"), show='headings', height=16)
+        self.tree = ttk.Treeview(frame_tabla, columns=("nombre", "siglas", "cuit"), show='headings', height=15)
         self.tree.grid(row=0, column=0, sticky="nsew")
 
         #Títulos de columnas
@@ -210,9 +211,9 @@ class Gestion_Obra_Social(Frame):
         self.tree.heading("cuit", text="CUIT")
 
         #Ancho de las columnas y datos centrados
-        self.tree.column("nombre", anchor='center', width=450, stretch=False)
-        self.tree.column("siglas", anchor='center', width=300, stretch=False)
-        self.tree.column("cuit", anchor='center', width=300, stretch=False)        
+        self.tree.column("nombre", anchor='center', width=480, stretch=False)
+        self.tree.column("siglas", anchor='center', width=350, stretch=False)
+        self.tree.column("cuit", anchor='center', width=350, stretch=False)        
 
         #Scrollbar para la tabla dentro del frame_tabla
         scrollbar = ttk.Scrollbar(frame_tabla, orient="vertical", command=self.tree.yview)
@@ -284,7 +285,7 @@ class Gestion_Obra_Social(Frame):
         btn_nueva_obra_social = Button(frame_btns, text="Agregar", width=15, font=("Robot", 13),bg="#e6c885", command=lambda: self.guardar_nueva_obra_social(entradas, self.ventana_agregar))
         btn_nueva_obra_social.grid(row=len(campos), column=0, padx=40, pady=10)
         
-        btn_cancelar = Button(frame_btns, text="Volver", width=15, font=("Robot", 13), bg="#e6c885", command=self.ventana_agregar.destroy)
+        btn_cancelar = Button(frame_btns, text="Cancelar", width=15, font=("Robot", 13), bg="#e6c885", command=self.ventana_agregar.destroy)
         btn_cancelar.grid(row=len(campos), column=1, padx= 40, pady=10)
 
         self.ventana_agregar.mainloop()
@@ -567,9 +568,9 @@ class Gestion_Obra_Social(Frame):
             self.tree.delete(*self.tree.get_children())
             self.actualizar_treeview()
 
-'''ventana = Tk()
+"""ventana = Tk()
 ventana.title("Gestion de obra_socials")
 ventana.resizable(False,False)
 ventana.geometry("+0+0")
 root = Gestion_Obra_Social(ventana)
-ventana.mainloop()'''
+ventana.mainloop()"""
