@@ -333,6 +333,14 @@ class GestionPaciente(Frame):
             btn_volver.grid(row=len(campos), column=2, pady=10, padx=10)
 
         if modo == "modificar":
+
+            frame_btns = Frame(ventana_abrir, bg="#e4c09f")
+            frame_btns.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
+
+            btn_volver = Button(frame_btns, text="Volver", font=("Roboto", 13),bg="#e6c885", width=15,
+                            command=ventana_abrir.destroy)
+            btn_volver.grid(row=len(campos), column=2, pady=10, padx=10)
+
             btn_guardar = Button(frame_detalles, text="Guardar Cambios", font=("Roboto", 13), bg="#e6c885", width=15,
                                 command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
             btn_guardar.grid(row=len(campos) + 1, column=1, padx=10, pady=10)
