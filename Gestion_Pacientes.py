@@ -473,6 +473,9 @@ class GestionPaciente(Frame):
         obra_social_nombre = entry["Obra Social"].get().upper()
         numeroafiliado = entry["Número de Afiliado"].get().upper()
 
+        #cursor.execute("SELECT nombre FROM obra_social WHERE id_obra_social = %s", (id_obra_social,))
+        #obra_social_nombre = cursor.fetchone()[0]
+
         # Validar datos y agregar al Treeview
         if nombre and apellido and tipo_documento and documento and obra_social_nombre and numeroafiliado:
             try:
@@ -549,7 +552,13 @@ class GestionPaciente(Frame):
         try:
             conexion = obtener_conexion()
             cursor = conexion.cursor()
-            cursor.execute("SELECT id_paciente, nombre, apellido, documento, id_obra_social FROM paciente WHERE activo = 1")
+            query = """
+            SELECT p.id_paciente, p.nombre, p.apellido, p.documento, o.nombre as obra_social 
+            FROM paciente p
+            JOIN obra_social o ON p.id_obra_social = o.id_obra_social
+            WHERE p.activo = 1
+            """
+            cursor.execute(query)
             pacientes = cursor.fetchall()
             self.tree.delete(*self.tree.get_children())  # Limpiar el Treeview antes de cargar los datos
             for paciente in pacientes:
@@ -567,4 +576,4 @@ ventana.resizable(False,False)
 ventana.geometry("+0+0")
 ventana.protocol("WM_DELETE_WINDOW", lambda: None)
 root = GestionPaciente(ventana)
-ventana.mainloop()'''
+ventana.mainloop()''''''
