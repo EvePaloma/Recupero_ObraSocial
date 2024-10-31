@@ -345,10 +345,10 @@ class GestionFicha(Frame):
         
         estilo = ttk.Style()
         estilo.configure("Treeview", font=("Robot",10), rowheight=13)  # Cambia la fuente y el alto de las filas
-        estilo.configure("Treeview.Heading", font=("Robot",12), padding= [0, 10])  # Cambia la fuente de las cabeceras
+        estilo.configure("Treeview.Heading", font=("Robot",12), padding= [0, 8])  # Cambia la fuente de las cabeceras
         
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.arbol_ficha = ttk.Treeview(frame_tabla_tratamientos, columns=("Código", "Nombre", "Precio", "Cantidad"), show='headings', height=16, style = "Treeview")
+        self.arbol_ficha = ttk.Treeview(frame_tabla_tratamientos, columns=("Código", "Nombre", "Precio", "Cantidad"), show='headings', height=14, style = "Treeview")
         self.arbol_ficha.pack(expand=True, fill="both")
 
         #Títulos de columnas
@@ -385,10 +385,10 @@ class GestionFicha(Frame):
         frame_botones.pack()
 
         btn_guardar_ficha = Button(frame_botones, text="Guardar", font=("Robot", 15),bg="#e6c885", width= 15, command= lambda: self.guardar_nueva_ficha(self.datos_ficha, self.ventana_agregar))
-        btn_guardar_ficha.grid(row = 0, column=0, columnspan=2, padx=20)
+        btn_guardar_ficha.grid(row = 0, column=0, columnspan=2, padx=20, pady=10)
 
         btn_volver = Button(frame_botones, text="Volver", font=("Robot", 15),bg="#e6c885", width=15, command= self.volver_inicio)
-        btn_volver.grid(row = 0, column=3, columnspan=2, padx=20)
+        btn_volver.grid(row = 0, column=3, columnspan=2, padx=20, pady=10)
 
     #Funciones para buscar un elemento en la base de datos
     def buscar_elemento_tabla(self, elemento, tabla):
@@ -586,15 +586,15 @@ class GestionFicha(Frame):
 
         self.ventana_tratamientos = Toplevel()
         self.ventana_tratamientos.title("Tratamientos")
-        self.ventana_tratamientos.geometry("680x450")
+        self.ventana_tratamientos.geometry("650x450+700+180")
         self.ventana_tratamientos.config(bg="#e4c09f")
 
         #Buscar tratamiento por nombre, codigo
-        frame_busqueda = Frame(self.ventana_tratamientos, bg="#e6c885")
+        frame_busqueda = Frame(self.ventana_tratamientos, bg="#e4c09f")
         frame_busqueda.pack()
 
         #Widgets de búsqueda dentro del frame más chico
-        etiqueta_buscar = Label(frame_busqueda, text="Buscar:", bg="#e6c885",font=("Robot",11))
+        etiqueta_buscar = Label(frame_busqueda, text="Buscar:", bg="#e4c09f",font=("Robot",11))
         etiqueta_buscar.grid(row=1, column=1, padx=5, pady=5)
 
         self.entrada_buscar = Entry(frame_busqueda,width="40",font=("Robot",10))
@@ -609,36 +609,36 @@ class GestionFicha(Frame):
 
         # Crear el Treeview para ver los tratamientos
         stilo = ttk.Style()
-        stilo.configure("Custom.Treeview", font=("Robot",11), rowheight=22)  # Cambia la fuente y el alto de las filas
-        stilo.configure("Custom.Treeview.Heading", font=("Robot",14), padding= [0, 10])  # Cambia la fuente de las cabeceras
+        stilo.configure("Custom.Treeview", font=("Robot",11), rowheight=21)  # Cambia la fuente y el alto de las filas
+        stilo.configure("Custom.Treeview.Heading", font=("Robot",14), padding= [0, 5])  # Cambia la fuente de las cabeceras
 
         self.tree_tratamiento = ttk.Treeview(self.ventana_tratamientos, columns=("Nombre", "Código", "Precio"), show='headings', style="Custom.Treeview")
         self.tree_tratamiento.heading("Nombre", text="Nombre")
         self.tree_tratamiento.heading("Código", text="Código")
         self.tree_tratamiento.heading("Precio", text="Precio")
 
-        self.tree_tratamiento.column("Nombre", anchor='center', width=200, stretch=False)
+        self.tree_tratamiento.column("Nombre", anchor='center', width=300, stretch=False)
         self.tree_tratamiento.column("Código", anchor='center', width=100, stretch=False)
         self.tree_tratamiento.column("Precio", anchor='center', width=100, stretch=False)
         self.tree_tratamiento.pack(pady=15)
 
         self.actualizar_treeview_tratamiento()
 
-        self.cantidad_var = ttk.Combobox(self.ventana_tratamientos, values=[str(i) for i in range(1, 10)], state="readonly", width=8, height=2)
+        self.cantidad_var = ttk.Combobox(self.ventana_tratamientos, values=[str(i) for i in range(1, 10)], state="readonly", width=11, height=5)
         self.cantidad_var.pack()
         self.cantidad_var.current(0)
 
         # Crear el frame para los botones
-        frame_botones = Frame(self.ventana_tratamientos)
-        frame_botones.pack(pady=10)
+        frame_botones = Frame(self.ventana_tratamientos, bg="#e4c09f")
+        frame_botones.pack(pady=16)
 
         # Botón Agregar
-        btn_agregar = Button(frame_botones, text="Agregar", font=("Robot", 11, "bold"), bg="#e6c885", height=1, width=10, command= self.agregar_tratamiento_a_ficha)
-        btn_agregar.grid(row=0, column=0, padx=10)
+        btn_agregar = Button(frame_botones, text="Agregar", font=("Robot", 11, "bold"), bg="#e6c885", height=1, width=12, command= self.agregar_tratamiento_a_ficha)
+        btn_agregar.grid(row=0, column=0, padx=10, pady=20)
 
         # Botón Volver
-        btn_volver = Button(frame_botones, text="Volver", font=("Robot", 11, "bold"), bg="#e6c885", height=1, width=10, command=self.ventana_tratamientos.destroy)
-        btn_volver.grid(row=0, column=1, padx=10)
+        btn_volver = Button(frame_botones, text="Volver", font=("Robot", 11, "bold"), bg="#e6c885", height=1, width=12, command=self.ventana_tratamientos.destroy)
+        btn_volver.grid(row=0, column=1, padx=10, pady=20)
 
     #Funciones para conectar con la base de datos
     #Funciones para subir los datos en la base de datos
