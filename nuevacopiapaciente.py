@@ -254,11 +254,11 @@ class GestionPaciente(Frame):
         ventana_abrir.geometry("510x445+400+160")
         ventana_abrir.protocol("WM_DELETE_WINDOW", lambda: None)  # Deshabilitar el botón "Cerrar" de la ventana
 
-        ventana_abrir.grid_columnconfigure(0, weight=1)
-        ventana_abrir.grid_rowconfigure(0, weight=1)
+        ventana_abrir.grid_columnconfigure(0, weight=2)
+        ventana_abrir.grid_rowconfigure(0, weight=2)
 
         frame_detalles = LabelFrame(ventana_abrir, text="Detalles del Paciente", font=("Roboto", 13), padx=10, pady=10, bg="#c9c2b2")
-        frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        frame_detalles.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
         campos = ["Nombre", "Apellido", "Tipo de Documento", "DNI", "Obra Social", "Número de Afiliado"]
         id_paciente = paciente[0]  # Asumiendo que el ID es el primer valor
@@ -311,18 +311,40 @@ class GestionPaciente(Frame):
         combo_estado.set("Activo" if valores[6] == 1 else "Inactivo")
         entradas["Estado"] = combo_estado
 
+        
+        etiqueta_obra_social = Label(frame_detalles, text="Obra Social:", bg="#c9c2b2", font=("Roboto", 10))
+        etiqueta_obra_social.grid(row=len(campos) + 1, column=0, padx=10, pady=5)
+        
+        try:
+            conexion = obtener_conexion()
+            cursor = conexion.cursor()
+            cursor.execute("SELECT nombre FROM obra_social")
+            obras_sociales = [row[0] for row in cursor.fetchall()]
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error", f"Error al obtener las obras sociales: {err}")
+            return
+        finally:
+            if conexion.is_connected():
+                cursor.close()
+                conexion.close()
+        # Combobox para Obra Social
+        combo_obra_social = ttk.Combobox(frame_detalles, values=obras_sociales, width=37)
+        combo_obra_social.grid(row=len(campos) + 1, column=1, padx=10, pady=5)
+        combo_obra_social.set(obra_social_nombre)
+        entradas["Obra Social"] = combo_obra_social
+
         if modo == "ver":
             for entry in entradas.values():
-                entry.config(state="readonly")
+                entry.config(state="readonly")  # Deshabilitar la edición en todos los Entry
             combo_estado.config(state="readonly")
-            
+
             frame_btns = Frame(ventana_abrir, bg="#e4c09f")
             frame_btns.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
 
             btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Roboto", 13), bg="#e6c885",
                                 command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
             btn_guardar.grid(row=len(campos), column=1, padx=10, pady=10)
-            btn_guardar.config(state="disabled")  
+            btn_guardar.config(state="disabled")  # Initially disabled
 
             btn_editar = Button(frame_btns, text="Modificar", width=15, font=("Roboto", 13), bg="#e6c885",
                                 command=lambda: self.activar_edicion(entradas, btn_guardar))
@@ -337,13 +359,15 @@ class GestionPaciente(Frame):
             frame_btns = Frame(ventana_abrir, bg="#e4c09f")
             frame_btns.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
 
+            btn_guardar = Button(frame_btns, text="Guardar Cambios", font=("Roboto", 13), bg="#e6c885", width=15,
+                                command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
+            btn_guardar.grid(row=len(campos), column=0, pady=10, padx=60)
+
             btn_volver = Button(frame_btns, text="Volver", font=("Roboto", 13),bg="#e6c885", width=15,
                             command=ventana_abrir.destroy)
-            btn_volver.grid(row=len(campos), column=2, pady=10, padx=10)
+            btn_volver.grid(row=len(campos), column=1, pady=10)
+            self.actualizar_treeview()
 
-            btn_guardar = Button(frame_detalles, text="Guardar Cambios", font=("Roboto", 13), bg="#e6c885", width=15,
-                                command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
-            btn_guardar.grid(row=len(campos) + 1, column=1, padx=10, pady=10)
 
     def activar_edicion(self, entradas, btn_guardar):
     # Habilitar la edición en las entradas
@@ -436,7 +460,7 @@ class GestionPaciente(Frame):
         
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Paciente", font= ("Roboto", 11),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-
+        
         frame_btns = Frame(ventana_agregar, bg="#e4c09f")
         frame_btns.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
 
@@ -459,12 +483,33 @@ class GestionPaciente(Frame):
             entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
 
+        # ComboBox para Obra Social
+        etiqueta_obra_social = Label(frame_agregar, text="Obra Social:", bg="#c9c2b2", font=("Roboto", 10))
+        etiqueta_obra_social.grid(row=len(campos), column=0, padx=10, pady=5)
+
+        try:
+            conexion = obtener_conexion()
+            cursor = conexion.cursor()
+            cursor.execute("SELECT nombre FROM obra_social")
+            obras_sociales = [row[0] for row in cursor.fetchall()]
+        except mysql.connector.Error as err:
+            messagebox.showerror("Error", f"Error al obtener las obras sociales: {err}")
+            return
+        finally:
+            if conexion.is_connected():
+                cursor.close()
+                conexion.close()
+            
+        combo_obra_social = ttk.Combobox(frame_agregar, values=obras_sociales, width=37)
+        combo_obra_social.grid(row=len(campos), column=1, padx=10, pady=5)
+        entradas["Obra Social"] = combo_obra_social
+
         btn_nuevo_paciente = Button(frame_btns, text="Agregar", font=("Roboto", 13),bg="#e6c885", width=15, command=lambda: self.guardar_nuevo_paciente(entradas, ventana_agregar))
-        btn_nuevo_paciente.grid(row=len(campos),column=1, padx=10, pady=10)
+        btn_nuevo_paciente.grid(row=len(campos),column=0, padx=60, pady=10)
 
         btn_volver = Button(frame_btns, text="Volver", font=("Roboto", 13),bg="#e6c885", width=15,
                             command=ventana_agregar.destroy)
-        btn_volver.grid(row=len(campos), column=0, pady=10, padx=10)
+        btn_volver.grid(row=len(campos), column=1, pady=10, padx=10)
 
     def guardar_nuevo_paciente(self, entry, ventana):
         nombre = entry["Nombre"].get().upper()      # Obtenemos los valores que el usuario ingresó.
@@ -562,10 +607,12 @@ class GestionPaciente(Frame):
                 cursor.close()
                 conexion.close()
 
-ventana = Tk()
+"""ventana = Tk()
 ventana.title("Gestion de Paciente")
 ventana.resizable(False,False)
 ventana.geometry("+0+0")
 ventana.protocol("WM_DELETE_WINDOW", lambda: None)
 root = GestionPaciente(ventana)
-ventana.mainloop()
+ventana.mainloop()"""
+
+
