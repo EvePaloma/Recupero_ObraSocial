@@ -234,12 +234,13 @@ INSERT INTO 'tratamiento'('codigo', 'nombre', 'precio', 'fecha_precio', 'siglas,
 
 use recupero_obra_social;
 
-INSERT INTO `paciente` (nombre, apellido, tipo_documento, documento, id_obra_social, nro_afiliado, activo) VALUES
+INSERT INTO `paciente` (nombre, apellido, tipo_documento, documento, id_obra_social, nro_afiliado, activo)
+VALUES
 ('JUAN', 'PEREZ', '1', '23456789', 'PAMI', '1112345678',1),
 ('MARIA', 'GOMEZ', '2', '34567890', 'OSDE', '2223456789',1),
 ('CARLOS', 'RODRIGUEZ', '1', '45678901', 'SWISS MEDICAL', '3334567890',1),
 ('ANA', 'FERNANDEZ', '2', '56789012', 'GALENO', '4445678901',1),
-('PEDRO', 'LOPEZ', '1', '67890123', 'PAMI', '5556789012'),1,
+('PEDRO', 'LOPEZ', '1', '67890123', 'PAMI', '5556789012',1),
 ('LUIS', 'MARTINEZ', '2', '78901234', 'OSDE', '6667890123',1),
 ('MARTA', 'SANCHEZ', '1', '89012345', 'SWISS MEDICAL', '7778901234',1),
 ('JORGE', 'RAMIREZ', '2', '90123456', 'GALENO', '8889012345',1),

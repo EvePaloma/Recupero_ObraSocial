@@ -294,6 +294,11 @@ class GestionPaciente(Frame):
             entry.grid(row=i, column=1, padx=10, pady=5)
             entradas[campo] = entry
 
+            if campo in ["Nombre","Apellido","Obra Social"]:
+                entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
+            elif campo in ["Tipo de Documento","DNI"]:
+                entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
+
         # Establecer los valores en los campos
         entradas["Nombre"].insert(0, valores[0])
         entradas["Apellido"].insert(0, valores[1])
@@ -314,6 +319,10 @@ class GestionPaciente(Frame):
             for entry in entradas.values():
                 entry.config(state="readonly")
             combo_estado.config(state="readonly")
+            if campo in ["Nombre","Apellido","Obra Social"]:
+                entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
+            elif campo in ["Tipo de Documento","DNI"]:
+                entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
             
             frame_btns = Frame(ventana_abrir, bg="#e4c09f")
             frame_btns.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
