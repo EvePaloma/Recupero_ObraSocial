@@ -607,10 +607,10 @@ class GestionPaciente(Frame):
                 cursor.close()
                 conexion.close()
 
-ventana = Tk()
+"""ventana = Tk()
 ventana.title("Gestion de Paciente")
 ventana.resizable(False,False)
 ventana.geometry("+0+0")
 ventana.protocol("WM_DELETE_WINDOW", lambda: None)
 root = GestionPaciente(ventana)
-ventana.mainloop()
+ventana.mainloop()"""
