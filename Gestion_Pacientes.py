@@ -254,21 +254,17 @@ class GestionPaciente(Frame):
         ventana_abrir.geometry("510x445+400+160")
         ventana_abrir.protocol("WM_DELETE_WINDOW", lambda: None)  # Deshabilitar el botón "Cerrar" de la ventana
 
-        ventana_abrir.grid_columnconfigure(0, weight=1)
-        ventana_abrir.grid_rowconfigure(0, weight=1)
+        ventana_abrir.grid_columnconfigure(0, weight=2)
+        ventana_abrir.grid_rowconfigure(0, weight=2)
 
         frame_detalles = LabelFrame(ventana_abrir, text="Detalles del Paciente", font=("Roboto", 13), padx=10, pady=10, bg="#c9c2b2")
-        frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        frame_detalles.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
         campos = ["Nombre", "Apellido", "Tipo de Documento", "DNI", "Obra Social", "Número de Afiliado"]
         id_paciente = paciente[0]  # Asumiendo que el ID es el primer valor
 
         vcmd_letras = ventana_abrir.register(self.solo_letras)
         vcmd_numeros = ventana_abrir.register(self.solo_numeros)
-
-        btn_volver = Button(ventana_abrir, text="Volver", font=("Roboto", 13),bg="#e6c885", width=15,
-                            command=ventana_abrir.destroy)
-        btn_volver.grid(row=len(campos) + 1, column=0, pady=10, padx=10)
 
         try:
             conexion = obtener_conexion()
@@ -342,19 +338,35 @@ class GestionPaciente(Frame):
                 entry.config(state="readonly")  # Deshabilitar la edición en todos los Entry
             combo_estado.config(state="readonly")
 
-            btn_guardar = Button(frame_detalles, text="Guardar Cambios", width=15, font=("Roboto", 13), bg="#e6c885",
+            frame_btns = Frame(ventana_abrir, bg="#e4c09f")
+            frame_btns.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
+
+            btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Roboto", 13), bg="#e6c885",
                                 command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
-            btn_guardar.place(x=250, y=250)
+            btn_guardar.grid(row=len(campos), column=1, padx=10, pady=10)
             btn_guardar.config(state="disabled")  # Initially disabled
 
-            btn_editar = Button(frame_detalles, text="Modificar", width=15, font=("Roboto", 13), bg="#e6c885",
+            btn_editar = Button(frame_btns, text="Modificar", width=15, font=("Roboto", 13), bg="#e6c885",
                                 command=lambda: self.activar_edicion(entradas, btn_guardar))
-            btn_editar.place(x=80, y=250)
+            btn_editar.grid(row=len(campos), column=0, padx=10, pady=10)
+
+            btn_volver = Button(frame_btns, text="Volver", font=("Roboto", 13),bg="#e6c885", width=15,
+                            command=ventana_abrir.destroy)
+            btn_volver.grid(row=len(campos), column=2, pady=10, padx=10)
 
         if modo == "modificar":
-            btn_guardar = Button(frame_detalles, text="Guardar Cambios", font=("Roboto", 13), bg="#e6c885", width=15,
+
+            frame_btns = Frame(ventana_abrir, bg="#e4c09f")
+            frame_btns.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
+
+            btn_guardar = Button(frame_btns, text="Guardar Cambios", font=("Roboto", 13), bg="#e6c885", width=15,
                                 command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
-            btn_guardar.grid(row=len(campos) + 1, column=1, padx=10, pady=10)
+            btn_guardar.grid(row=len(campos), column=0, pady=10, padx=60)
+
+            btn_volver = Button(frame_btns, text="Volver", font=("Roboto", 13),bg="#e6c885", width=15,
+                            command=ventana_abrir.destroy)
+            btn_volver.grid(row=len(campos), column=1, pady=10)
+            self.actualizar_treeview()
 
 
     def activar_edicion(self, entradas, btn_guardar):
@@ -448,6 +460,9 @@ class GestionPaciente(Frame):
         
         frame_agregar = LabelFrame(ventana_agregar, text="Agregar Nuevo Paciente", font= ("Roboto", 11),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        
+        frame_btns = Frame(ventana_agregar, bg="#e4c09f")
+        frame_btns.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
 
         campos = ["Nombre","Apellido","Tipo de Documento","DNI","Obra Social","Número de Afiliado"]
         entradas = {}
@@ -489,13 +504,12 @@ class GestionPaciente(Frame):
         combo_obra_social.grid(row=len(campos), column=1, padx=10, pady=5)
         entradas["Obra Social"] = combo_obra_social
 
+        btn_nuevo_paciente = Button(frame_btns, text="Agregar", font=("Roboto", 13),bg="#e6c885", width=15, command=lambda: self.guardar_nuevo_paciente(entradas, ventana_agregar))
+        btn_nuevo_paciente.grid(row=len(campos),column=0, padx=60, pady=10)
 
-        btn_nuevo_paciente = Button(frame_agregar, text="Agregar", font=("Roboto", 13),bg="#e6c885", width=15, command=lambda: self.guardar_nuevo_paciente(entradas, ventana_agregar))
-        btn_nuevo_paciente.grid(row=len(campos),column=1, padx=10, pady=10)
-
-        btn_volver = Button(frame_agregar, text="Volver", font=("Roboto", 13),bg="#e6c885", width=15,
+        btn_volver = Button(frame_btns, text="Volver", font=("Roboto", 13),bg="#e6c885", width=15,
                             command=ventana_agregar.destroy)
-        btn_volver.grid(row=len(campos), column=0, pady=10, padx=10)
+        btn_volver.grid(row=len(campos), column=1, pady=10, padx=10)
 
     def guardar_nuevo_paciente(self, entry, ventana):
         nombre = entry["Nombre"].get().upper()      # Obtenemos los valores que el usuario ingresó.
