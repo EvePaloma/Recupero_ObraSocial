@@ -4,6 +4,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import mysql.connector
 from ConexionBD import *
+from tkcalendar import Calendar
 from datetime import datetime
 
 class GestionFicha(Frame):
@@ -56,6 +57,7 @@ class GestionFicha(Frame):
         self.ventana_agregar.destroy()
         self.master.deiconify()
 
+    #Recupera datos de paciente, obra social y médico utilizando el ID
     def recuperar_paciente(self, id):
         conexion = obtener_conexion()
         try:
@@ -100,6 +102,7 @@ class GestionFicha(Frame):
             cursor.close()
             conexion.close()
 
+    #actualiza los cuadros de las fichas y de los tratamientos
     def actualizar_treeview(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
@@ -247,6 +250,7 @@ class GestionFicha(Frame):
         self.ventana_agregar.config(bg="#e4c09f") 
         self.ventana_agregar.resizable(False,False)
         self.ventana_agregar.geometry("1370x700+0+0")
+        self.ventana_agregar.protocol("WM_DELETE_WINDOW", lambda: None)
 
         frame_agregar = LabelFrame(self.ventana_agregar, text="Agregar ficha", font= ("Robot", 12),padx=10, pady=10, bg="#c9c2b2")
         frame_agregar.pack(padx=10, pady=5)
@@ -278,7 +282,7 @@ class GestionFicha(Frame):
         btn_nuevo_paciente.grid(row = 0, column=6, padx=15)
 
         #Frame para los datos del PACIENTE
-        self.frame_datos_pacientes = Label(frame_paciente, bg="#c9c2b2", font=("Robot", 10))
+        self.frame_datos_pacientes = Frame(frame_paciente, bg="#c9c2b2")
         self.frame_datos_pacientes.pack(pady=5)
 
         campos_arriba = ["Nombre", "Apellido", "DNI"]
@@ -295,12 +299,13 @@ class GestionFicha(Frame):
             entry.config(state="readonly")
 
         #Frame para los datos del MEDICO
-        frame_medico = LabelFrame(frame_agregar, text="Datos del médico", font=("Robot", 10), bg="#c9c2b2")
+        frame_medico = LabelFrame(frame_agregar, text="Datos de la consulta", font=("Robot", 10), bg="#c9c2b2")
         frame_medico.pack(fill="x")
 
         #buscador de médico
         frame_busqueda_medico = Frame(frame_medico, bg="#c9c2b2")
-        frame_busqueda_medico.pack(fill="x", pady=5)
+        frame_busqueda_medico.pack(fill="x", pady=5, padx=8)
+
         Label(frame_busqueda_medico, text="Buscar:", bg="#c9c2b2",font=("Robot", 13)).grid(row=0, column=1, padx=5, pady=2, sticky= W)
         self.buscar_medico = Entry(frame_busqueda_medico, width=20,font=("Robot",12))
         self.buscar_medico.grid(row=0, column=2, padx=5, pady=2, sticky= W)
@@ -320,16 +325,28 @@ class GestionFicha(Frame):
         btn_nuevo_medico = Button(frame_busqueda_medico, text="Agregar Médico", font=("Robot", 11, "bold"),bg="#e6c885")
         btn_nuevo_medico.grid(row = 0, column=6, padx=15)
 
+        frame_campos_medyfecha = Frame(frame_medico, bg="#c9c2b2")
+        frame_campos_medyfecha.pack(fill="x", pady=5, padx=8)   
+
         #Frame para los datos del medico
-        self.frame_datos_medico = Label(frame_medico, bg="#c9c2b2", font=("Robot", 10))
-        self.frame_datos_medico.pack(pady=5, fill="x")
+        self.frame_datos_medico = Frame(frame_campos_medyfecha, bg="#c9c2b2")
+        self.frame_datos_medico.grid(row = 0, column = 0, pady=5)
 
         campos_medico = ["Nombre del médico", "Apellido del médico", "Matrícula"]
         for m, campo in enumerate(campos_medico):
             Label(self.frame_datos_medico, text=campo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=m, padx=8, sticky=W)
             entry = Entry(self.frame_datos_medico, width=28, font=("Robot", 12))
-            entry.grid(row=1, column=m, padx=8, sticky=W)
+            entry.grid(row=1, column=m, padx=10)
             entry.config(state="readonly")
+        
+        self.fecha= Frame(frame_campos_medyfecha, bg="#c9c2b2")
+        self.fecha.grid(row=0, column=1, padx=8, sticky=W)
+
+        Label(self.fecha, text="Fecha de consulta" + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).pack(anchor=W, padx=8)
+        self.entry_fecha = Entry(self.fecha, width=20, font=("Robot", 12))
+        self.entry_fecha.pack(anchor=W, padx=10)
+        self.entry_fecha.config(state="readonly")
+        self.entry_fecha.bind("<Button-1>", lambda e: self.abrir_calendario())
 
         #Frame para los datos del TRATAMIENTOS
         frame_tratamiento = LabelFrame(frame_agregar, text="Tratamiento", font=("Robot", 10), bg="#c9c2b2") 
@@ -339,7 +356,7 @@ class GestionFicha(Frame):
 
         #Tabla para mostar los tratamientos
         frame_tabla_tratamientos = Frame(frame_tratamiento, bg="#c9c2b2", width= 500)  # Frame para contener la tabla y el scrollbar
-        frame_tabla_tratamientos.grid(row= 0, column=0, padx= 20, pady= 5)
+        frame_tabla_tratamientos.grid(row= 0, column=0, padx= 50, pady= 5)
 
         Label(frame_tabla_tratamientos, text="Tratamientos aplicados", font=("Robot", 12), bg="#c9c2b2").pack(pady=5)
         
@@ -359,7 +376,7 @@ class GestionFicha(Frame):
 
         #Ancho de las columnas y datos centrados
         self.arbol_ficha.column("Código", anchor='center', width=150, stretch=False)
-        self.arbol_ficha.column("Nombre", anchor='center', width=200, stretch=False)
+        self.arbol_ficha.column("Nombre", anchor='center', width=300, stretch=False)
         self.arbol_ficha.column("Precio", anchor='center', width=200, stretch=False)
         self.arbol_ficha.column("Cantidad", anchor='center', width=100, stretch=False)
 
@@ -387,8 +404,61 @@ class GestionFicha(Frame):
         btn_guardar_ficha = Button(frame_botones, text="Guardar", font=("Robot", 15),bg="#e6c885", width= 15, command= lambda: self.guardar_nueva_ficha(self.datos_ficha, self.ventana_agregar))
         btn_guardar_ficha.grid(row = 0, column=0, columnspan=2, padx=20, pady=10)
 
+        """btn_limpiar = Button(frame_botones, text="Limpiar", font=("Robot", 15),bg="#e6c885", width=15, command= self.limpiar_campos)
+        btn_limpiar.grid(row = 0, column=2, columnspan=2, padx=20, pady=10)
+        """
         btn_volver = Button(frame_botones, text="Volver", font=("Robot", 15),bg="#e6c885", width=15, command= self.volver_inicio)
-        btn_volver.grid(row = 0, column=3, columnspan=2, padx=20, pady=10)
+        btn_volver.grid(row = 0, column=4, columnspan=2, padx=20, pady=10)
+
+    #Funciones para validar y agregar fecha
+    def abrir_calendario(self):
+        ventana_calendario = Toplevel(ventana)
+        ventana_calendario.config(bg="#e4c09f")
+        ventana_calendario.geometry("300x270+1000+200")
+        ventana_calendario.resizable(0, 0)
+        ventana_calendario.grab_set()  # Bloquear interacción con la ventana principal
+        ventana_calendario.title("Fecha de la consulta")
+        ventana_calendario.protocol("WM_DELETE_WINDOW", lambda: None)
+
+        # Obtener la fecha actual
+        fecha_actual = datetime.today().date()
+        anio = fecha_actual.year
+        mes = fecha_actual.month
+        dia = fecha_actual.day
+
+        # Configurar el calendario con la fecha actual
+        calendario = Calendar(ventana_calendario, selectmode="day", year=anio, month=mes, day=dia)
+        calendario.pack(pady=20)
+
+        # Función para confirmar la selección de fecha y aplicar el formato deseado
+        def confirmar_fecha():
+            try:
+                fecha_seleccionada = calendario.get_date()
+                # Convertir la fecha seleccionada al formato deseado
+                fecha_formateada = datetime.strptime(fecha_seleccionada, "%m/%d/%y").strftime("%Y/%m/%d")  # Formato año/mes/día
+                fecha_actual_formateada = fecha_actual.strftime("%Y/%m/%d")
+                if fecha_actual_formateada < fecha_formateada:
+                    messagebox.showwarning("Advertencia", "Seleccione una fecha anterior a la actual.")
+                    return
+                else:
+                    self.entry_fecha.config(state="normal")
+                    self.entry_fecha.delete(0, END)  
+                    self.entry_fecha.insert(0, fecha_formateada)
+                    self.entry_fecha.config(state="readonly") 
+                    ventana_calendario.destroy()
+            except ValueError:
+                messagebox.showwarning("Advertencia", "Seleccione una fecha válida.")
+                return
+
+        cont_botones = Frame(ventana_calendario, bg="#e4c09f")
+        cont_botones.pack()
+
+        # Botón para confirmar la fecha seleccionada
+        boton_confirmar = Button(cont_botones, text="Confirmar", command=confirmar_fecha, width=10, font=("Robot", 13), bg="#e6c885")
+        boton_confirmar.grid(row = 0, column=0, padx=10, pady=10)
+
+        boton_volver = Button(cont_botones, text="Volver", command=ventana_calendario.destroy, width=10, font=("Robot", 13), bg="#e6c885")
+        boton_volver.grid(row = 0, column=1, padx=10, pady=10)
 
     #Funciones para buscar un elemento en la base de datos
     def buscar_elemento_tabla(self, elemento, tabla):
@@ -418,6 +488,7 @@ class GestionFicha(Frame):
                 conexion.close()
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
+    #busca un elemento en la base de datos
     def obtener_unico(self, elemento, tabla):
         conexion = obtener_conexion()
         print(elemento)
@@ -438,6 +509,7 @@ class GestionFicha(Frame):
         finally:
             cursor.close()
             conexion.close()
+    #completa las entradas en la ficha al buscar el elemento
     def buscar_elemento(self, tabla):
         if tabla == "paciente":
             elemento = self.buscar_paciente.get()
@@ -583,15 +655,16 @@ class GestionFicha(Frame):
                 self.tree_tratamiento.delete(*self.tree_tratamiento.get_children())
                 self.ventana_tratamientos.lift()
                 self.actualizar_treeview_tratamiento()
+                self.entrada_buscar.delete(0, END)
 
         self.ventana_tratamientos = Toplevel()
         self.ventana_tratamientos.title("Tratamientos")
-        self.ventana_tratamientos.geometry("650x450+700+180")
+        self.ventana_tratamientos.geometry("650x430+700+180")
         self.ventana_tratamientos.config(bg="#e4c09f")
 
         #Buscar tratamiento por nombre, codigo
         frame_busqueda = Frame(self.ventana_tratamientos, bg="#e4c09f")
-        frame_busqueda.pack()
+        frame_busqueda.pack(pady=10)
 
         #Widgets de búsqueda dentro del frame más chico
         etiqueta_buscar = Label(frame_busqueda, text="Buscar:", bg="#e4c09f",font=("Robot",11))
@@ -609,36 +682,36 @@ class GestionFicha(Frame):
 
         # Crear el Treeview para ver los tratamientos
         stilo = ttk.Style()
-        stilo.configure("Custom.Treeview", font=("Robot",11), rowheight=21)  # Cambia la fuente y el alto de las filas
-        stilo.configure("Custom.Treeview.Heading", font=("Robot",14), padding= [0, 5])  # Cambia la fuente de las cabeceras
+        stilo.configure("Custom.Treeview", font=("Robot",10), rowheight=21)  # Cambia la fuente y el alto de las filas
+        stilo.configure("Custom.Treeview.Heading", font=("Robot",11), padding= [0, 5])  # Cambia la fuente de las cabeceras
 
         self.tree_tratamiento = ttk.Treeview(self.ventana_tratamientos, columns=("Nombre", "Código", "Precio"), show='headings', style="Custom.Treeview")
         self.tree_tratamiento.heading("Nombre", text="Nombre")
         self.tree_tratamiento.heading("Código", text="Código")
         self.tree_tratamiento.heading("Precio", text="Precio")
 
-        self.tree_tratamiento.column("Nombre", anchor='center', width=300, stretch=False)
-        self.tree_tratamiento.column("Código", anchor='center', width=100, stretch=False)
-        self.tree_tratamiento.column("Precio", anchor='center', width=100, stretch=False)
+        self.tree_tratamiento.column("Nombre", anchor='center', width=330, stretch=False)
+        self.tree_tratamiento.column("Código", anchor='center', width=150, stretch=False)
+        self.tree_tratamiento.column("Precio", anchor='center', width=150, stretch=False)
         self.tree_tratamiento.pack(pady=15)
 
         self.actualizar_treeview_tratamiento()
 
-        self.cantidad_var = ttk.Combobox(self.ventana_tratamientos, values=[str(i) for i in range(1, 10)], state="readonly", width=11, height=5)
+        self.cantidad_var = ttk.Combobox(self.ventana_tratamientos, font=("Robot",12), values=[str(i) for i in range(1, 10)], state="readonly", width=13, height=6)
         self.cantidad_var.pack()
         self.cantidad_var.current(0)
 
         # Crear el frame para los botones
         frame_botones = Frame(self.ventana_tratamientos, bg="#e4c09f")
-        frame_botones.pack(pady=16)
+        frame_botones.pack(pady=15)
 
         # Botón Agregar
-        btn_agregar = Button(frame_botones, text="Agregar", font=("Robot", 11, "bold"), bg="#e6c885", height=1, width=12, command= self.agregar_tratamiento_a_ficha)
-        btn_agregar.grid(row=0, column=0, padx=10, pady=20)
+        btn_agregar = Button(frame_botones, text="Agregar", font=("Robot", 13), bg="#e6c885", height=1, width=12, command= self.agregar_tratamiento_a_ficha)
+        btn_agregar.grid(row=0, column=0, padx=13, pady=15)
 
         # Botón Volver
-        btn_volver = Button(frame_botones, text="Volver", font=("Robot", 11, "bold"), bg="#e6c885", height=1, width=12, command=self.ventana_tratamientos.destroy)
-        btn_volver.grid(row=0, column=1, padx=10, pady=20)
+        btn_volver = Button(frame_botones, text="Volver", font=("Robot", 13), bg="#e6c885", height=1, width=12, command=self.ventana_tratamientos.destroy)
+        btn_volver.grid(row=0, column=1, padx=13, pady=15)
 
     #Funciones para conectar con la base de datos
     #Funciones para subir los datos en la base de datos
@@ -656,7 +729,7 @@ class GestionFicha(Frame):
         apellido_medico = entry["Apellido del médico"].get()
         matricula = entry ["Matrícula"].get()
         total = self.total_var.get()
-        fecha = datetime.now()
+        fecha = self.entry_fecha.get()
         print(id_paciente, nombre, apellido, dni, obra_social, nro_afiliado, id_medico, nombre_medico, apellido_medico, matricula, total, fecha)
 
         # Validar datos y agregar al Treeview
@@ -764,7 +837,7 @@ class GestionFicha(Frame):
         ventana.geometry("1370x700+0+0")
 
         frame_detalles = LabelFrame(ventana, text="Detalles de ficha", font=("Robot", 12), bg="#c9c2b2")
-        frame_detalles.pack(ipadx=20)
+        frame_detalles.pack(padx=10, pady=5)
 
         frame_btns = Frame(ventana, bg="#e4c09f")
         frame_btns.pack()
@@ -773,11 +846,11 @@ class GestionFicha(Frame):
 
         #FRAME DE DATOS DEL PACIENTE
         frame_paciente = LabelFrame(frame_detalles, text="Datos del paciente", font=("Robot", 10), padx=10, pady=5, bg="#c9c2b2")
-        frame_paciente.pack(fill="x", ipadx=10)
+        frame_paciente.pack(fill="x")
         #buscador de pacientes
 
         frame_busqueda = Frame(frame_paciente, bg="#c9c2b2")
-        frame_busqueda.pack(fill="x", pady=2)
+        frame_busqueda.pack(fill="x", pady=5)
         Label(frame_busqueda, text="Buscar:", bg="#c9c2b2",font=("Robot", 13)).grid(row=0, column=1, padx=5, pady=2, sticky= W)
         self.buscar_paciente = Entry(frame_busqueda, width=20,font=("Robot",12))
         self.buscar_paciente.grid(row=0, column=2, padx=5, pady=2, sticky= W)
@@ -793,7 +866,7 @@ class GestionFicha(Frame):
 
         #Frame para los datos del PACIENTE
         self.frame_datos_pacientes = Label(frame_paciente, bg="#c9c2b2", font=("Robot", 10))
-        self.frame_datos_pacientes.pack(pady=10, padx=10, fill="x")
+        self.frame_datos_pacientes.pack(pady=5)
 
         campos_arriba = ["Nombre", "Apellido", "DNI"]
         valores_arriba = list(self.recuperar_paciente(ficha[1]))
@@ -821,11 +894,11 @@ class GestionFicha(Frame):
 
         #Frame para los datos del MEDICO
         frame_medico = LabelFrame(frame_detalles, text="Datos del médico", font=("Robot", 10), bg="#c9c2b2")
-        frame_medico.pack(fill="x", pady=5)
+        frame_medico.pack(fill="x")
 
         #buscador de médico
         frame_busqueda_medico = Frame(frame_medico, bg="#c9c2b2")
-        frame_busqueda_medico.pack(fill="x", pady=5)
+        frame_busqueda_medico.pack(fill="x", pady=5, padx=8)
         Label(frame_busqueda_medico, text="Buscar:", bg="#c9c2b2",font=("Robot", 13)).grid(row=0, column=1, padx=5, pady=2, sticky= W)
         self.buscar_medico = Entry(frame_busqueda_medico, width=20,font=("Robot",12))
         self.buscar_medico.grid(row=0, column=2, padx=5, pady=2, sticky= W)
@@ -839,38 +912,49 @@ class GestionFicha(Frame):
         btn_buscar2.grid(row=0, column=3, sticky= W)
         btn_buscar2.image = img_buscar
 
+        frame_campos_medyfecha = Frame(frame_medico, bg="#c9c2b2")
+        frame_campos_medyfecha.pack(fill="x", pady=5, padx=8)
         #Frame para los datos del medico
-        self.frame_datos_medico = Label(frame_medico, bg="#c9c2b2", font=("Robot", 10))
-        self.frame_datos_medico.pack(pady=10, padx = 10,fill="x")
+        self.frame_datos_medico = Frame(frame_campos_medyfecha, bg="#c9c2b2")
+        self.frame_datos_medico.grid(row = 0, column = 0, pady=5)
 
         campos_medico = ["Nombre del médico", "Apellido del médico", "Matrícula"]
         valores_medico= list(self.recuperar_medico(ficha[4]))
         for m, campo in enumerate(campos_medico):
             Label(self.frame_datos_medico, text=campo + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=m, padx=8, sticky=W)
             entry = Entry(self.frame_datos_medico, width=28, font=("Robot", 12))
-            entry.grid(row=1, column=m, padx=8, sticky=W)
+            entry.grid(row=1, column=m, padx=10, sticky=W)
             entry.insert(0, str(valores_medico[0][m]).upper())
             self.datos_ficha[campo] = entry
             entry.config(state="readonly")
+
+        self.fecha= Frame(frame_campos_medyfecha, bg="#c9c2b2")
+        self.fecha.grid(row=0, column=1, padx=8, sticky=W)
+
+        Label(self.fecha, text="Fecha de consulta" + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).pack(anchor=W, padx=8)
+        self.entry_fecha = Entry(self.fecha, width=20, font=("Robot", 12))
+        self.entry_fecha.pack(anchor=W, padx=10)
+        self.entry_fecha.insert(0, ficha[5])
+        self.datos_ficha["Fecha"] = self.entry_fecha
+        self.entry_fecha.config(state="readonly")
 
         #Frame para los datos del TRATAMIENTOS
         frame_tratamiento = LabelFrame(frame_detalles, text="Tratamiento", font=("Robot", 10), bg="#c9c2b2") 
         frame_tratamiento.pack(fill="x")
 
-        campos_tratamiento = ["Código", "Nombre del procedimiento", "Precio"]
-
         #Tabla para mostar los tratamientos
         frame_tabla_tratamientos = Frame(frame_tratamiento, bg="#c9c2b2", width= 500)  # Frame para contener la tabla y el scrollbar
-        frame_tabla_tratamientos.grid(row= 0, column=0, padx= 20, pady= 10)
+        frame_tabla_tratamientos.grid(row= 0, column=0, padx= 50, pady= 5)
 
-        Label(frame_tabla_tratamientos, text="Tratamientos aplicados", font=("Robot", 12), bg="#c9c2b2").pack(pady=5)
-        
+        campos_tratamiento = ["Código", "Nombre del procedimiento", "Precio"]
+    
+        Label(frame_tabla_tratamientos, text="Tratamientos aplicados", font=("Robot", 12), bg="#c9c2b2").pack(pady=5) 
         estilo = ttk.Style()
-        estilo.configure("Treeview", font=("Robot",10), rowheight=15)  # Cambia la fuente y el alto de las filas
-        estilo.configure("Treeview.Heading", font=("Robot",12), padding= [0, 10])  # Cambia la fuente de las cabeceras
+        estilo.configure("Treeview", font=("Robot",10), rowheight=13)  # Cambia la fuente y el alto de las filas
+        estilo.configure("Treeview.Heading", font=("Robot",12), padding= [0, 8])  # Cambia la fuente de las cabeceras
         
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.arbol_ficha = ttk.Treeview(frame_tabla_tratamientos, columns=("Código", "Nombre", "Precio", "Cantidad"), show='headings', height=10, style = "Treeview")
+        self.arbol_ficha = ttk.Treeview(frame_tabla_tratamientos, columns=("Código", "Nombre", "Precio", "Cantidad"), show='headings', height=14, style = "Treeview")
         self.arbol_ficha.pack(expand=True, fill="both")
 
         #Títulos de columnas
@@ -881,7 +965,7 @@ class GestionFicha(Frame):
 
         #Ancho de las columnas y datos centrados
         self.arbol_ficha.column("Código", anchor='center', width=150, stretch=False)
-        self.arbol_ficha.column("Nombre", anchor='center', width=200, stretch=False)
+        self.arbol_ficha.column("Nombre", anchor='center', width=300, stretch=False)
         self.arbol_ficha.column("Precio", anchor='center', width=200, stretch=False)
         self.arbol_ficha.column("Cantidad", anchor='center', width=100, stretch=False)
 
@@ -931,6 +1015,7 @@ class GestionFicha(Frame):
             btn_buscar2.config(state="normal")
             self.buscar_paciente.config(state="normal")
             self.buscar_medico.config(state="normal")
+            self.entry_fecha.bind("<Button-1>", lambda e: self.abrir_calendario())
 
             btn_guardar = Button(frame_btns, text="Guardar Cambios", width=15, font=("Robot", 13), bg="#e6c885", command=lambda: self.guardar_cambios(self.datos_ficha, ventana, seleccion))
             btn_guardar.grid(row=len(campos), column=0,  padx=40, pady=10)
@@ -1099,62 +1184,6 @@ class GestionFicha(Frame):
                 self.actualizar_treeview()
 
 
-"""
-
-    def guardar_cambios(self, entradas, ventana,seleccion):
-        #base de datos
-        #messagebox.showinfo("Información", "Cambios guardados correctamente.")# Obtener los nuevos valores de todas las entradas
-        nuevos_valores = {campo: entradas[campo].get() for campo in entradas}
-        id_ficha = self.tree.item(seleccion, 'values')[0]
-        
-        try:
-            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
-            cursor = conexion.cursor()
-            query = 
-            UPDATE ficha
-            SET nombre = %s, apellido = %s, dni = %s, obra_social = %s, propietario = %s, telefono = %s, nro_afiliado = %s, nombre_medico = %s, apellido_medico = %s, especialidad = %s, tipo_matricula = %s,
-            matricula = %s, servicio = %s, fecha = %s, codigo = %s, nombre_procedimiento = %s, precio = %s, tipo_tratamiento = %s, siglas = %s
-            WHERE id_ficha = %s
-            cursor.execute(query, (
-                nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["DNI"], nuevos_valores["Obra Social"],
-                nuevos_valores["Propietario del Plan"], nuevos_valores["Teléfono"],
-                nuevos_valores["Número de Afiliado"], nuevos_valores["Nombre del médico"], nuevos_valores["Apellido del médico"],nuevos_valores["Especialidad"],
-                nuevos_valores["Especialidad"],nuevos_valores["Tipo de matrícula"],nuevos_valores["Matrícula"], nuevos_valores["Servicio"],nuevos_valores["Fecha de prestación médica"],
-                nuevos_valores["Código"],nuevos_valores["Nombre del procedimiento"],nuevos_valores["Precio"],nuevos_valores["Tipo de tratamiento"],
-                nuevos_valores["Siglas"], id_ficha
-            ))
-            conexion.commit()
-            
-            # Actualizar los valores en el Treeview
-            self.tree.item(seleccion, values=(id_ficha, *nuevos_valores.values()))
-            
-            # Mostrar mensaje de confirmación
-            messagebox.showinfo("Información", "Cambios guardados correctamente.")
-            
-            # Cerrar la ventana después de guardar
-            ventana.destroy()
-        except mysql.connector.Error as err:
-            messagebox.showerror("Error", f"Error al guardar los cambios: {err}")
-        finally:
-            if conexion.is_connected():
-                cursor.close()
-                conexion.close()
-
-    def cargar_ficha(self):
-        try:
-            conexion = mysql.connector.connect(host="localhost", user="root", password="12345", database="recupero_obra_social")
-            cursor = conexion.cursor()
-            cursor.execute("SELECT id_ficha, nombre, apellido, dni, obra_social FROM ficha")
-            fichas = cursor.fetchall()
-            for ficha in fichas:
-                self.tree.insert("", "end", values=ficha)
-        except mysql.connector.Error as err:
-            messagebox.showerror("Error", f"Error al cargar las fichas: {err}")
-        finally:
-            if conexion.is_connected():
-                cursor.close()
-                conexion.close()
-"""
 ventana = Tk()
 ventana.title("Gestion de Fichas")
 ventana.resizable(False,False)
