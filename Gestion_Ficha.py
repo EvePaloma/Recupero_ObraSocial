@@ -1156,8 +1156,6 @@ class GestionFicha(Frame):
             return
 
         try:
-            nombre = self.datos_ficha["Nombre"].get()      #Obtenemos los valores que el usuario ingresó.
-            apellido = self.datos_ficha["Apellido"].get()
             documento = self.datos_ficha["Documento"].get()
             id_paciente = self.buscar_ids("paciente", documento)[0]
             obra_social = self.datos_ficha["Obra Social"].get()
@@ -1189,6 +1187,7 @@ class GestionFicha(Frame):
         if documento and id_paciente and id_obra_social and nro_afiliado and id_medico and total and fecha:
             if self.ficha_duplicada(id_paciente, id_medico, fecha, tratamientos):
                 messagebox.showwarning("Atención", "Ya existe una ficha con los mismos datos.")
+                ventana.lift()
                 return
             try:
                 cursor = conexion.cursor()
@@ -1232,10 +1231,12 @@ class GestionFicha(Frame):
 
                 conexion.commit()
                 messagebox.showinfo("Información", "Ficha actualizada exitosamente")
+                ventana.destroy()
                 self.actualizar_treeview()
             except Exception as e:
                 conexion.rollback()
                 messagebox.showerror("Error", f"Error al actualizar la ficha: {e}")
+                ventana.lift()
             finally:
                 cursor.close()
                 conexion.close()
