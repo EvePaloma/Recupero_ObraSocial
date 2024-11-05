@@ -76,7 +76,6 @@ class GestionFicha(Frame):
             cursor = conexion.cursor()
             cursor.execute("SELECT * FROM obra_social WHERE id_obra_social = %s", (id,))
             obra_social = cursor.fetchall()
-            print(obra_social)
             return obra_social
         except mysql.connector.Error as error:
             messagebox.showerror("Error", f"No se pudo recuperar la obra social: {error}")
@@ -101,7 +100,6 @@ class GestionFicha(Frame):
             resultado = cursor.fetchall()
             cursor.close()
             conexion.close()
-            print(resultado)
             return resultado[0]
         except mysql.connector.Error as err:
             messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}. Error 2")
@@ -114,7 +112,6 @@ class GestionFicha(Frame):
     #busca un elemento en la base de datos
     def obtener_unico(self, elemento, tabla):
         conexion = obtener_conexion()
-        print(elemento)
         try:
             cursor = conexion.cursor()
             if tabla == "paciente":
@@ -738,7 +735,6 @@ class GestionFicha(Frame):
                 ventana.lift()
                 return
             resultado = self.buscar_elemento_tabla(elemento, "paciente")
-            print(resultado[0])
             if resultado[0] == 0:
                 messagebox.showwarning("Atención", "No se encontró ningún paciente con ese Documento.")
                 ventana.lift()
@@ -747,7 +743,6 @@ class GestionFicha(Frame):
                 valores = self.obtener_unico(elemento, "paciente")
                 campos_arriba = ["Nombre", "Apellido", "Documento"]
                 campos_abajo = ["Obra Social", "Número de Afiliado"]
-                print(valores)
                 self.datos_ficha["Id_paciente"] = valores[0]
                 for i, campos_arriba in enumerate(campos_arriba):
                     Label(self.frame_datos_pacientes, text=campos_arriba + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=i, padx=10, sticky=W)
@@ -766,9 +761,7 @@ class GestionFicha(Frame):
                     entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
                     entry.grid(row=3, column=j, padx=10)
                     if campos_abajo == "Obra Social":
-                        print(valores[5])
                         nombre = self.conexion_bd_os(valores[5])
-                        print(nombre)
                         entry.insert(0, nombre[0][1])
                         self.datos_ficha[campos_abajo] = valores[5]  #guarda el id de la obra social
                     elif campos_abajo == "Número de Afiliado":
@@ -818,7 +811,7 @@ class GestionFicha(Frame):
             precio = self.arbol_ficha.item(child, 'values')[2]
             cantidad = self.arbol_ficha.item(child, 'values')[3]
             total += float(precio) * int(cantidad)
-        self.total_var.set(f"${total:.2f}")
+        self.total_var.set(f"{total:.2f}")
     def agregar_tratamiento_a_ficha(self):
         # Obtener el elemento seleccionado
         selected_item = self.tree_tratamiento.selection()
@@ -834,7 +827,6 @@ class GestionFicha(Frame):
                     self.ventana_tratamientos.lift()
                     return
             # Agregar el elemento al Treeview de la ficha
-            print(id_tratamiento, item_values, cantidad)
             self.arbol_ficha.insert("", "end", iid = id_tratamiento ,values= (item_values[1], item_values[0], item_values[2], cantidad))
             self.actualizar_total_precios()
     def eliminar_tratamiento_a_ficha(self):
@@ -1168,8 +1160,8 @@ class GestionFicha(Frame):
             apellido = self.datos_ficha["Apellido"].get()
             documento = self.datos_ficha["Documento"].get()
             id_paciente = self.buscar_ids("paciente", documento)[0]
-            obra_social = self.datos_ficha["Obra Social"]
-            id_obra_social = self.datos_ficha["Obra Social"]
+            obra_social = self.datos_ficha["Obra Social"].get()
+            id_obra_social = self.buscar_ids("obra_social", obra_social)[0]
             nro_afiliado = self.datos_ficha["Número de Afiliado"].get()
         except KeyError as e:
             messagebox.showwarning("Atención", "Complete todos los campos del paciente")
@@ -1183,7 +1175,6 @@ class GestionFicha(Frame):
             return
         try:
             total = self.total_var.get()
-            print(total)
             fecha = self.entry_fecha.get()
         except KeyError as e:
             messagebox.showwarning("Atención", "Complete todos los campos de la consulta")
@@ -1259,7 +1250,6 @@ class GestionFicha(Frame):
             return
         
         id_ficha = seleccion[0]  # Asumiendo que el ID es el primer valor
-        print(id_ficha)
         
         #Pregunta al usuario si está seguro de eliminar 
         respuesta = messagebox.askyesno("Confirmar Eliminación", "¿Está seguro de que desea eliminar la ficha seleccionada?")
