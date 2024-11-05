@@ -36,6 +36,38 @@ class GestionFicha(Frame):
         if not char:
             return True
         return bool(re.match(r'[a-zA-Z0-9 ]', char))
+    # Función para verificar si una ficha ya existe
+    def ficha_duplicada(self, id_paciente, id_medico, fecha, tratamientos):
+        conexion = obtener_conexion()
+        try:
+            cursor = conexion.cursor()
+            # Verificar si ya existe una ficha con los mismos datos de paciente, médico y fecha
+            sql = "SELECT id_ficha FROM ficha WHERE id_paciente = %s AND id_medico = %s AND fecha = %s"
+            cursor.execute(sql, (id_paciente, id_medico, fecha))
+            ficha_existente = cursor.fetchone()
+            
+            if ficha_existente:
+                id_ficha_existente = ficha_existente[0]
+                # Verificar si los tratamientos son los mismos
+                sql = "SELECT id_tratamiento, cantidad FROM detalle_ficha WHERE id_ficha = %s"
+                cursor.execute(sql, (id_ficha_existente,))
+                tratamientos_existentes = cursor.fetchall()
+                
+                if len(tratamientos) != len(tratamientos_existentes):
+                    return False
+                
+                for tratamiento in tratamientos:
+                    if tratamiento not in tratamientos_existentes:
+                        return False
+                
+                return True
+            return False
+        except mysql.connector.Error as error:
+            messagebox.showerror("Error", f"No se pudo verificar la ficha duplicada: {error}")
+            return False
+        finally:
+            cursor.close()
+            conexion.close()
     #CONEXIONES CON BASE DE DATOS
     #recupera obras sociales utilizando id
     def conexion_bd_os(self, id):
@@ -201,6 +233,34 @@ class GestionFicha(Frame):
             conexion.close()
     
     #FUNCIONES QUE SE UTILIZAN
+    #limpair todos los campos en la ficha
+    def limpiar_campos(self):
+        # Limpiar los campos de datos del paciente
+        for campo in self.frame_datos_pacientes.winfo_children():
+            if isinstance(campo, Entry):
+                campo.config(state="normal")
+                campo.delete(0, END)
+                campo.config(state="readonly")
+        
+        # Limpiar los campos de datos del médico
+        for campo in self.frame_datos_medico.winfo_children():
+            if isinstance(campo, Entry):
+                campo.config(state="normal")
+                campo.delete(0, END)
+                campo.config(state="readonly")
+        
+        # Limpiar el campo de fecha
+        self.entry_fecha.config(state="normal")
+        self.entry_fecha.delete(0, END)
+        self.entry_fecha.config(state="readonly")
+        
+        # Limpiar el Treeview de tratamientos
+        for item in self.arbol_ficha.get_children():
+            self.arbol_ficha.delete(item)
+        
+        # Resetear el total
+        self.total_var.set("")
+
     #coloca valores en los entrys de busqueda para que el usuario sepa que hacer
     def limpiar_marcador(self, entry):
         if entry.get() == "DOCUMENTO" or entry.get() == "MATRÍCULA":
@@ -453,11 +513,11 @@ class GestionFicha(Frame):
         stilo.configure("Inicio.Treeview.Heading", font=("Robot",14), padding= [0, 5])  # Cambia la fuente de las cabeceras
         
         #Treeview para mostrar la tabla de tratamientos dentro del frame_tabla
-        self.tree = ttk.Treeview(frame_tabla, columns=("DNI", "Nombre" ,"Apellido", "Obra Social", "Fecha prestación", "Total"), show='headings', height=15, style = "Inicio.Treeview")
+        self.tree = ttk.Treeview(frame_tabla, columns=("Documento", "Nombre" ,"Apellido", "Obra Social", "Fecha prestación", "Total"), show='headings', height=15, style = "Inicio.Treeview")
         self.tree.grid(row=0, column=0, sticky="nsew")
 
         #Títulos de columnas
-        self.tree.heading("DNI", text="DNI")
+        self.tree.heading("Documento", text="Documento")
         self.tree.heading("Nombre", text="Nombre")
         self.tree.heading("Apellido", text="Apellido")
         self.tree.heading("Obra Social", text="Obra Social")
@@ -465,7 +525,7 @@ class GestionFicha(Frame):
         self.tree.heading("Total", text="Total")
 
         #Ancho de las columnas y datos centrados
-        self.tree.column("DNI", anchor='center', width=130)
+        self.tree.column("Documento", anchor='center', width=130)
         self.tree.column("Nombre", anchor='center', width=230)
         self.tree.column("Apellido", anchor='center', width=230)
         self.tree.column("Obra Social", anchor='center', width=300)
@@ -540,7 +600,7 @@ class GestionFicha(Frame):
         self.frame_datos_pacientes = Frame(frame_paciente, bg="#c9c2b2")
         self.frame_datos_pacientes.pack(pady=5)
 
-        campos_arriba = ["Nombre", "Apellido", "DNI"]
+        campos_arriba = ["Nombre", "Apellido", "Documento"]
         campos_abajo = ["Obra Social", "Número de Afiliado"]
         for i, campos_arriba in enumerate(campos_arriba):
             Label(self.frame_datos_pacientes, text=campos_arriba + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=i, padx=10, sticky=W)
@@ -660,9 +720,9 @@ class GestionFicha(Frame):
         btn_guardar_ficha = Button(frame_botones, text="Guardar", font=("Robot", 15),bg="#e6c885", width= 15, command= lambda: self.guardar_nueva_ficha(self.datos_ficha, self.ventana_agregar))
         btn_guardar_ficha.grid(row = 0, column=0, columnspan=2, padx=20, pady=10)
 
-        """btn_limpiar = Button(frame_botones, text="Limpiar", font=("Robot", 15),bg="#e6c885", width=15, command= self.limpiar_campos)
+        btn_limpiar = Button(frame_botones, text="Limpiar", font=("Robot", 15),bg="#e6c885", width=15, command= self.limpiar_campos)
         btn_limpiar.grid(row = 0, column=2, columnspan=2, padx=20, pady=10)
-        """
+        
         btn_volver = Button(frame_botones, text="Volver", font=("Robot", 15),bg="#e6c885", width=15, command= self.volver_inicio)
         btn_volver.grid(row = 0, column=4, columnspan=2, padx=20, pady=10)
     #completa las entradas en la ficha al buscar el elemento
@@ -670,22 +730,22 @@ class GestionFicha(Frame):
         if tabla == "paciente":
             elemento = self.buscar_paciente.get()
             if not elemento:
-                messagebox.showwarning("Atención", "Ingrese un DNI para buscar.")
+                messagebox.showwarning("Atención", "Ingrese un Documento para buscar.")
                 ventana.lift()
                 return
             if not elemento.isdigit():
-                messagebox.showwarning("Atención", "Ingrese un DNI válido.")
+                messagebox.showwarning("Atención", "Ingrese un Documento válido.")
                 ventana.lift()
                 return
             resultado = self.buscar_elemento_tabla(elemento, "paciente")
             print(resultado[0])
             if resultado[0] == 0:
-                messagebox.showwarning("Atención", "No se encontró ningún paciente con ese DNI.")
+                messagebox.showwarning("Atención", "No se encontró ningún paciente con ese Documento.")
                 ventana.lift()
                 return
             elif resultado[0] == 1:
                 valores = self.obtener_unico(elemento, "paciente")
-                campos_arriba = ["Nombre", "Apellido", "DNI"]
+                campos_arriba = ["Nombre", "Apellido", "Documento"]
                 campos_abajo = ["Obra Social", "Número de Afiliado"]
                 print(valores)
                 self.datos_ficha["Id_paciente"] = valores[0]
@@ -693,7 +753,7 @@ class GestionFicha(Frame):
                     Label(self.frame_datos_pacientes, text=campos_arriba + ":", bg="#c9c2b2", font=("Robot", 12), justify=LEFT).grid(row=0, column=i, padx=10, sticky=W)
                     entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
                     entry.grid(row=1, column=i, padx=10)
-                    if campos_arriba == "DNI":
+                    if campos_arriba == "Documento":
                         entry.insert(0, valores[4])
                     elif campos_arriba == "Nombre":
                         entry.insert(0, valores[1])
@@ -719,7 +779,7 @@ class GestionFicha(Frame):
                 if valores is None:
                     return
             else:
-                messagebox.showwarning("Atención", "Se encontraron varios pacientes con ese DNI.")
+                messagebox.showwarning("Atención", "Se encontraron varios pacientes con ese Documento.")
                 ventana.lift()
                 return            
         elif tabla == "medico":
@@ -794,7 +854,7 @@ class GestionFicha(Frame):
             id_paciente = self.datos_ficha["Id_paciente"]
             nombre = entry["Nombre"].get()      #Obtenemos los valores que el usuario ingresó.
             apellido = entry["Apellido"].get()
-            dni = entry["DNI"].get()
+            documento = entry["Documento"].get()
             obra_social = self.datos_ficha["Obra Social"]
             nro_afiliado = entry["Número de Afiliado"].get()
         except KeyError as e:
@@ -814,8 +874,17 @@ class GestionFicha(Frame):
             messagebox.showwarning("Atención", "Complete todos los campos de la consulta")
             return
 
+        # Obtener los tratamientos de la ficha
+        tratamientos = []
+        for child in self.arbol_ficha.get_children():
+            tratamiento = self.arbol_ficha.item(child, 'values')
+            tratamientos.append((int(child), int(tratamiento[3])))
+
         # Validar datos y agregar al Treeview
-        if nombre and apellido and dni and obra_social and nro_afiliado and nombre_medico and apellido_medico and matricula and total and fecha:
+        if nombre and apellido and documento and obra_social and nro_afiliado and nombre_medico and apellido_medico and matricula and total and fecha:
+            if self.ficha_duplicada(id_paciente, id_medico, fecha, tratamientos):
+                messagebox.showwarning("Atención", "Ya existe una ficha con los mismos datos.")
+                return
             try:
                 cursor = conexion.cursor()
                 sql = "INSERT INTO ficha (id_paciente, id_obra_social, nro_afiliado ,id_medico, fecha, total) VALUES (%s, %s, %s, %s, %s, %s)"
@@ -832,7 +901,7 @@ class GestionFicha(Frame):
                     cursor.execute(sql, val)
                     conexion.commit()
                 messagebox.showinfo("Información", "Ficha agregada exitosamente")
-                self.tree.insert("", 0, values=(dni, nombre, apellido, obra_social, fecha, total))
+                self.tree.insert("", 0, values=(documento, nombre, apellido, obra_social, fecha, total))
                 self.volver_inicio()
                 self.actualizar_treeview()
             except mysql.connector.Error as err:
@@ -932,7 +1001,7 @@ class GestionFicha(Frame):
         self.frame_datos_pacientes = Label(frame_paciente, bg="#c9c2b2", font=("Robot", 10))
         self.frame_datos_pacientes.pack(pady=5)
 
-        campos_arriba = ["Nombre", "Apellido", "DNI"]
+        campos_arriba = ["Nombre", "Apellido", "Documento"]
         valores_arriba = list(self.recuperar_paciente(ficha[1]))
         campos_abajo = ["Obra Social", "Número de Afiliado"]
         obra_social = self.conexion_bd_os(ficha[2])
@@ -1094,18 +1163,46 @@ class GestionFicha(Frame):
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
 
-        dni = self.datos_ficha["DNI"].get()
-        id_paciente = self.buscar_ids("paciente", dni)[0]
-        id_obra_social = self.buscar_ids("obra_social", self.datos_ficha["Obra Social"].get())[0]
-        nro_afiliado = self.datos_ficha["Número de Afiliado"].get()
-        id_medico = self.buscar_ids("medico", self.datos_ficha["Matrícula"].get())[0]
-        total = self.total_var.get()
+        try:
+            nombre = self.datos_ficha["Nombre"].get()      #Obtenemos los valores que el usuario ingresó.
+            apellido = self.datos_ficha["Apellido"].get()
+            documento = self.datos_ficha["Documento"].get()
+            id_paciente = self.buscar_ids("paciente", documento)[0]
+            obra_social = self.datos_ficha["Obra Social"]
+            id_obra_social = self.datos_ficha["Obra Social"]
+            nro_afiliado = self.datos_ficha["Número de Afiliado"].get()
+        except KeyError as e:
+            messagebox.showwarning("Atención", "Complete todos los campos del paciente")
+        try:
+            id_medico = self.buscar_ids("medico", self.datos_ficha["Matrícula"].get())[0]
+            nombre_medico = self.datos_ficha["Nombre del médico"].get()
+            apellido_medico = self.datos_ficha["Apellido del médico"].get()
+            matricula = self.datos_ficha ["Matrícula"].get()
+        except KeyError as e:
+            messagebox.showwarning("Atención", "Complete todos los campos del médico")
+            return
+        try:
+            total = self.total_var.get()
+            print(total)
+            fecha = self.entry_fecha.get()
+        except KeyError as e:
+            messagebox.showwarning("Atención", "Complete todos los campos de la consulta")
+            return
 
-        if dni and id_paciente and id_obra_social and nro_afiliado and id_medico and total:
+        # Obtener los tratamientos de la ficha
+        tratamientos = []
+        for child in self.arbol_ficha.get_children():
+            tratamiento = self.arbol_ficha.item(child, 'values')
+            tratamientos.append((int(child), int(tratamiento[3])))
+
+        if documento and id_paciente and id_obra_social and nro_afiliado and id_medico and total and fecha:
+            if self.ficha_duplicada(id_paciente, id_medico, fecha, tratamientos):
+                messagebox.showwarning("Atención", "Ya existe una ficha con los mismos datos.")
+                return
             try:
                 cursor = conexion.cursor()
                 sql1 = "UPDATE ficha SET id_paciente = %s, id_obra_social = %s, nro_afiliado = %s, id_medico = %s, fecha = %s, total = %s WHERE id_ficha = %s"
-                val1 = (id_paciente, id_obra_social, nro_afiliado, id_medico, datetime.now(), total, seleccion)
+                val1 = (id_paciente, id_obra_social, nro_afiliado, id_medico, fecha, total, seleccion)
                 cursor.execute(sql1, val1)
 
                 # Obtener los tratamientos actuales de la ficha
@@ -1191,14 +1288,14 @@ class GestionFicha(Frame):
             self.actualizar_treeview()
             return
 
-        #evalua los dni que contengan ese número
+        #evalua los documento que contengan ese número
         if busqueda.isdigit():
             tratamiento_encontrado = False
             for item in self.tree.get_children():
                 valores = self.tree.item(item, 'values')
-                dni = valores[0]
+                documento = valores[0]
 
-                if busqueda in dni:
+                if busqueda in documento:
                     tratamiento_encontrado = True
                 else:
                     self.tree.delete(item)
