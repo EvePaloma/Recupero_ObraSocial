@@ -257,7 +257,6 @@ class GestionFicha(Frame):
         
         # Resetear el total
         self.total_var.set("")
-
     #coloca valores en los entrys de busqueda para que el usuario sepa que hacer
     def limpiar_marcador(self, entry):
         if entry.get() == "DOCUMENTO" or entry.get() == "MATRÍCULA":
@@ -1154,12 +1153,11 @@ class GestionFicha(Frame):
         if conexion is None:
             messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
             return
-
+        
         try:
             documento = self.datos_ficha["Documento"].get()
             id_paciente = self.buscar_ids("paciente", documento)[0]
-            obra_social = self.datos_ficha["Obra Social"].get()
-            id_obra_social = self.buscar_ids("obra_social", obra_social)[0]
+            id_obra_social = self.datos_ficha["Obra Social"]
             nro_afiliado = self.datos_ficha["Número de Afiliado"].get()
         except KeyError as e:
             messagebox.showwarning("Atención", "Complete todos los campos del paciente")
@@ -1312,9 +1310,6 @@ class GestionFicha(Frame):
                 messagebox.showwarning("Atención", "No se encontró la ficha.")
                 self.tree.delete(*self.tree.get_children())
                 self.actualizar_treeview()
-
-    #FUNCIONES EXTRA
-    #AGREGAR PACIENTE  
 
 ventana = Tk()
 ventana.title("Gestion de Fichas")
