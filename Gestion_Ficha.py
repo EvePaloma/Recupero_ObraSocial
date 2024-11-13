@@ -446,6 +446,7 @@ class GestionFicha(Frame):
         cursor.close()
         conexion.close()
     
+
     #CREACION DE INTERFAZ Y MODIFICACIONES EN LA BASE DE DATOS
     #Función para generar el inicio
     def createWidgets(self):
@@ -905,7 +906,7 @@ class GestionFicha(Frame):
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
 
-    #Ver obra social seleccionada
+    #VER obra social seleccionada
     def ver_ficha(self):
         seleccion = self.tree.selection()
         if not seleccion:
@@ -924,7 +925,7 @@ class GestionFicha(Frame):
             self.abrir_ventana_ficha(ficha_reducida, modo="ver", seleccion=id_seleccionado)  # Excluimos el ID
         else:
             messagebox.showerror("Error", "No se pudo obtener el obra_social.")
-    #funcion para modificar ficha
+    #funcion para MODIFICAR ficha
     def modificar_ficha(self):
         seleccion = self.tree.selection()
         if not seleccion:
@@ -1242,7 +1243,7 @@ class GestionFicha(Frame):
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
 
-    #Funciones para eliminar las fichas, y los detalles de la misma
+    #Funciones para ELIMINAR las fichas, y los detalles de la misma
     def eliminar_ficha(self):
         seleccion = self.tree.selection()
         if not seleccion:
@@ -1270,7 +1271,7 @@ class GestionFicha(Frame):
                 if conexion.is_connected():
                     cursor.close()
                     conexion.close()
-    #Funciones para buscar fichas en la base de datos
+    #Funciones para BUSCAR fichas en la base de datos
     def buscar_ficha(self):
         busqueda = self.entrada_buscar.get().strip().upper() 
         if not busqueda:
