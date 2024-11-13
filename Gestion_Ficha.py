@@ -16,6 +16,7 @@ class GestionFicha(Frame):
         self.pack(expand=True)
         self.createWidgets()
         self.actualizar_treeview()
+        self.ventana_agregar_medico = None
 
     #Funcion para volver al menú principal
     def volver_menu_principal(self):
@@ -634,7 +635,7 @@ class GestionFicha(Frame):
         frame_busqueda_medico.columnconfigure(4, weight=2)
         frame_busqueda_medico.columnconfigure(5, weight=2)
 
-        btn_nuevo_medico = Button(frame_busqueda_medico, text="Nuevo Médico", font=("Robot", 11, "bold"),bg="#e6c885", width = 15)
+        btn_nuevo_medico = Button(frame_busqueda_medico, text="Nuevo Médico", font=("Robot", 11, "bold"),bg="#e6c885", width = 15, command= self.agregar_medico)
         btn_nuevo_medico.grid(row = 0, column=6, padx=15)
 
         frame_campos_medyfecha = Frame(frame_medico, bg="#c9c2b2")
@@ -1310,6 +1311,112 @@ class GestionFicha(Frame):
                 messagebox.showwarning("Atención", "No se encontró la ficha.")
                 self.tree.delete(*self.tree.get_children())
                 self.actualizar_treeview()
+
+    #Funciones para nuevo médico
+    def agregar_medico(self):
+        def solo_letras(char):
+            return char.isalpha() or char == " "
+        def solo_numeros(char):
+            return char.isdigit()
+
+        # Verifica si la ventana ya está abierta
+        if self.ventana_agregar_medico is not None and Toplevel.winfo_exists(self.ventana_agregar_medico):
+            self.ventana_agregar_medico.destroy()
+        self.ventana_agregar_medico = Toplevel(self)
+        self.ventana_agregar_medico.title("Agregar medico")
+        self.ventana_agregar_medico.config(bg="#e4c09f")
+        self.ventana_agregar_medico.geometry("+200+180")
+        self.ventana_agregar_medico.resizable(False, False)
+        self.ventana_agregar_medico.protocol("WM_DELETE_WINDOW", lambda: None)
+
+        frame_agregar = LabelFrame(self.ventana_agregar_medico, text="Agregar Nuevo medico",font=("Robot", 12), padx=10,pady=10,bg="#c9c2b2")
+        frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+        campos = ["Nombre", "Apellido", "DNI", "Telefono", "Matricula"]
+        entradas = {}
+
+        vcmd_letras = self.ventana_agregar_medico.register(solo_letras)
+        vcmd_numeros = self.ventana_agregar_medico.register(solo_numeros)
+
+        for i, campo in enumerate(campos):  # Devuelve índice y valor de cada elemento
+            etiquetas = Label(
+                frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Robot", 10)
+            )
+            etiquetas.grid(row=i, column=0, padx=10, pady=5)
+            entry = Entry(frame_agregar, width=40, font=("Robot", 10))
+            if campo in ["Nombre", "Apellido"]:
+                entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
+            elif campo in ["DNI", "Telefono"]:
+                entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
+            entry.grid(row=i, column=1, padx=10, pady=5)
+            entradas[campo] = entry
+
+        frame_btns = Frame(self.ventana_agregar_medico, bg="#e4c09f")
+        frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+
+        btn_nuevo_tratamiento = Button(frame_btns, text="Agregar", font=("Robot", 13),bg="#e6c885", width=15, command=lambda:self.guardar_nuevo_medico(entradas,ventana_agregar))
+        btn_nuevo_tratamiento.grid(row=len(campos), column=0, padx=40, pady=10)
+
+        btn_volver = Button(frame_btns, text="Volver", font=("Robot", 13),bg="#e6c885", width=15, command=self.ventana_agregar_medico.destroy)
+        btn_volver.grid(row=len(campos), column=1, pady=10)
+    def guardar_nuevo_medico(self, entradas, ventana):
+        def validar_repetidos(documento):
+            conexion = obtener_conexion()
+            if conexion is None:
+                messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+                return
+            try:
+                cursor = conexion.cursor()
+                sentencia = "SELECT COUNT(*) FROM medico WHERE documento = %s"
+                cursor.execute(sentencia, (documento,))
+                resultado = cursor.fetchone()
+                cursor.close()
+                conexion.close()
+                if resultado[0] > 0:
+                    return False
+                return True
+            except mysql.connector.Error as err:
+                messagebox.showerror("Error de Consulta", f"No se pudo realizar la consulta a la base de datos: {err}")
+                if cursor:
+                    cursor.close()
+                if conexion:
+                    conexion.close()
+                messagebox.showerror("Error", "No se pudo conectar a la base de datos.")
+                return
+        def insertar_medico(nombre, apellido, matricula, telefono, documento):
+            conexion = obtener_conexion()
+            if conexion is None:
+                return
+            try:
+                cursor = conexion.cursor()
+                sql = "INSERT INTO medico (nombre, apellido, matricula, telefono, documento) VALUES (%s, %s, %s, %s, %s)"
+                val = (nombre, apellido, matricula, telefono, documento)
+                cursor.execute(sql, val)
+                conexion.commit()
+                #messagebox.showinfo("Éxito", "Registro insertado correctamente.")
+            except mysql.connector.Error as err:
+                messagebox.showerror("Error", f"Error al insertar en la base de datos: {err}")
+            finally:
+                conexion.close()
+        nombre = entradas["Nombre"].get()
+        apellido = entradas["Apellido"].get()
+        dni = entradas["DNI"].get()
+        telefono = entradas["Telefono"].get()
+        matricula = entradas["Matricula"].get()
+
+        if not validar_repetidos(dni):
+            messagebox.showwarning("Atención", "El documento ya está registrado.")
+            return
+
+        if nombre and apellido and dni and telefono and matricula:
+            try:
+                insertar_medico(nombre, apellido, matricula, telefono, dni)
+                messagebox.showinfo("Información", "Médico agregado correctamente.")
+                ventana.destroy()
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo agregar el médico: {e}")
+        else:
+            messagebox.showwarning("Atención", "Complete todos los campos.")
 
 ventana = Tk()
 ventana.title("Gestion de Fichas")
