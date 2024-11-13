@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 import mysql.connector
 from ConexionBD import *
 import mysql
+from Gestion_obra_social import *
 #import mysql.connector as mysql_connector
 
 class GestionPaciente(Frame):
@@ -312,13 +313,22 @@ class GestionPaciente(Frame):
         etiqueta_estado.grid(row=len(campos), column=0, padx=10, pady=5)
         combo_estado = ttk.Combobox(frame_detalles, values=["Activo", "Inactivo"], width=37)
         combo_estado.grid(row=len(campos), column=1, padx=10, pady=5)
-        combo_estado.set("Activo" if valores[6] == 1 else "Inactivo")
+        combo_estado.set("Activo" if valores[5] == 1 else "Inactivo")
         entradas["Estado"] = combo_estado
+
+        # ComboBox para Obra Social
+        '''etiqueta_obra_social = Label(frame_detalles, text="Obra Socials:", bg="#c9c2b2", font=("Roboto", 10))
+        etiqueta_obra_social.grid(row=len(campos), column=0, padx=10, pady=50)
+        combo_obra_social = ttk.Combobox(frame_detalles, values=["OSDE", "Swiss Medical", "Galeno", "Medifé", "Sancor Salud", "Otra"], width=37)
+        combo_obra_social.grid(row=len(campos), column=1, padx=30, pady=35)
+        combo_obra_social.set("Seleccionar obra social")
+        entradas["Obra Social"] = combo_obra_social'''
 
         if modo == "ver":
             for entry in entradas.values():
                 entry.config(state="readonly")
             combo_estado.config(state="readonly")
+            #combo_obra_social.config(state="readonly")
             if campo in ["Nombre","Apellido","Obra Social"]:
                 entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
             elif campo in ["Tipo de Documento","DNI"]:
@@ -453,6 +463,14 @@ class GestionPaciente(Frame):
 
         vcmd_letras = ventana_agregar.register(self.solo_letras)
         vcmd_numeros = ventana_agregar.register(self.solo_numeros)
+
+                # ComboBox para Obra Social
+        etiqueta_obra_social = Label(frame_agregar, text="Obra Socials:", bg="#c9c2b2", font=("Roboto", 10))
+        etiqueta_obra_social.grid(row=len(campos), column=0, padx=10, pady=50)
+        combo_obra_social = ttk.Combobox(frame_agregar, values= ["OSDE", "Swiss Medical", "Galeno", "Medifé", "Sancor Salud", "Otra"], width=37)
+        combo_obra_social.grid(row=len(campos), column=1, padx=10, pady=35)
+        combo_obra_social.set("Seleccionar obra social") 
+        entradas["Obra Social"] = combo_obra_social
 
         for i, campo in enumerate(campos):
             etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Roboto", 10))
