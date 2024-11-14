@@ -282,6 +282,10 @@ class GestionPaciente(Frame):
             cursor.execute("SELECT nombre, apellido, tipo_documento, documento, id_obra_social, nro_afiliado, activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
             valores = cursor.fetchone()
 
+            # Obtener el estado actual del paciente
+            cursor.execute("SELECT activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
+            estado_actual = cursor.fetchone()[0]
+
             # Obtener el nombre de la obra social
             cursor.execute("SELECT nombre FROM obra_social WHERE id_obra_social = %s", (valores[4],))
             obra_social_nombre = cursor.fetchone()[0]
@@ -310,6 +314,7 @@ class GestionPaciente(Frame):
                 combobox = ttk.Combobox(frame_detalles, values=obras_sociales, font=("Roboto", 10))
                 combobox.grid(row=i, column=1, padx=10, pady=5)
                 entradas[campo] = combobox
+
             else:
                 entry = Entry(frame_detalles, width=40, font=("Roboto", 10))
                 entry.grid(row=i, column=1, padx=10, pady=5)
