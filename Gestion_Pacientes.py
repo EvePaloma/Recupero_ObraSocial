@@ -345,9 +345,9 @@ class GestionPaciente(Frame):
         if modo == "ver":
             for entry in entradas.values():
                 entry.config(state="readonly")
-                combobox.config(state="readonly")
-            combo_estado.config(state="readonly")
-            #combo_obra_social.config(state="readonly")
+                combobox.config(state="disabled")
+                combo_estado.config(state="disabled")
+
             if campo in ["Nombre","Apellido","Obra Social"]:
                 entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
             elif campo in ["Tipo de Documento","DNI"]:
