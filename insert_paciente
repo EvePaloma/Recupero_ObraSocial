@@ -1,10 +1,44 @@
 use recupero_obra_social;
-INSERT INTO paciente (nombre, apellido, dni, obrasocial, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado) 
-            VALUES ("María"," Pérez", "203845629", "Osim", "Osecac", "María Pérez", "12-05-1970", "Femenino", "3541283650", "351875389", "123"),
-             ("Juan"," Pérez", "423456789", "Osecac", "Osim", "Juan Pérez", "10-01-2000", "Masculino", "3541283650", "María Pérez", "203845629"),
-             ("Pedro","Gómez", "403845629", "Ace", "Osecac", "Pedro Gómez", "12-05-1999", "Masculino", "3541283650", "Juan Pérez", "123456789"),
-             ("Ana","López", "323456789", "Panaderos", "Osim", "Ana López", "27-12-1990", "Femenino", "3541283650", "María Pérez", "203845629");
-
+INSERT INTO paciente (nombre, apellido, documento, obrasocial, numeroafiliado) 
+            VALUES ("María"," Pérez", "203845629", "Osim", "123"),
+             ("Juan"," Pérez", "423456789", "Osecac","203845629"),
+             ("Pedro","Gómez", "403845629", "Galeno",  "123456789"),
+             ("Ana","López", "323456789", "Pami", "203845629"),
+            ("Lucía","Martínez", "503845629", "Swiss Medical", "987654321"),
+            ("Carlos","Fernández", "623456789", "Medife", "876543210"),
+            ("Sofía","García", "703845629", "Osde", "765432109"),
+            ("Miguel","Rodríguez", "823456789", "Omint", "654321098"),
+            ("Luis","Pérez", "903845629", "Osim", "543210987"),
+            ("Laura","Hernández", "123456780", "Osecac","654321098"),
+            ("Diego","Martínez", "223456789", "Galeno",  "765432109"),
+            ("Valeria","Gómez", "323456780", "Pami", "876543210"),
+            ("Jorge","López", "423456789", "Swiss Medical", "987654321"),
+            ("Elena","Martínez", "523456780", "Medife", "098765432"),
+            ("Roberto","Fernández", "623456789", "Osde", "109876543"),
+            ("Natalia","García", "723456780", "Omint", "210987654"),
+            ("Luis","Rodríguez", "823456789", "Osim", "321098765"),
+            ("Andrea","Pérez", "923456780", "Osecac","432109876"),
+            ("Sergio","Gómez", "103456789", "Galeno",  "543210987"),
+            ("Marta","López", "203456780", "Pami", "654321098"),
+            ("Pablo","Martínez", "303456789", "Swiss Medical", "765432109"),
+            ("Clara","Fernández", "403456780", "Medife", "876543210"),
+            ("Hugo","García", "503456789", "Osde", "987654321"),
+            ("Isabel","Rodríguez", "603456780", "Omint", "098765432"),
+            ("Laura","Hernández", "903845629", "Osim", "543210987"),
+            ("Diego","Martínez", "123456780", "Osecac","654321098"),
+            ("Valeria","Gómez", "223456789", "Galeno",  "765432109"),
+            ("Jorge","López", "323456780", "Pami", "876543210"),
+            ("Elena","Martínez", "423456789", "Swiss Medical", "987654321"),
+            ("Roberto","Fernández", "523456780", "Medife", "098765432"),
+            ("Natalia","García", "623456789", "Osde", "109876543"),
+            ("Luis","Rodríguez", "723456780", "Omint", "210987654"),
+            ("Andrea","Pérez", "823456789", "Osim", "321098765"),
+            ("Sergio","Gómez", "923456780", "Osecac","432109876"),
+            ("Marta","López", "103456789", "Galeno",  "543210987"),
+            ("Pablo","Martínez", "203456780", "Pami", "654321098"),
+            ("Clara","Fernández", "303456789", "Swiss Medical", "765432109"),
+            ("Hugo","García", "403456780", "Medife", "876543210"),
+            ("Isabel","Rodríguez", "503456789", "Osde", "987654321");
 
 select * from paciente;
 

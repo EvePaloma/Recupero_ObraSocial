@@ -345,6 +345,7 @@ class GestionPaciente(Frame):
         if modo == "ver":
             for entry in entradas.values():
                 entry.config(state="readonly")
+                combobox.config(state="readonly")
             combo_estado.config(state="readonly")
             #combo_obra_social.config(state="readonly")
             if campo in ["Nombre","Apellido","Obra Social"]:
