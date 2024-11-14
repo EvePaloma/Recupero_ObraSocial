@@ -259,13 +259,13 @@ class GestionPaciente(Frame):
         ventana_abrir.title("Detalles del paciente")
         ventana_abrir.config(bg="#e4c09f")
         ventana_abrir.resizable(False, False)
-        ventana_abrir.geometry("510x445+400+160")
+        ventana_abrir.geometry("510x380+400+160")
         ventana_abrir.protocol("WM_DELETE_WINDOW", lambda: None)  # Deshabilitar el botón "Cerrar" de la ventana
 
         ventana_abrir.grid_columnconfigure(0, weight=1)
         ventana_abrir.grid_rowconfigure(0, weight=1)
 
-        frame_detalles = LabelFrame(ventana_abrir, text="Detalles del Paciente", font=("Roboto", 13), padx=10, pady=10, bg="#c9c2b2")
+        frame_detalles = LabelFrame(ventana_abrir, text="Detalles del Paciente", font=("Roboto", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         campos = ["Nombre", "Apellido", "Tipo de Documento", "DNI", "Obra Social", "Número de Afiliado"]
@@ -373,7 +373,7 @@ class GestionPaciente(Frame):
                                 command=lambda: self.activar_edicion(entradas, btn_guardar))
             btn_editar.grid(row=len(campos), column=0, padx=10, pady=10)
 
-            btn_volver = Button(frame_btns, text="Volver", font=("Roboto", 13),bg="#e6c885", width=15,
+            btn_volver = Button(frame_btns, text="Cancelar", font=("Roboto", 13),bg="#e6c885", width=15,
                             command=ventana_abrir.destroy)
             btn_volver.grid(row=len(campos), column=2, pady=10, padx=10)
 
@@ -382,13 +382,13 @@ class GestionPaciente(Frame):
             frame_btns = Frame(ventana_abrir, bg="#e4c09f")
             frame_btns.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
 
-            btn_volver = Button(frame_btns, text="Volver", font=("Roboto", 13),bg="#e6c885", width=15,
+            btn_volver = Button(frame_btns, text="Cancelar", font=("Roboto", 13),bg="#e6c885", width=15,
                             command=ventana_abrir.destroy)
-            btn_volver.grid(row=len(campos), column=2, pady=10, padx=10)
+            btn_volver.grid(row=len(campos), column=1, pady=0, padx=10)
 
-            btn_guardar = Button(frame_detalles, text="Guardar Cambios", font=("Roboto", 13), bg="#e6c885", width=15,
+            btn_guardar = Button(frame_btns, text="Guardar Cambios", font=("Roboto", 13), bg="#e6c885", width=15,
                                 command=lambda: self.guardar_cambios(entradas, ventana_abrir, id_seleccionado))
-            btn_guardar.grid(row=len(campos) + 1, column=1, padx=10, pady=10)
+            btn_guardar.grid(row=len(campos) , column=0, padx=60, pady=10)
 
     def activar_edicion(self, entradas, btn_guardar):
     # Habilitar la edición en las entradas
@@ -520,7 +520,7 @@ class GestionPaciente(Frame):
         btn_nuevo_paciente = Button(frame_btns, text="Agregar", font=("Roboto", 13),bg="#e6c885", width=15, command=lambda: self.guardar_nuevo_paciente(entradas, ventana_agregar))
         btn_nuevo_paciente.grid(row=len(campos),column=0, padx=60, pady=10)
 
-        btn_volver = Button(frame_btns, text="Volver", font=("Roboto", 13),bg="#e6c885", width=15,
+        btn_volver = Button(frame_btns, text="Cancelar", font=("Roboto", 13),bg="#e6c885", width=15,
                             command=ventana_agregar.destroy)
         btn_volver.grid(row=len(campos), column=1, pady=10, padx=10)
 
