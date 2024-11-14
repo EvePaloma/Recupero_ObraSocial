@@ -314,7 +314,15 @@ class GestionPaciente(Frame):
                 combobox = ttk.Combobox(frame_detalles, values=obras_sociales, font=("Roboto", 10))
                 combobox.grid(row=i, column=1, padx=10, pady=5)
                 entradas[campo] = combobox
+                '''
+            elif campo == "Estado":
+            # Crear comboBox para Estado
 
+                combobox_estado = ttk.Combobox(frame_detalles, values=["Activo", "Inactivo"], font=("Roboto", 10))
+                combobox_estado.grid(row=i, column=1, padx=10, pady=5)
+                combobox_estado.set("Activo" if estado_actual == 1 else "Inactivo")  # Establecer el estado actual
+                entradas[campo] = combobox_estado
+                '''
             else:
                 entry = Entry(frame_detalles, width=40, font=("Roboto", 10))
                 entry.grid(row=i, column=1, padx=10, pady=5)
@@ -338,7 +346,7 @@ class GestionPaciente(Frame):
         etiqueta_estado.grid(row=len(campos), column=0, padx=10, pady=5)
         combo_estado = ttk.Combobox(frame_detalles, values=["Activo", "Inactivo"], width=37)
         combo_estado.grid(row=len(campos), column=1, padx=10, pady=5)
-        combo_estado.set("Activo" if valores[5] == 1 else "Inactivo")
+        combo_estado.set("Activo" if estado_actual == 1 else "Inactivo")  # Establecer el estado actual
         entradas["Estado"] = combo_estado
 
 
