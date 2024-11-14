@@ -295,11 +295,23 @@ class GestionPaciente(Frame):
         for i, campo in enumerate(campos):
             etiquetas = Label(frame_detalles, text=campo + ":", bg="#c9c2b2", font=("Roboto", 10))
             etiquetas.grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_detalles, width=40, font=("Roboto", 10))
-            entry.grid(row=i, column=1, padx=10, pady=5)
-            entradas[campo] = entry
+            if campo == "Obra Social":
+                # Crear ComboBox para Obra Social
+                conexion = obtener_conexion()
+                cursor = conexion.cursor()
+                cursor.execute("SELECT nombre FROM obra_social")
+                obras_sociales = [row[0] for row in cursor.fetchall()]
+                cursor.close()
+                conexion.close()
+                combobox = ttk.Combobox(frame_detalles, values=obras_sociales, font=("Roboto", 10))
+                combobox.grid(row=i, column=1, padx=10, pady=5)
+                entradas[campo] = combobox
+            else:
+                entry = Entry(frame_detalles, width=40, font=("Roboto", 10))
+                entry.grid(row=i, column=1, padx=10, pady=5)
+                entradas[campo] = entry
 
-            if campo in ["Nombre","Apellido","Obra Social"]:
+            if campo in ["Nombre","Apellido"]:
                 entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
             elif campo in ["Tipo de Documento","DNI"]:
                 entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
@@ -320,13 +332,6 @@ class GestionPaciente(Frame):
         combo_estado.set("Activo" if valores[5] == 1 else "Inactivo")
         entradas["Estado"] = combo_estado
 
-        # ComboBox para Obra Social
-        '''etiqueta_obra_social = Label(frame_detalles, text="Obra Socials:", bg="#c9c2b2", font=("Roboto", 10))
-        etiqueta_obra_social.grid(row=len(campos), column=0, padx=10, pady=50)
-        combo_obra_social = ttk.Combobox(frame_detalles, values=["OSDE", "Swiss Medical", "Galeno", "Medifé", "Sancor Salud", "Otra"], width=37)
-        combo_obra_social.grid(row=len(campos), column=1, padx=30, pady=35)
-        combo_obra_social.set("Seleccionar obra social")
-        entradas["Obra Social"] = combo_obra_social'''
 
         if modo == "ver":
             for entry in entradas.values():
@@ -467,12 +472,7 @@ class GestionPaciente(Frame):
         vcmd_letras = ventana_agregar.register(self.solo_letras)
         vcmd_numeros = ventana_agregar.register(self.solo_numeros)
 
-                # ComboBox para Obra Social
 
-        '''combo_obra_social = ttk.Combobox(frame_agregar, values= ["OSDE", "Swiss Medical", "Galeno", "Medifé", "Sancor Salud", "Otra"], width=37)
-        combo_obra_social.grid(row=len(campos), column=1, padx=10, pady=35)
-        combo_obra_social.set("Seleccionar obra social") 
-        entradas["Obra Social"] = combo_obra_social'''
 
         for i, campo in enumerate(campos):
             etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Roboto", 10))
