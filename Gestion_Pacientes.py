@@ -63,11 +63,15 @@ class GestionPaciente(Frame):
         conexion = obtener_conexion()
         if conexion is None:
             return
+                    # Obtener el nombre de la obra social
+            cursor.execute("SELECT nombre FROM obra_social WHERE id_obra_social = %s", (valores[4],))
+            obra_social_nombre = cursor.fetchone()[0]
         try:
             cursor = conexion.cursor()
             seleccion = self.combo_activos.get()
             if seleccion == "Activos":
-                cursor.execute("SELECT id_paciente, nombre, apellido, documento, id_obra_social FROM paciente WHERE activo = 1")
+                cursor.execute("SELECT p.id_paciente, p.nombre, p.apellido, p.documento, o.nombre as obra_social FROM paciente p JOIN obra_social o ON p.id_obra_social = o.id_obra_social WHERE p.activo = 1")
+                               
             elif seleccion == "Inactivos":
                 cursor.execute("SELECT id_paciente, nombre, apellido, documento, id_obra_social FROM paciente WHERE activo = 0")
             elif seleccion == "Todos":
