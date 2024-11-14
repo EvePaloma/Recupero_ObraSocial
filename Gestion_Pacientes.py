@@ -385,7 +385,6 @@ class GestionPaciente(Frame):
         try:
             conexion = obtener_conexion()
             cursor = conexion.cursor()
-
             # Obtener el ID de la obra social
             cursor.execute("SELECT id_obra_social FROM obra_social WHERE nombre = %s", (nuevos_valores["Obra Social"],))
             result = cursor.fetchone()
@@ -469,25 +468,36 @@ class GestionPaciente(Frame):
         vcmd_numeros = ventana_agregar.register(self.solo_numeros)
 
                 # ComboBox para Obra Social
-        etiqueta_obra_social = Label(frame_agregar, text="Obra Socials:", bg="#c9c2b2", font=("Roboto", 10))
-        etiqueta_obra_social.grid(row=len(campos), column=0, padx=10, pady=50)
-        combo_obra_social = ttk.Combobox(frame_agregar, values= ["OSDE", "Swiss Medical", "Galeno", "Medifé", "Sancor Salud", "Otra"], width=37)
+
+        '''combo_obra_social = ttk.Combobox(frame_agregar, values= ["OSDE", "Swiss Medical", "Galeno", "Medifé", "Sancor Salud", "Otra"], width=37)
         combo_obra_social.grid(row=len(campos), column=1, padx=10, pady=35)
         combo_obra_social.set("Seleccionar obra social") 
-        entradas["Obra Social"] = combo_obra_social
+        entradas["Obra Social"] = combo_obra_social'''
 
         for i, campo in enumerate(campos):
             etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Roboto", 10))
             etiquetas.grid(row=i, column=0, padx=10, pady=5)
-            entry = Entry(frame_agregar, width=40, font=("Roboto", 10))
+            if campo == "Obra Social":
+                # Crear ComboBox para Obra Social
+                conexion = obtener_conexion()
+                cursor = conexion.cursor()
+                cursor.execute("SELECT nombre FROM obra_social")
+                obras_sociales = [row[0] for row in cursor.fetchall()]
+                cursor.close()
+                conexion.close()
+                combobox = ttk.Combobox(frame_agregar, values=obras_sociales, font=("Roboto", 10))
+                combobox.grid(row=i, column=1, padx=10, pady=5)
+                entradas[campo] = combobox
+            else:
+                entry = Entry(frame_agregar, width=40, font=("Roboto", 10))
+                entry.grid(row=i, column=1, padx=10, pady=5)
+                entradas[campo] = entry
 
-            if campo in ["Nombre","Apellido","Obra Social"]:
+            if campo in ["Nombre","Apellido"]:
                 entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
             elif campo in ["Tipo de Documento","DNI"]:
                 entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
 
-            entry.grid(row=i, column=1, padx=10, pady=5)
-            entradas[campo] = entry
 
         btn_nuevo_paciente = Button(frame_btns, text="Agregar", font=("Roboto", 13),bg="#e6c885", width=15, command=lambda: self.guardar_nuevo_paciente(entradas, ventana_agregar))
         btn_nuevo_paciente.grid(row=len(campos),column=0, padx=60, pady=10)
