@@ -16,7 +16,7 @@ class GestionPaciente(Frame):
         self.createWidgets()
         self.cargar_paciente()
         self.master.protocol("WM_DELETE_WINDOW", lambda: None)
-        #self.actualizar_treeview()
+        self.actualizar_treeview()
     
     def insertar_paciente_bd(nombre, apellido, tipo_documento, documento, id_obra_social, numeroafiliado):
         conexion = obtener_conexion()
@@ -135,16 +135,20 @@ class GestionPaciente(Frame):
         stilo.configure("Treeview.Heading", font=("Roboto",14))  # Cambia la fuente de las cabeceras
         # Treeview para mostrar la tabla de pacientes dentro del frame_tabla
         self.tree = ttk.Treeview(frame_tabla, columns=("id", "nombre", "apellido", "documento", "id_obra_social"), show='headings', height=11)
-        
+        self.tree["displaycolumns"] = ("nombre", "apellido", "documento", "id_obra_social")
+        for col in self.tree["displaycolumns"]:
+            self.tree.heading(col, command=lambda: "break")
+            self.tree.column(col, stretch=False)
+
         # Títulos de columnas
-        self.tree.heading("id", text="ID")
+        self.tree.heading("id", text="")
         self.tree.heading("nombre", text="Nombre")
         self.tree.heading("apellido", text="Apellido")
         self.tree.heading("documento", text="DNI")
         self.tree.heading("id_obra_social", text="Obra Social")
 
         # Ancho de las columnas y datos centrados
-        self.tree.column("id", anchor='center', width=0)
+        self.tree.column("id", width=0)
         self.tree.column("nombre", anchor='center', width=300)
         self.tree.column("apellido", anchor='center', width=300)
         self.tree.column("documento", anchor='center', width=300)
