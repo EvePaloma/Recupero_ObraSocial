@@ -18,14 +18,14 @@ class GestionPaciente(Frame):
         self.master.protocol("WM_DELETE_WINDOW", lambda: None)
         self.actualizar_treeview()
     
-    def insertar_paciente_bd(nombre, apellido, tipo_documento, documento, id_obra_social, numeroafiliado):
+    def insertar_paciente_bd(nombre, apellido, documento, id_obra_social, numeroafiliado):
         conexion = obtener_conexion()
         if conexion is None:
             return
         try:
             cursor = conexion.cursor()
-            sql = "INSERT INTO paciente (nombre, apellido, tipo_documento, documento, id_obra_social, nro_afiliado,) VALUES (%s, %s, %s, %s, %s, %s)"
-            val = (nombre, apellido, tipo_documento, documento, id_obra_social, numeroafiliado)
+            sql = "INSERT INTO paciente (nombre, apellido, documento, id_obra_social, nro_afiliado,) VALUES (%s, %s, %s, %s, %s, %s)"
+            val = (nombre, apellido, documento, id_obra_social, numeroafiliado)
             cursor.execute(sql, val)
             conexion.commit()
             messagebox.showinfo("Éxito", "Registro insertado correctamente.")
@@ -35,15 +35,15 @@ class GestionPaciente(Frame):
             conexion.close()
 
         #nombre, apellido, documento, id_obra_social, obrasocialsec, propietario, fechanac, sexo, telefonopaciente, contactoemergencia, numeroafiliado)
-    def actualizar_paciente(nombre, apellido,  tipo_documento, documento, id_obra_social, numeroafiliado):
+    def actualizar_paciente(nombre, apellido, documento, id_obra_social, numeroafiliado):
         
         conexion = obtener_conexion()
         if conexion is None:
             return
         try:
             cursor = conexion.cursor()
-            sql = "UPDATE paciente SET nombre=%s, apellido=%s, tipo_documento=%s, documento=%s, id_obra_social = %s, nro_afiliado = %s WHERE id=%s"
-            val = (nombre, apellido, tipo_documento, documento, id_obra_social, numeroafiliado)
+            sql = "UPDATE paciente SET nombre=%s, apellido=%s, documento=%s, id_obra_social = %s, nro_afiliado = %s WHERE id=%s"
+            val = (nombre, apellido, documento, id_obra_social, numeroafiliado)
             cursor.execute(sql, val)
             conexion.commit()
             messagebox.showinfo("Éxito", "Registro actualizado correctamente.")
@@ -64,7 +64,7 @@ class GestionPaciente(Frame):
         if conexion is None:
             return
                     # Obtener el nombre de la obra social
-            cursor.execute("SELECT nombre FROM obra_social WHERE id_obra_social = %s", (valores[4],))
+            cursor.execute("SELECT nombre FROM obra_social WHERE id_obra_social = %s", (valores[3],))
             obra_social_nombre = cursor.fetchone()[0]
         try:
             cursor = conexion.cursor()
@@ -78,7 +78,7 @@ class GestionPaciente(Frame):
                 cursor.execute("SELECT id_paciente, nombre, apellido, documento, id_obra_social FROM paciente")
             pacientes = cursor.fetchall()
             for paciente in pacientes:
-                self.tree.insert("", "end", values=paciente)
+                self.tree.insert("", 0, values=paciente)
         except mysql.connector.Error as err:
             messagebox.showerror("Error", f"Error al actualizar el Treeview: {err}")
         finally:
@@ -268,7 +268,7 @@ class GestionPaciente(Frame):
         frame_detalles = LabelFrame(ventana_abrir, text="Detalles del Paciente", font=("Roboto", 10), padx=10, pady=10, bg="#c9c2b2")
         frame_detalles.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        campos = ["Nombre", "Apellido", "Tipo de Documento", "DNI", "Obra Social", "Número de Afiliado"]
+        campos = ["Nombre", "Apellido", "DNI", "Obra Social", "Número de Afiliado"]
         id_paciente = paciente[0]  # Asumiendo que el ID es el primer valor
 
         vcmd_letras = ventana_abrir.register(self.solo_letras)
@@ -278,8 +278,8 @@ class GestionPaciente(Frame):
             conexion = obtener_conexion()
             cursor = conexion.cursor()
 
-            # Obtener los datos del paciente
-            cursor.execute("SELECT nombre, apellido, tipo_documento, documento, id_obra_social, nro_afiliado, activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
+            # Obtener los datos del paciente esta no sacarrrr
+            cursor.execute("SELECT nombre, apellido, documento, id_obra_social, nro_afiliado, activo FROM paciente WHERE id_paciente = %s", (id_paciente,))
             valores = cursor.fetchone()
 
             # Obtener el estado actual del paciente
@@ -287,7 +287,7 @@ class GestionPaciente(Frame):
             estado_actual = cursor.fetchone()[0]
 
             # Obtener el nombre de la obra social
-            cursor.execute("SELECT nombre FROM obra_social WHERE id_obra_social = %s", (valores[4],))
+            cursor.execute("SELECT nombre FROM obra_social WHERE id_obra_social = %s", (valores[3],))
             obra_social_nombre = cursor.fetchone()[0]
 
         except mysql.connector.Error as err:
@@ -314,15 +314,7 @@ class GestionPaciente(Frame):
                 combobox = ttk.Combobox(frame_detalles, values=obras_sociales, font=("Roboto", 10))
                 combobox.grid(row=i, column=1, padx=10, pady=5)
                 entradas[campo] = combobox
-                '''
-            elif campo == "Estado":
-            # Crear comboBox para Estado
 
-                combobox_estado = ttk.Combobox(frame_detalles, values=["Activo", "Inactivo"], font=("Roboto", 10))
-                combobox_estado.grid(row=i, column=1, padx=10, pady=5)
-                combobox_estado.set("Activo" if estado_actual == 1 else "Inactivo")  # Establecer el estado actual
-                entradas[campo] = combobox_estado
-                '''
             else:
                 entry = Entry(frame_detalles, width=40, font=("Roboto", 10))
                 entry.grid(row=i, column=1, padx=10, pady=5)
@@ -330,13 +322,12 @@ class GestionPaciente(Frame):
 
             if campo in ["Nombre","Apellido"]:
                 entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
-            elif campo in ["Tipo de Documento","DNI"]:
+            elif campo in ["DNI"]:
                 entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
 
         # Establecer los valores en los campos
         entradas["Nombre"].insert(0, valores[0])
         entradas["Apellido"].insert(0, valores[1])
-        entradas["Tipo de Documento"].insert(0, valores[2])
         entradas["DNI"].insert(0, valores[3])
         entradas["Obra Social"].insert(0, obra_social_nombre)
         entradas["Número de Afiliado"].insert(0, valores[5])
@@ -358,7 +349,7 @@ class GestionPaciente(Frame):
 
             if campo in ["Nombre","Apellido","Obra Social"]:
                 entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
-            elif campo in ["Tipo de Documento","DNI"]:
+            elif campo in ["DNI"]:
                 entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
             
             frame_btns = Frame(ventana_abrir, bg="#e4c09f")
@@ -418,11 +409,11 @@ class GestionPaciente(Frame):
 
             query = """
             UPDATE paciente
-            SET nombre = %s, apellido = %s, tipo_documento= %s, documento = %s, id_obra_social = %s, nro_afiliado = %s, activo = %s
+            SET nombre = %s, apellido = %s, documento = %s, id_obra_social = %s, nro_afiliado = %s, activo = %s
             WHERE id_paciente = %s
             """
             cursor.execute(query, (
-                nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["Tipo de Documento"], nuevos_valores["DNI"], id_obra_social,
+                nuevos_valores["Nombre"], nuevos_valores["Apellido"], nuevos_valores["DNI"], id_obra_social,
                 nuevos_valores["Número de Afiliado"], estado, id_paciente
             ))
             conexion.commit()
@@ -484,12 +475,11 @@ class GestionPaciente(Frame):
         frame_btns = Frame(ventana_agregar, bg="#e4c09f")
         frame_btns.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
 
-        campos = ["Nombre","Apellido","Tipo de Documento","DNI","Obra Social","Número de Afiliado"]
+        campos = ["Nombre","Apellido","DNI","Obra Social","Número de Afiliado"]
         entradas = {}
 
         vcmd_letras = ventana_agregar.register(self.solo_letras)
         vcmd_numeros = ventana_agregar.register(self.solo_numeros)
-
 
 
         for i, campo in enumerate(campos):
@@ -513,7 +503,7 @@ class GestionPaciente(Frame):
 
             if campo in ["Nombre","Apellido"]:
                 entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
-            elif campo in ["Tipo de Documento","DNI"]:
+            elif campo in ["DNI"]:
                 entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
 
 
@@ -527,7 +517,6 @@ class GestionPaciente(Frame):
     def guardar_nuevo_paciente(self, entry, ventana):
         nombre = entry["Nombre"].get().upper()      # Obtenemos los valores que el usuario ingresó.
         apellido = entry["Apellido"].get().upper()
-        tipo_documento = entry["Tipo de Documento"].get().upper()
         documento = entry["DNI"].get()
         obra_social_nombre = entry["Obra Social"].get().upper()
         numeroafiliado = entry["Número de Afiliado"].get().upper()
@@ -536,7 +525,7 @@ class GestionPaciente(Frame):
         #obra_social_nombre = cursor.fetchone()[0]
 
         # Validar datos y agregar al Treeview
-        if nombre and apellido and tipo_documento and documento and obra_social_nombre and numeroafiliado:
+        if nombre and apellido and documento and obra_social_nombre and numeroafiliado:
             try:
                 conexion = obtener_conexion()
                 cursor = conexion.cursor()
@@ -556,12 +545,14 @@ class GestionPaciente(Frame):
                 id_obra_social = result[0]
                 
                 query = """
-                INSERT INTO paciente (nombre, apellido, tipo_documento, documento, id_obra_social, nro_afiliado)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO paciente (nombre, apellido, documento, id_obra_social, nro_afiliado)
+                VALUES (%s, %s, %s, %s, %s)
                 """
-                cursor.execute(query, (nombre, apellido, tipo_documento, documento, id_obra_social, numeroafiliado))
+                cursor.execute(query, (nombre, apellido, documento, id_obra_social, numeroafiliado))
                 conexion.commit()
                 messagebox.showinfo("Información", "Paciente agregado correctamente.")
+                self.tree.insert("", 0, values=(nombre, apellido, documento, obra_social_nombre, numeroafiliado))
+                self.actualizar_treeview()
                 ventana.destroy()
                 self.cargar_paciente()  # Recargar la lista de pacientes
             except mysql.connector.Error as err:
