@@ -76,19 +76,6 @@ CREATE TABLE `paciente` (
   FOREIGN KEY (`id_obra_social`) REFERENCES `obra_social` (`id_obra_social`)
 );
 
-DROP TABLE IF EXISTS `detalle_obra_social`;
-CREATE TABLE `detalle_obra_social` (
-  `id_detalle_os` int NOT NULL AUTO_INCREMENT,
-  `id_paciente` int NOT NULL,
-  `id_obra_social` int NOT NULL,
-  `nro_afiliado` varchar(25) NOT NULL,
-  `caracter` varchar(25) NOT NULL,
-  `activo` tinyint NOT NULL DEFAULT 1,
-  PRIMARY KEY (`id_detalle_os`),
-  FOREIGN KEY (`id_paciente`) REFERENCES `paciente` (`id_paciente`),
-  FOREIGN KEY (`id_obra_social`) REFERENCES `obra_social` (`id_obra_social`)
-);
-
 DROP TABLE IF EXISTS `tratamiento`;
 CREATE TABLE `tratamiento` (
   `id_tratamiento` int NOT NULL AUTO_INCREMENT,
@@ -141,15 +128,12 @@ CREATE TABLE `detalle_ficha` (
   `id_tratamiento` int NOT NULL,
   `cantidad` int NOT NULL DEFAULT 1 ,
   `precio_unitario` float NOT NULL,
-  `subtotal` float AS (cantidad * precio_unitario) STORED,
+  `subtotal` float GENERATED ALWAYS AS (cantidad * precio_unitario) STORED,
   `activo` tinyint NOT NULL DEFAULT 1,
   PRIMARY KEY (`id_detalle`),
   FOREIGN KEY (`id_ficha`) REFERENCES `ficha` (`id_ficha`),
   FOREIGN KEY (`id_tratamiento`) REFERENCES `tratamiento` (`id_tratamiento`)
 );
-
----------------------------------------------------------------------------
----insertar datos---
 
 use recupero_obra_social;
 INSERT INTO obra_social (nombre, siglas, telefono, detalle, domicilio_central, domicilio_cp, cuit, id_afip) VALUES
@@ -173,7 +157,7 @@ INSERT INTO obra_social (nombre, siglas, telefono, detalle, domicilio_central, d
 
 select * from obra_social;
 
-INSERT INTO 'tratamiento'('codigo', 'nombre', 'precio', 'fecha_precio', 'siglas, descripcion') VALUES 
+INSERT INTO tratamiento(codigo, nombre, precio, fecha_precio,siglas, descripcion) VALUES 
 ('1001', 'SUTURA SIMPLE', 1800.00, '2024-01-10', 'SS', 'CIERRE DE HERIDAS SUPERFICIALES CON SUTURAS EN URGENCIAS.'),
 ('1002A', 'SUTURA COMPLEJA', 3400.00, '2024-01-11', 'SC', 'SUTURA PARA HERIDAS PROFUNDAS O CON MÚLTIPLES CAPAS DE TEJIDO.'),
 ('1010', 'ESCAYOLA BRAZO', 2800.00, '2024-01-12', 'EB', 'INMOVILIZACIÓN DE BRAZO CON ESCAYOLA DEBIDO A FRACTURAS.'),
@@ -199,21 +183,15 @@ use recupero_obra_social;
 
 INSERT INTO `paciente` (nombre, apellido, documento, id_obra_social, nro_afiliado, activo)
 VALUES
-('JUAN', 'PEREZ', '23456789', 'PAMI', '1112345678',1),
-('MARIA', 'GOMEZ', '34567890', 'OSDE', '2223456789',1),
-('CARLOS', 'RODRIGUEZ', '45678901', 'SWISS MEDICAL', '3334567890',1),
-('ANA', 'FERNANDEZ', '56789012', 'GALENO', '4445678901',1),
-('PEDRO', 'LOPEZ', '67890123', 'PAMI', '5556789012',1),
-('LUIS', 'MARTINEZ', '78901234', 'OSDE', '6667890123',1),
-('MARTA', 'SANCHEZ', '89012345', 'SWISS MEDICAL', '7778901234',1),
-('JORGE', 'RAMIREZ', '90123456', 'GALENO', '8889012345',1),
-('LAURA', 'TORRES', '12345678', 'PAMI', '9990123456',1),
-('SILVIA', 'RAMOS', '23456789', 'OSDE', '1011234567',1),
-('DIEGO', 'CRUZ',  '34567890', 'SWISS MEDICAL', '2022345678',1),
-('ROSA', 'REYES', '45678901', 'GALENO', '3033456789',1),
-('GUSTAVO', 'MORALES', '56789012', 'PAMI', '4044567890',1),
-('CAROLINA', 'NUÑEZ', '67890123', 'OSDE', '5055678901',1),
-('PABLO', 'CASTRO', '78901234', 'SWISS MEDICAL', '6066789012',1);
+('JUAN', 'PEREZ', '23456789', '2', '1112345678',1),
+('MARIA', 'GOMEZ', '34567890', '1', '2223456789',1),
+('CARLOS', 'RODRIGUEZ', '45678901', '2', '3334567890',1),
+('ANA', 'FERNANDEZ', '56789012', '8', '4445678901',1),
+('PEDRO', 'LOPEZ', '67890123', '5', '5556789012',1),
+('LUIS', 'MARTINEZ', '78901234', '4', '6667890123',1),
+('MARTA', 'SANCHEZ', '89012345', '6', '7778901234',1),
+('JORGE', 'RAMIREZ', '90123456', '7', '8889012345',1),
+('LAURA', 'TORRES', '12345678', '4', '9990123456',1);
 select * from paciente;
 
 
