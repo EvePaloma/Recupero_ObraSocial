@@ -8,7 +8,7 @@ from tkcalendar import Calendar
 from datetime import datetime
 import re
 
-class GestionFicha(Frame):
+class Gestion_Ficha(Frame):
     def __init__(self, master):
         Frame.__init__(self, master, bg="#e4c09f", width= 1370, height=700)
         self.master = master
@@ -17,6 +17,8 @@ class GestionFicha(Frame):
         self.createWidgets()
         self.actualizar_treeview()
         self.ventana_agregar_medico = None
+        self.ventana_agregar_paciente = None
+        self.master.protocol("WM_DELETE_WINDOW", lambda: None)
 
     #Funcion para volver al menú principal
     def volver_menu_principal(self):
@@ -25,7 +27,7 @@ class GestionFicha(Frame):
         ventana = Tk()
         ventana.wm_title("Menú Recupero de Obra Social")
         ventana.wm_resizable(0,0)
-        ventana.geometry("+30+15")
+        ventana.geometry("+0+0")
         menu = MENU(ventana)
         menu.mainloop()
     def volver_inicio(self):
@@ -274,7 +276,7 @@ class GestionFicha(Frame):
             entry.config(fg="gray")
     #Funciones para validar y agregar fecha
     def abrir_calendario(self):
-        ventana_calendario = Toplevel(ventana)
+        ventana_calendario = Toplevel(self)
         ventana_calendario.config(bg="#e4c09f")
         ventana_calendario.geometry("300x270+1000+200")
         ventana_calendario.resizable(0, 0)
@@ -446,7 +448,6 @@ class GestionFicha(Frame):
         cursor.close()
         conexion.close()
     
-
     #CREACION DE INTERFAZ Y MODIFICACIONES EN LA BASE DE DATOS
     #Función para generar el inicio
     def createWidgets(self):
@@ -549,7 +550,7 @@ class GestionFicha(Frame):
         btn_eliminar = Button(frame_btn, text="Eliminar", width=15,font=("Robot",15),bg="#e6c885", command= self.eliminar_ficha)
         btn_eliminar.grid(row=0, column=3, padx=50)
 
-        btn_volver = Button(frame_btn, text="Volver", width=15 ,font=("Robot",15), bg="#e6c885")
+        btn_volver = Button(frame_btn, text="Volver", width=15 ,font=("Robot",15), bg="#e6c885", command = self.volver_menu_principal)
         btn_volver.grid(row=0, column=4, padx=50)
 
     #AGREGAR NUEVA FICHA 
@@ -591,7 +592,7 @@ class GestionFicha(Frame):
         frame_busqueda.columnconfigure(4, weight=2)
         frame_busqueda.columnconfigure(5, weight=2)
 
-        btn_nuevo_paciente = Button(frame_busqueda, text="Nuevo Paciente", font=("Robot", 11, "bold"),bg="#e6c885", width = 15)
+        btn_nuevo_paciente = Button(frame_busqueda, text="Nuevo Paciente", font=("Robot", 11, "bold"),bg="#e6c885", width = 15, command = self.agregar_paciente)
         btn_nuevo_paciente.grid(row = 0, column=6, padx=15)
 
         #Frame para los datos del PACIENTE
@@ -698,8 +699,8 @@ class GestionFicha(Frame):
         frame_botones_tratamiento = Frame(frame_tratamiento, bg="#c9c2b2")
         frame_botones_tratamiento.grid(row=0, column=1, columnspan=2, padx=30)
 
-        btn_nuevo_t = Button(frame_botones_tratamiento, text="Nuevo Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885", height=2, width=20)
-        btn_nuevo_t.pack(pady=8)
+        """btn_nuevo_t = Button(frame_botones_tratamiento, text="Nuevo Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885", height=2, width=20)
+        btn_nuevo_t.pack(pady=8)"""
 
         btn_agregar_t = Button(frame_botones_tratamiento, text="Agregar Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885", height=2, width=20, command= self.mostrar_tratamientos)
         btn_agregar_t.pack(pady=8)
@@ -729,11 +730,11 @@ class GestionFicha(Frame):
             elemento = self.buscar_paciente.get()
             if not elemento:
                 messagebox.showwarning("Atención", "Ingrese un Documento para buscar.")
-                ventana.lift()
+                self.lift()
                 return
             if not elemento.isdigit():
                 messagebox.showwarning("Atención", "Ingrese un Documento válido.")
-                ventana.lift()
+                self.lift()
                 return
             resultado = self.buscar_elemento_tabla(elemento, "paciente")
             if resultado[0] == 0:
@@ -750,7 +751,7 @@ class GestionFicha(Frame):
                     entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
                     entry.grid(row=1, column=i, padx=10)
                     if campos_arriba == "Documento":
-                        entry.insert(0, valores[4])
+                        entry.insert(0, valores[3])
                     elif campos_arriba == "Nombre":
                         entry.insert(0, valores[1])
                     elif campos_arriba == "Apellido":
@@ -762,11 +763,11 @@ class GestionFicha(Frame):
                     entry = Entry(self.frame_datos_pacientes, width=40, font=("Robot", 12))
                     entry.grid(row=3, column=j, padx=10)
                     if campos_abajo == "Obra Social":
-                        nombre = self.conexion_bd_os(valores[5])
+                        nombre = self.conexion_bd_os(valores[4])
                         entry.insert(0, nombre[0][1])
-                        self.datos_ficha[campos_abajo] = valores[5]  #guarda el id de la obra social
+                        self.datos_ficha[campos_abajo] = valores[4]  #guarda el id de la obra social
                     elif campos_abajo == "Número de Afiliado":
-                        entry.insert(0, valores[6])
+                        entry.insert(0, valores[5])
                         self.datos_ficha[campos_abajo] = entry      #guarda el número de afiliado
                     entry.config(state="readonly")
                 self.buscar_paciente.delete(0, END)
@@ -1101,8 +1102,8 @@ class GestionFicha(Frame):
         frame_botones_tratamiento = Frame(frame_tratamiento, bg="#c9c2b2")
         frame_botones_tratamiento.grid(row=0, column=1, columnspan=2, padx=30)
 
-        btn_nuevo_t = Button(frame_botones_tratamiento, text="Nuevo Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885", height=2, width=20)
-        btn_nuevo_t.pack(pady=8)
+        """btn_nuevo_t = Button(frame_botones_tratamiento, text="Nuevo Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885", height=2, width=20)
+        btn_nuevo_t.pack(pady=8)"""
 
         btn_agregar_t = Button(frame_botones_tratamiento, text="Agregar Tratamiento", font=("Robot", 11, "bold"),bg="#e6c885", height=2, width=20, command= self.mostrar_tratamientos)
         btn_agregar_t.pack(pady=8)
@@ -1355,7 +1356,7 @@ class GestionFicha(Frame):
         frame_btns = Frame(self.ventana_agregar_medico, bg="#e4c09f")
         frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
-        btn_nuevo_tratamiento = Button(frame_btns, text="Agregar", font=("Robot", 13),bg="#e6c885", width=15, command=lambda:self.guardar_nuevo_medico(entradas,ventana_agregar))
+        btn_nuevo_tratamiento = Button(frame_btns, text="Agregar", font=("Robot", 13),bg="#e6c885", width=15, command=lambda:self.guardar_nuevo_medico(entradas,self.ventana_agregar_medico))
         btn_nuevo_tratamiento.grid(row=len(campos), column=0, padx=40, pady=10)
 
         btn_volver = Button(frame_btns, text="Volver", font=("Robot", 13),bg="#e6c885", width=15, command=self.ventana_agregar_medico.destroy)
@@ -1399,8 +1400,8 @@ class GestionFicha(Frame):
                 messagebox.showerror("Error", f"Error al insertar en la base de datos: {err}")
             finally:
                 conexion.close()
-        nombre = entradas["Nombre"].get()
-        apellido = entradas["Apellido"].get()
+        nombre = entradas["Nombre"].get().upper()
+        apellido = entradas["Apellido"].get().upper()
         dni = entradas["DNI"].get()
         telefono = entradas["Telefono"].get()
         matricula = entradas["Matricula"].get()
@@ -1419,9 +1420,109 @@ class GestionFicha(Frame):
         else:
             messagebox.showwarning("Atención", "Complete todos los campos.")
 
-ventana = Tk()
+    #Funciones para agregar nuevo paciente
+    def agregar_paciente(self):
+        def solo_letras(char):
+            return char.isalpha() or char == " "
+        def solo_numeros(char):
+            return char.isdigit()
+        # Verifica si la ventana ya está abierta
+        if self.ventana_agregar_paciente is not None and Toplevel.winfo_exists(self.ventana_agregar_paciente):
+            self.ventana_agregar_paciente.destroy()
+        self.ventana_agregar_paciente = Toplevel(self)
+        self.ventana_agregar_paciente.title("Agregar Paciente")
+        self.ventana_agregar_paciente.config(bg="#e4c09f")
+        self.ventana_agregar_paciente.geometry("+200+180")
+        self.ventana_agregar_paciente.resizable(False,False)
+        self.ventana_agregar_paciente.protocol("WM_DELETE_WINDOW", lambda: None)  # Deshabilitar el botón "Cerrar" de la ventana  
+        
+        frame_agregar = LabelFrame(self.ventana_agregar_paciente, text="Agregar Nuevo Paciente", font= ("Roboto", 11),padx=10, pady=10, bg="#c9c2b2")
+        frame_agregar.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        frame_btns = Frame(self.ventana_agregar_paciente, bg="#e4c09f")
+        frame_btns.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
+
+        campos = ["Nombre","Apellido","DNI","Obra Social","Número de Afiliado"]
+        entradas = {}
+        vcmd_letras = self.ventana_agregar_paciente.register(solo_letras)
+        vcmd_numeros = self.ventana_agregar_paciente.register(solo_numeros)
+
+        for i, campo in enumerate(campos):
+            etiquetas = Label(frame_agregar, text=campo + ":", bg="#c9c2b2", font=("Roboto", 10))
+            etiquetas.grid(row=i, column=0, padx=10, pady=5)
+            if campo == "Obra Social":
+                # Crear ComboBox para Obra Social
+                conexion = obtener_conexion()
+                cursor = conexion.cursor()
+                cursor.execute("SELECT nombre FROM obra_social")
+                obras_sociales = [row[0] for row in cursor.fetchall()]
+                cursor.close()
+                conexion.close()
+                combobox = ttk.Combobox(frame_agregar, values=obras_sociales, font=("Roboto", 10))
+                combobox.grid(row=i, column=1, padx=10, pady=5)
+                entradas[campo] = combobox
+            else:
+                entry = Entry(frame_agregar, width=40, font=("Roboto", 10))
+                entry.grid(row=i, column=1, padx=10, pady=5)
+                entradas[campo] = entry
+            if campo in ["Nombre","Apellido"]:
+                entry.config(validate="key", validatecommand=(vcmd_letras, '%S'))
+            elif campo in ["DNI"]:
+                entry.config(validate="key", validatecommand=(vcmd_numeros, '%S'))
+        btn_nuevo_paciente = Button(frame_btns, text="Agregar", font=("Roboto", 13),bg="#e6c885", width=15, command=lambda: self.guardar_nuevo_paciente(entradas, self.ventana_agregar_paciente))
+        btn_nuevo_paciente.grid(row=len(campos),column=0, padx=60, pady=10)
+
+        btn_volver = Button(frame_btns, text="Cancelar", font=("Roboto", 13),bg="#e6c885", width=15,
+                            command=self.ventana_agregar_paciente.destroy)
+        btn_volver.grid(row=len(campos), column=1, pady=10, padx=10)
+    def guardar_nuevo_paciente(self, entry, ventana):
+        nombre = entry["Nombre"].get().upper()      # Obtenemos los valores que el usuario ingresó.
+        apellido = entry["Apellido"].get().upper()
+        documento = entry["DNI"].get()
+        obra_social_nombre = entry["Obra Social"].get().upper()
+        numeroafiliado = entry["Número de Afiliado"].get().upper()
+
+        # Validar datos y agregar al Treeview
+        if nombre and apellido and documento and obra_social_nombre and numeroafiliado:
+            try:
+                conexion = obtener_conexion()
+                cursor = conexion.cursor()
+                # Verificar si el DNI ya existe
+                cursor.execute("SELECT COUNT(*) FROM paciente WHERE documento = %s", (documento,))
+                if cursor.fetchone()[0] > 0:
+                    messagebox.showerror("Error", "El DNI ingresado ya existe. Por favor, ingrese un DNI diferente.")
+                    return
+                # Obtener el ID de la obra social
+                cursor.execute("SELECT id_obra_social FROM obra_social WHERE nombre = %s", (obra_social_nombre,))
+                result = cursor.fetchone()
+                if result is None:
+                    messagebox.showerror("Error", "La obra social ingresada no existe. Por favor, ingrese una obra social válida.")
+                    return
+                id_obra_social = result[0]
+                
+                query = """
+                INSERT INTO paciente (nombre, apellido, documento, id_obra_social, nro_afiliado)
+                VALUES (%s, %s, %s, %s, %s)
+                """
+                cursor.execute(query, (nombre, apellido, documento, id_obra_social, numeroafiliado))
+                conexion.commit()
+                messagebox.showinfo("Información", "Paciente agregado correctamente.")
+                ventana.destroy()
+                cursor.close()
+
+                self.buscar_paciente.delete(0, END)
+                self.buscar_paciente.insert(0, documento)
+                self.buscar_elemento("paciente")
+            except mysql.connector.Error as err:
+                messagebox.showerror("Error", f"Error al agregar el paciente: {err}")
+            finally:
+                if conexion.is_connected():
+                    conexion.close()
+        else:
+            messagebox.showwarning("Atención", "Complete todos los campos.")
+
+"""ventana = Tk()
 ventana.title("Gestion de Fichas")
 ventana.resizable(False,False)
 ventana.geometry("+0+0")
 root = GestionFicha(ventana)
-ventana.mainloop()
+ventana.mainloop()"""

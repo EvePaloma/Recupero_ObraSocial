@@ -5,6 +5,7 @@ from Gestion_Tratamiento import *
 from Gestion_obra_social import *
 from Gestion_Medico_completa import *
 from Gestion_Pacientes import *
+from Gestion_Ficha import *
 
 class MENU(Frame):
     def __init__(self, master):
@@ -52,6 +53,15 @@ class MENU(Frame):
         entradas = Gestionmedico(ventana)
         entradas.mainloop()
 
+    def abrir_ficha(self):
+        self.master.destroy()
+        ventana = Tk()
+        ventana.wm_title("Gestion de Fichas")
+        ventana.wm_resizable(0,0)
+        ventana.geometry("+0+0")
+        root = Gestion_Ficha(ventana)
+        ventana.mainloop()
+
     def volver_login(self):
         self.master.destroy()
         from Login import Login
@@ -92,8 +102,8 @@ class MENU(Frame):
         btn_tratamiento = Button(frame_botones, text="Gestión de Tratamiento", font=("Roboto", 15), bg="#e4c09f", height=2, width=96,command=self.abrir_tratamiento)
         btn_tratamiento.grid(row=5, column=0, pady=(0, 20))    
 
-        """btn_ficha = Button(menu, text="Gestión de Ficha Médica", font=("Roboto", 15), bg="#e4c09f", width=96)
-        btn_ficha.grid(row=6, column=0, pady=(0, 20))"""
+        btn_ficha = Button(frame_botones, text="Gestión de Fichas", font=("Roboto", 15), bg="#e4c09f", height=2, width=96,command=self.abrir_ficha)
+        btn_ficha.grid(row=5, column=0, pady=(0, 20))  
 
 
 if __name__ == "__main__":
