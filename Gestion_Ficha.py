@@ -946,7 +946,7 @@ class Gestion_Ficha(Frame):
     def abrir_ventana_ficha(self, ficha, modo, seleccion=None):
         def activar_edicion(entradas, btn_guardar):
             btn_guardar.config(state="normal")
-            btn_nuevo_t.config(state="normal")
+            """btn_nuevo_t.config(state="normal")"""
             btn_agregar_t.config(state="normal")
             btn_eliminar_t.config(state="normal")
             btn_buscar1.config(state="normal")
@@ -1117,7 +1117,7 @@ class Gestion_Ficha(Frame):
         self.actualizar_total_precios()
 
         if modo == "ver":
-            btn_nuevo_t.config(state="disabled")
+            """ btn_nuevo_t.config(state="disabled")"""
             btn_agregar_t.config(state="disabled")
             btn_eliminar_t.config(state="disabled")
             btn_buscar1.config(state="disabled")
@@ -1136,7 +1136,7 @@ class Gestion_Ficha(Frame):
             btn_editar.grid(row = 0, column=2, padx=25,pady=10)
 
         if modo == "modificar":
-            btn_nuevo_t.config(state="normal")
+            """btn_nuevo_t.config(state="normal")"""
             btn_agregar_t.config(state="normal")
             btn_eliminar_t.config(state="normal")
             btn_buscar1.config(state="normal")
@@ -1356,8 +1356,8 @@ class Gestion_Ficha(Frame):
         frame_btns = Frame(self.ventana_agregar_medico, bg="#e4c09f")
         frame_btns.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
-        btn_nuevo_tratamiento = Button(frame_btns, text="Agregar", font=("Robot", 13),bg="#e6c885", width=15, command=lambda:self.guardar_nuevo_medico(entradas,self.ventana_agregar_medico))
-        btn_nuevo_tratamiento.grid(row=len(campos), column=0, padx=40, pady=10)
+        btn_nuevo_medico = Button(frame_btns, text="Agregar", font=("Robot", 13),bg="#e6c885", width=15, command=lambda:self.guardar_nuevo_medico(entradas,self.ventana_agregar_medico))
+        btn_nuevo_medico.grid(row=len(campos), column=0, padx=40, pady=10)
 
         btn_volver = Button(frame_btns, text="Volver", font=("Robot", 13),bg="#e6c885", width=15, command=self.ventana_agregar_medico.destroy)
         btn_volver.grid(row=len(campos), column=1, pady=10)
